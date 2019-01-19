@@ -114,6 +114,30 @@ func WithTargetExclusion(target string) func(*Scanner) {
 	}
 }
 
+// WithTargetInput sets the input file name to set the targets.
+func WithTargetInput(inputFileName string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-iL")
+		s.args = append(s.args, inputFileName)
+	}
+}
+
+// WithTargetExclusionInput sets the input file name to set the target exclusions.
+func WithTargetExclusionInput(inputFileName string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--excludefile")
+		s.args = append(s.args, inputFileName)
+	}
+}
+
+// WithRandomTargets sets the amount of targets to randomly choose from the targets.
+func WithRandomTargets(randomTargets int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-iR")
+		s.args = append(s.args, fmt.Sprint(randomTargets))
+	}
+}
+
 // WithPorts sets the ports which the scanner should scan on each host.
 func WithPorts(ports string) func(*Scanner) {
 	return func(s *Scanner) {
