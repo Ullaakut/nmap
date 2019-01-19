@@ -285,6 +285,60 @@ func WithTraceRoute() func(*Scanner) {
 	}
 }
 
+/*** Scan techniques ***/
+
+// WithSYNScan sets the scan technique to use SYN packets over TCP.
+// This is the default method, as it is fast, stealthy and not
+// hampered by restrictive firewalls.
+func WithSYNScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sS")
+	}
+}
+
+// WithConnectScan sets the scan technique to use TCP connections.
+// This is the default method used when a user does not have raw
+// packet privileges. Target machines are likely to log these
+// connections.
+func WithConnectScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sT")
+	}
+}
+
+// WithACKScan sets the scan technique to use ACK packets over TCP.
+// This scan is unable to determine if a port is open.
+// When scanning unfiltered systems, open and closed ports will both
+// return a RST packet.
+// Nmap then labels them as unfiltered, meaning that they are reachable
+// by the ACK packet, but whether they are open or closed is undetermined.
+func WithACKScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sA")
+	}
+}
+
+// WithWindowScan sets the scan technique to use ACK packets over TCP and
+// examining the TCP window field of the RST packets returned.
+// Window scan is exactly the same as ACK scan except that it exploits
+// an implementation detail of certain systems to differentiate open ports
+// from closed ones, rather than always printing unfiltered when a RST
+// is returned.
+func WithWindowScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sW")
+	}
+}
+
+// WithMaimonScan sends the same packets as NULL, FIN, and Xmas scans,
+// except that the probe is FIN/ACK. Many BSD-derived systems will drop
+// these packets if the port is open.
+func WithMaimonScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sM")
+	}
+}
+
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
