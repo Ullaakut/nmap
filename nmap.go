@@ -262,6 +262,29 @@ func WithForcedDNSResolution() func(*Scanner) {
 	}
 }
 
+// WithCustomDNSServers sets custom DNS servers for the scan.
+// List format: dns1[,dns2],...
+func WithCustomDNSServers(dnsList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--dns-servers")
+		s.args = append(s.args, dnsList)
+	}
+}
+
+// WithSystemDNS sets the scanner's DNS to the system's DNS.
+func WithSystemDNS() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--system-dns")
+	}
+}
+
+// WithTraceRoute enables the tracing of the hop path to each host.
+func WithTraceRoute() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--traceroute")
+	}
+}
+
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
