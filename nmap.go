@@ -413,6 +413,23 @@ func WithTCPScanFlags(flags ...TCPFlag) func(*Scanner) {
 	}
 }
 
+// WithIdleScan sets the scan technique to use a zombie host to
+// allow for a truly blind TCP port scan of the target.
+// Besides being extraordinarily stealthy (due to its blind nature),
+// this scan type permits mapping out IP-based trust relationships
+// between machines.
+func WithIdleScan(zombieHost string, probePort int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sI")
+
+		if probePort != 0 {
+			s.args = append(s.args, fmt.Sprintf("%s:%d", zombieHost, probePort))
+		} else {
+			s.args = append(s.args, zombieHost)
+		}
+	}
+}
+
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
