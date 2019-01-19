@@ -665,3 +665,29 @@ func WithScriptHelp() func(*Scanner) {
 		s.args = append(s.args, "--script-updatedb")
 	}
 }
+
+/*** OS Detection ***/
+
+// WithOSDetection enables OS detection.
+func WithOSDetection() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-O")
+	}
+}
+
+// WithOSScanLimit sets the scanner to not even try OS detection against
+// hosts that do have at least one open TCP port, as it is unlikely to be effective.
+// This can save substantial time, particularly on -Pn scans against many hosts.
+// It only matters when OS detection is requested with -O or -A.
+func WithOSScanLimit() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-O")
+	}
+}
+
+// WithOSScanGuess makes nmap attempt to guess the OS more aggressively.
+func WithOSScanGuess() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-O")
+	}
+}
