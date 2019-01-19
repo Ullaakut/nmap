@@ -4,6 +4,7 @@ package nmap
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -876,5 +877,45 @@ func WithSpoofIPAddress(ip string) func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-S")
 		s.args = append(s.args, ip)
+	}
+}
+
+// WithInterface specifies which network interface to use for scanning.
+func WithInterface(iface string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-e")
+		s.args = append(s.args, iface)
+	}
+}
+
+// WithSourcePort specifies from which port to scan.
+func WithSourcePort(port int16) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--source-port")
+		s.args = append(s.args, fmt.Sprint(port))
+	}
+}
+
+// WithProxies allows to relay connection through HTTP/SOCKS4 proxies.
+func WithProxies(proxyList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--proxies")
+		s.args = append(s.args, proxyList)
+	}
+}
+
+// WithHexData appends a custom hex-encoded payload to sent packets.
+func WithHexData(data string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--data")
+		s.args = append(s.args, data)
+	}
+}
+
+// WithASCIIData appends a custom ascii-encoded payload to sent packets.
+func WithASCIIData(data string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--data-string")
+		s.args = append(s.args, data)
 	}
 }
