@@ -202,6 +202,39 @@ func WithSCTPDiscovery(portList string) func(*Scanner) {
 	}
 }
 
+// WithICMPEchoDiscovery sets the discovery mode to use an ICMP type 8
+// packet (an echo request), like the standard packets sent by the ping
+// command.
+// Many hosts and firewalls block these packets, so this is usually not
+// the best for exploring networks.
+func WithICMPEchoDiscovery() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-PE")
+	}
+}
+
+// WithICMPTimestampDiscovery sets the discovery mode to use an ICMP type 13
+// packet (a timestamp request).
+// This query can be valuable when administrators specifically block echo
+// request packets while forgetting that other ICMP queries can be used
+// for the same purpose.
+func WithICMPTimestampDiscovery() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-PP")
+	}
+}
+
+// WithICMPNetMaskDiscovery sets the discovery mode to use an ICMP type 17
+// packet (an address mask request).
+// This query can be valuable when administrators specifically block echo
+// request packets while forgetting that other ICMP queries can be used
+// for the same purpose.
+func WithICMPNetMaskDiscovery() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-PM")
+	}
+}
+
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
