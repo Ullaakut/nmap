@@ -383,6 +383,36 @@ func WithTCPXmasScan() func(*Scanner) {
 	}
 }
 
+// TCPFlag represents a TCP flag.
+type TCPFlag int
+
+// Flag enumerations.
+const (
+	NULL TCPFlag = 0
+	FIN  TCPFlag = 1
+	SYN  TCPFlag = 2
+	RST  TCPFlag = 4
+	PSH  TCPFlag = 8
+	ACK  TCPFlag = 16
+	URG  TCPFlag = 32
+	ECE  TCPFlag = 64
+	CWR  TCPFlag = 128
+	NS   TCPFlag = 256
+)
+
+// WithTCPScanFlags sets the scan technique to use custom TCP flags.
+func WithTCPScanFlags(flags ...TCPFlag) func(*Scanner) {
+	var total int
+	for _, flag := range flags {
+		total += int(flag)
+	}
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--scanflags")
+		s.args = append(s.args, fmt.Sprintf("%x", total))
+	}
+}
+
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
