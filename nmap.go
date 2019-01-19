@@ -339,6 +339,50 @@ func WithMaimonScan() func(*Scanner) {
 	}
 }
 
+// WithUDPScan sets the scan technique to use UDP packets.
+// It can be combined with a TCP scan type such as SYN scan
+// to check both protocols during the same run.
+// UDP scanning is generally slower than TCP, but should not
+// be ignored.
+func WithUDPScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sU")
+	}
+}
+
+// WithTCPNullScan sets the scan technique to use TCP null packets.
+// (TCP flag header is 0). This scan method can be used to exploit
+// a loophole in the TCP RFC.
+// If an RST packet is received, the port is considered closed,
+// while no response means it is open|filtered.
+func WithTCPNullScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sN")
+	}
+}
+
+// WithTCPFINScan sets the scan technique to use TCP packets with
+// the FIN flag set.
+// This scan method can be used to exploit a loophole in the TCP RFC.
+// If an RST packet is received, the port is considered closed,
+// while no response means it is open|filtered.
+func WithTCPFINScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sF")
+	}
+}
+
+// WithTCPXmasScan sets the scan technique to use TCP packets with
+// the FIN, PSH and URG flags set.
+// This scan method can be used to exploit a loophole in the TCP RFC.
+// If an RST packet is received, the port is considered closed,
+// while no response means it is open|filtered.
+func WithTCPXmasScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--sX")
+	}
+}
+
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
