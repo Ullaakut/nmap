@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -103,6 +104,9 @@ func WithBinaryPath(binaryPath string) func(*Scanner) {
 // There should be no reason to use this, unless you are using a custom build
 // of nmap or that this repository isn't up to date with the latest options
 // of the official nmap release.
+// You can use this as a quick way to paste an nmap command into your go code,
+// but remember that the whole purpose of this repository is to be idiomatic,
+// provide type checking, enums for the values that can be passed, etc.
 func WithCustomArguments(args ...string) func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, args...)
@@ -591,5 +595,73 @@ func WithVersionAll() func(*Scanner) {
 func WithVersionTrace() func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--version-trace")
+	}
+}
+
+/*** Script scan ***/
+
+// WithDefaultScript sets the scanner to perform a script scan using the default
+// set of scripts. It is equivalent to --script=default. Some of the scripts in
+// this category are considered intrusive and should not be run against a target
+// network without permission.
+func WithDefaultScript() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sC")
+	}
+}
+
+// WithScripts sets the scanner to perform a script scan using the enumerated
+// scripts, script directories and script categories.
+func WithScripts(scriptList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("--script=%s", scriptList))
+	}
+}
+
+// WithScriptArguments provides arguments for scripts.
+func WithScriptArguments(arguments map[string]string) func(*Scanner) {
+	var argList string
+
+	// Properly format the argument list from the map.
+	// Complex example:
+	// user=foo,pass=",{}=bar",whois={whodb=nofollow+ripe},xmpp-info.server_name=localhost
+	for key, value := range arguments {
+		argList = strings.Join([]string{
+			argList,
+			fmt.Sprintf("%s=%s", key, value),
+		}, ",")
+	}
+
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("--script-args=%s", argList))
+	}
+}
+
+// WithScriptArgumentsFile provides arguments for scripts from a file.
+func WithScriptArgumentsFile(inputFilePath string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("--script-args-file=%s", inputFilePath))
+	}
+}
+
+// WithScriptTrace makes the scripts show all data sent and received.
+func WithScriptTrace() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--script-trace")
+	}
+}
+
+// WithScriptUpdateDB updates the script database.
+func WithScriptUpdateDB() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--script-updatedb")
+	}
+}
+
+// WithScriptHelp is not supported yet due to only using XML output.
+// Using it will do nothing until the RunAsync() feature is ready.
+func WithScriptHelp() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--script-updatedb")
 	}
 }
