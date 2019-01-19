@@ -864,3 +864,17 @@ func WithDecoys(decoys string) func(*Scanner) {
 		s.args = append(s.args, decoys)
 	}
 }
+
+// WithSpoofIPAddress spoofs the IP address of the machine which is running nmap.
+// This can be used if nmap is unable to determine your source address.
+// Another possible use of this flag is to spoof the scan to make the targets
+// think that someone else is scanning them. The WithInterface option and
+// WithSkipHostDiscovery are generally required for this sort of usage. Note
+// that you usually won't receive reply packets back (they will be addressed to
+// the IP you are spoofing), so Nmap won't produce useful reports.
+func WithSpoofIPAddress(ip string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-S")
+		s.args = append(s.args, ip)
+	}
+}
