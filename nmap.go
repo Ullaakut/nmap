@@ -820,3 +820,47 @@ func WithMaxRate(packetsPerSecond int) func(*Scanner) {
 		s.args = append(s.args, fmt.Sprint(packetsPerSecond))
 	}
 }
+
+/*** Firewalls/IDS evasion and spoofing ***/
+
+// WithFragmentPackets enables the use of tiny fragmented IP packets in order to
+// split up the TCP header over several packets to make it harder for packet
+// filters, intrusion detection systems, and other annoyances to detect what
+// you are doing.
+// Some programs have trouble handling these tiny packets.
+func WithFragmentPackets() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-f")
+	}
+}
+
+// WithMTU allows you to specify your own offset size for fragmenting IP packets.
+// Using fragmented packets allows to split up the TCP header over several packets
+// to make it harder for packet filters, intrusion detection systems, and other
+// annoyances to detect what you are doing.
+// Some programs have trouble handling these tiny packets.
+func WithMTU(offset int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--mtu")
+		s.args = append(s.args, fmt.Sprint(offset))
+	}
+}
+
+// WithDecoys causes a decoy scan to be performed, which makes it appear to the
+// remote host that the host(s) you specify as decoys are scanning the target
+// network too. Thus their IDS might report 5–10 port scans from unique IP
+// addresses, but they won't know which IP was scanning them and which were
+// innocent decoys.
+// While this can be defeated through router path tracing, response-dropping,
+// and other active mechanisms, it is generally an effective technique for
+// hiding your IP address.
+// Separate each decoy host with commas, and you can optionally use ME as
+// one of the decoys to represent the position for your real IP address.
+// If you put ME in the sixth position or later, some common port scan
+// detectors are unlikely to show your IP address at all.
+func WithDecoys(decoys string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-D")
+		s.args = append(s.args, decoys)
+	}
+}
