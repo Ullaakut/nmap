@@ -235,6 +235,33 @@ func WithICMPNetMaskDiscovery() func(*Scanner) {
 	}
 }
 
+// WithIPProtocolPingDiscovery sets the discovery mode to use the IP
+// protocol ping.
+// If no protocols are specified, the default is to send multiple IP
+// packets for ICMP (protocol 1), IGMP (protocol 2), and IP-in-IP
+// (protocol 4).
+func WithIPProtocolPingDiscovery(protocolList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("-PO%s", protocolList))
+	}
+}
+
+// WithDisabledDNSResolution disables DNS resolution in the discovery
+// step of the nmap scan.
+func WithDisabledDNSResolution() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-n")
+	}
+}
+
+// WithForcedDNSResolution enforces DNS resolution in the discovery
+// step of the nmap scan.
+func WithForcedDNSResolution() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-R")
+	}
+}
+
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
