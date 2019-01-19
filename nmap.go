@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -681,13 +682,141 @@ func WithOSDetection() func(*Scanner) {
 // It only matters when OS detection is requested with -O or -A.
 func WithOSScanLimit() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "-O")
+		s.args = append(s.args, "--osscan-limit")
 	}
 }
 
 // WithOSScanGuess makes nmap attempt to guess the OS more aggressively.
 func WithOSScanGuess() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "-O")
+		s.args = append(s.args, "--osscan-guess")
+	}
+}
+
+/*** Timing and performance ***/
+
+// Timing represents a timing template for nmap
+type Timing int16
+
+// Timings supported by nmap.
+const (
+	Slowest Timing = 0
+	Slower  Timing = 1
+	Slow    Timing = 2
+	Fast    Timing = 3
+	Faster  Timing = 4
+	Fastest Timing = 5
+)
+
+// WithTimingTemplate sets the timing template for nmap.
+func WithTimingTemplate(timing Timing) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("-T%d", timing))
+	}
+}
+
+// WithMinHostgroup sets the minimal parallel host scan group size.
+func WithMinHostgroup(size int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--min-hostgroup")
+		s.args = append(s.args, fmt.Sprint(size))
+	}
+}
+
+// WithMaxHostgroup sets the maximal parallel host scan group size.
+func WithMaxHostgroup(size int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--max-hostgroup")
+		s.args = append(s.args, fmt.Sprint(size))
+	}
+}
+
+// WithMinParallelism sets the minimal number of parallel probes.
+func WithMinParallelism(probes int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--min-parallelism")
+		s.args = append(s.args, fmt.Sprint(probes))
+	}
+}
+
+// WithMaxParallelism sets the maximal number of parallel probes.
+func WithMaxParallelism(probes int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--max-parallelism")
+		s.args = append(s.args, fmt.Sprint(probes))
+	}
+}
+
+// WithMinRTTTimeout sets the minimal probe round trip time.
+func WithMinRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
+	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--min-rtt-timeout")
+		s.args = append(s.args, fmt.Sprintf("%dms", int(milliseconds)))
+	}
+}
+
+// WithMaxRTTTimeout sets the maximal probe round trip time.
+func WithMaxRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
+	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--max-rtt-timeout")
+		s.args = append(s.args, fmt.Sprintf("%dms", int(milliseconds)))
+	}
+}
+
+// WithMaxRetries sets the maximal number of port scan probe retransmissions.
+func WithMaxRetries(tries int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--max-retries")
+		s.args = append(s.args, fmt.Sprint(tries))
+	}
+}
+
+// WithHostTimeout sets the time after which nmap should give up on a target host.
+func WithHostTimeout(timeout time.Duration) func(*Scanner) {
+	milliseconds := timeout.Round(time.Nanosecond).Seconds()
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--host-timeout")
+		s.args = append(s.args, fmt.Sprintf("%ds", int(milliseconds)))
+	}
+}
+
+// WithScanDelay sets the minimum time to wait between each probe sent to a host.
+func WithScanDelay(timeout time.Duration) func(*Scanner) {
+	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--scan-delay")
+		s.args = append(s.args, fmt.Sprintf("%dms", int(milliseconds)))
+	}
+}
+
+// WithMaxScanDelay sets the maximum time to wait between each probe sent to a host.
+func WithMaxScanDelay(timeout time.Duration) func(*Scanner) {
+	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--max-scan-delay")
+		s.args = append(s.args, fmt.Sprintf("%dms", int(milliseconds)))
+	}
+}
+
+// WithMinRate sets the minimal number of packets sent per second.
+func WithMinRate(packetsPerSecond int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--min-rate")
+		s.args = append(s.args, fmt.Sprint(packetsPerSecond))
+	}
+}
+
+// WithMaxRate sets the maximal number of packets sent per second.
+func WithMaxRate(packetsPerSecond int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--max-rate")
+		s.args = append(s.args, fmt.Sprint(packetsPerSecond))
 	}
 }
