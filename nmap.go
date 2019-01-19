@@ -521,13 +521,65 @@ func WithMostCommonPorts(number int) func(*Scanner) {
 
 // WithPortRatio sets the scanner to go the ports more common than the given ratio.
 // Ratio must be a float between 0 and 1.
-func WithPortRatio(ratio float64) func(*Scanner) {
+func WithPortRatio(ratio float32) func(*Scanner) {
 	return func(s *Scanner) {
-		if ratio <= 0 && ratio >= 1 {
+		if ratio < 0 || ratio > 1 {
 			panic("value given to nmap.WithPortRatio() should be between 0 and 1")
 		}
 
 		s.args = append(s.args, "--port-ratio")
 		s.args = append(s.args, fmt.Sprintf("%.1f", ratio))
+	}
+}
+
+/*** Service/Version detection ***/
+
+// WithServiceInfo enables the probing of open ports to determine service and version
+// info.
+func WithServiceInfo() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sV")
+	}
+}
+
+// WithVersionIntensity sets the level of intensity with which nmap should
+// probe the open ports to get version information.
+// Intensity should be a value between 0 (light) and 9 (try all probes). The
+// default value is 7.
+func WithVersionIntensity(intensity int16) func(*Scanner) {
+	return func(s *Scanner) {
+		if intensity < 0 || intensity > 9 {
+			panic("value given to nmap.WithVersionIntensity() should be between 0 and 9")
+		}
+
+		s.args = append(s.args, "--version-intensity")
+		s.args = append(s.args, fmt.Sprint(intensity))
+	}
+}
+
+// WithVersionLight sets the level of intensity with which nmap should probe the
+// open ports to get version information to 2. This will make version scanning much
+// faster, but slightly less likely to identify services.
+func WithVersionLight() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--version-light")
+	}
+}
+
+// WithVersionAll sets the level of intensity with which nmap should probe the
+// open ports to get version information to 9. This will ensure that every single
+// probe is attempted against each port.
+func WithVersionAll() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--version-all")
+	}
+}
+
+// WithVersionTrace causes Nmap to print out extensive debugging info about what
+// version scanning is doing.
+// TODO: See how this works along with XML output.
+func WithVersionTrace() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--version-trace")
 	}
 }
