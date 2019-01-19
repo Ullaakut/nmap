@@ -142,25 +142,63 @@ func WithRandomTargets(randomTargets int) func(*Scanner) {
 
 /*** Host discovery ***/
 
-// WithListScan sets the scan mode to simply list the targets to scan and not scan them.
+// WithListScan sets the discovery mode to simply list the targets to scan and not scan them.
 func WithListScan() func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sL")
 	}
 }
 
-// WithPingScan sets the scan mode to simply ping the targets to scan and not scan them.
+// WithPingScan sets the discovery mode to simply ping the targets to scan and not scan them.
 func WithPingScan() func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sn")
 	}
 }
 
-// WithSkipHostDiscovery sets the scan mode to skip the host discovery and consider all hosts
-// as online.
+// WithSkipHostDiscovery diables host discovery and considers all hosts as online.
 func WithSkipHostDiscovery() func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-Pn")
+	}
+}
+
+// WithSYNDiscovery sets the discovery mode to use SYN packets.
+// If the portList argument is empty, this will enable SYN discovery
+// for all ports. Otherwise, it will be only for the specified ports.
+func WithSYNDiscovery(portList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("-PS%s", portList))
+	}
+}
+
+// WithACKDiscovery sets the discovery mode to use ACK packets.
+// If the portList argument is empty, this will enable ACK discovery
+// for all ports. Otherwise, it will be only for the specified ports.
+func WithACKDiscovery(portList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("-PA%s", portList))
+	}
+}
+
+// WithUDPDiscovery sets the discovery mode to use UDP packets.
+// If the portList argument is empty, this will enable UDP discovery
+// for all ports. Otherwise, it will be only for the specified ports.
+func WithUDPDiscovery(portList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("-PU%s", portList))
+	}
+}
+
+// WithSCTPDiscovery sets the discovery mode to use SCTP packets
+// containing a minimal INIT chunk.
+// If the portList argument is empty, this will enable SCTP discovery
+// for all ports. Otherwise, it will be only for the specified ports.
+// Warning: on Unix, only the privileged user root is generally
+// able to send and receive raw SCTP packets.
+func WithSCTPDiscovery(portList string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, fmt.Sprintf("-PY%s", portList))
 	}
 }
 
