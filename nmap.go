@@ -292,7 +292,7 @@ func WithTraceRoute() func(*Scanner) {
 // hampered by restrictive firewalls.
 func WithSYNScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sS")
+		s.args = append(s.args, "-sS")
 	}
 }
 
@@ -302,7 +302,7 @@ func WithSYNScan() func(*Scanner) {
 // connections.
 func WithConnectScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sT")
+		s.args = append(s.args, "-sT")
 	}
 }
 
@@ -314,7 +314,7 @@ func WithConnectScan() func(*Scanner) {
 // by the ACK packet, but whether they are open or closed is undetermined.
 func WithACKScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sA")
+		s.args = append(s.args, "-sA")
 	}
 }
 
@@ -326,7 +326,7 @@ func WithACKScan() func(*Scanner) {
 // is returned.
 func WithWindowScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sW")
+		s.args = append(s.args, "-sW")
 	}
 }
 
@@ -335,7 +335,7 @@ func WithWindowScan() func(*Scanner) {
 // these packets if the port is open.
 func WithMaimonScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sM")
+		s.args = append(s.args, "-sM")
 	}
 }
 
@@ -346,7 +346,7 @@ func WithMaimonScan() func(*Scanner) {
 // be ignored.
 func WithUDPScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sU")
+		s.args = append(s.args, "-sU")
 	}
 }
 
@@ -357,7 +357,7 @@ func WithUDPScan() func(*Scanner) {
 // while no response means it is open|filtered.
 func WithTCPNullScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sN")
+		s.args = append(s.args, "-sN")
 	}
 }
 
@@ -368,7 +368,7 @@ func WithTCPNullScan() func(*Scanner) {
 // while no response means it is open|filtered.
 func WithTCPFINScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sF")
+		s.args = append(s.args, "-sF")
 	}
 }
 
@@ -379,7 +379,7 @@ func WithTCPFINScan() func(*Scanner) {
 // while no response means it is open|filtered.
 func WithTCPXmasScan() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--sX")
+		s.args = append(s.args, "-sX")
 	}
 }
 
@@ -427,6 +427,53 @@ func WithIdleScan(zombieHost string, probePort int) func(*Scanner) {
 		} else {
 			s.args = append(s.args, zombieHost)
 		}
+	}
+}
+
+// WithSCTPInitScan sets the scan technique to use SCTP packets
+// containing an INIT chunk.
+// It can be performed quickly, scanning thousands of ports per
+// second on a fast network not hampered by restrictive firewalls.
+// Like SYN scan, INIT scan is relatively unobtrusive and stealthy,
+// since it never completes SCTP associations.
+func WithSCTPInitScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sY")
+	}
+}
+
+// WithSCTPCookieEchoScan sets the scan technique to use SCTP packets
+// containing a COOKIE-ECHO chunk.
+// The advantage of this scan type is that it is not as obvious a port
+// scan than an INIT scan. Also, there may be non-stateful firewall
+// rulesets blocking INIT chunks, but not COOKIE ECHO chunks.
+func WithSCTPCookieEchoScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sZ")
+	}
+}
+
+// WithIPProtocolScan sets the scan technique to use the IP protocol.
+// IP protocol scan allows you to determine which IP protocols
+// (TCP, ICMP, IGMP, etc.) are supported by target machines. This isn't
+// technically a port scan, since it cycles through IP protocol numbers
+// rather than TCP or UDP port numbers.
+func WithIPProtocolScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sO")
+	}
+}
+
+// WithFTPBounceScan sets the scan technique to use the an FTP relay host.
+// It takes an argument of the form "<username>:<password>@<server>:<port>. <Server>".
+// You may omit <username>:<password>, in which case anonymous login credentials
+// (user: anonymous password:-wwwuser@) are used.
+// The port number (and preceding colon) may be omitted as well, in which case the
+// default FTP port (21) on <server> is used.
+func WithFTPBounceScan(FTPRelayHost string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-b")
+		s.args = append(s.args, FTPRelayHost)
 	}
 }
 
