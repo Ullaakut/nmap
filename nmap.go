@@ -494,3 +494,40 @@ func WithPortExclusions(ports string) func(*Scanner) {
 		s.args = append(s.args, ports)
 	}
 }
+
+// WithFastMode makes the scan faster by scanning fewer ports than the default scan.
+func WithFastMode() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-F")
+	}
+}
+
+// WithConsecutivePortScanning makes the scan go through ports consecutively instead of
+// picking them out randomly.
+func WithConsecutivePortScanning() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-r")
+	}
+}
+
+// WithMostCommonPorts sets the scanner to go through the provided number of most
+// common ports.
+func WithMostCommonPorts(number int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--top-ports")
+		s.args = append(s.args, fmt.Sprint(number))
+	}
+}
+
+// WithPortRatio sets the scanner to go the ports more common than the given ratio.
+// Ratio must be a float between 0 and 1.
+func WithPortRatio(ratio float64) func(*Scanner) {
+	return func(s *Scanner) {
+		if ratio <= 0 && ratio >= 1 {
+			panic("value given to nmap.WithPortRatio() should be between 0 and 1")
+		}
+
+		s.args = append(s.args, "--port-ratio")
+		s.args = append(s.args, fmt.Sprintf("%.1f", ratio))
+	}
+}
