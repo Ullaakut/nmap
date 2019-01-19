@@ -99,6 +99,8 @@ func WithBinaryPath(binaryPath string) func(*Scanner) {
 	}
 }
 
+/*** Target specification ***/
+
 // WithTarget sets the target of a scanner.
 func WithTarget(target string) func(*Scanner) {
 	return func(s *Scanner) {
@@ -137,6 +139,32 @@ func WithRandomTargets(randomTargets int) func(*Scanner) {
 		s.args = append(s.args, fmt.Sprint(randomTargets))
 	}
 }
+
+/*** Host discovery ***/
+
+// WithListScan sets the scan mode to simply list the targets to scan and not scan them.
+func WithListScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sL")
+	}
+}
+
+// WithPingScan sets the scan mode to simply ping the targets to scan and not scan them.
+func WithPingScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sn")
+	}
+}
+
+// WithSkipHostDiscovery sets the scan mode to skip the host discovery and consider all hosts
+// as online.
+func WithSkipHostDiscovery() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-Pn")
+	}
+}
+
+/*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
 func WithPorts(ports string) func(*Scanner) {
