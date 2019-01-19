@@ -99,6 +99,16 @@ func WithBinaryPath(binaryPath string) func(*Scanner) {
 	}
 }
 
+// WithCustomArguments sets custom arguments to give to the nmap binary.
+// There should be no reason to use this, unless you are using a custom build
+// of nmap or that this repository isn't up to date with the latest options
+// of the official nmap release.
+func WithCustomArguments(args ...string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, args...)
+	}
+}
+
 /*** Target specification ***/
 
 // WithTarget sets the target of a scanner.
