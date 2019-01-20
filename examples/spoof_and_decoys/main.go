@@ -13,12 +13,22 @@ func main() {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
     defer cancel()
 
-    // Equivalent to `/usr/local/bin/nmap -p 554,8554,18554-18654 172.17.100.0/24`,
-    // with a 5 minute timeout.
+    // Equivalent to
+    // nmap -sS 192.168.0.10 \
+    // -D 192.168.0.2,192.168.0.3,192.168.0.4,192.168.0.5,192.168.0.6,ME,192.168.0.8 \
+    // 192.168.0.72`, with a 5 minute timeout.
     scanner, err := nmap.New(
-        nmap.WithBinaryPath("/usr/local/bin/nmap"),
-        nmap.WithTarget("172.17.100.0/24"),
-        nmap.WithPorts("554,8554,18554-18654"),
+        nmap.WithTarget("192.168.0.72"),
+        nmap.WithSpoofIPAddress("192.168.0.10"),
+        nmap.WithDecoys([]string{
+            "192.168.0.2",
+            "192.168.0.3",
+            "192.168.0.4",
+            "192.168.0.5",
+            "192.168.0.6",
+            "ME",
+            "192.168.0.8",
+        }),
         nmap.WithContext(ctx),
     )
     if err != nil {
@@ -27,9 +37,13 @@ func main() {
 
     result, err := scanner.Run()
     if err != nil {
-        log.Fatalf("unable to run nmap scan: %v", err)
+        log.Fatalf("nmap scan failed: %v", err)
     }
 
+    printResults(result)
+}
+
+func printResults(result *nmap.Run) {
     // Use the results to print an example output
     for _, host := range result.Hosts {
         if len(host.Ports) == 0 || len(host.Addresses) == 0 {

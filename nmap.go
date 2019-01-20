@@ -35,7 +35,7 @@ func (s *Scanner) Run() (*Run, error) {
 
 	err := cmd.Start()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("nmap scan failed: %v", err)
 	}
 
 	// Make a goroutine to notify the select when the scan is done.
@@ -51,12 +51,8 @@ func (s *Scanner) Run() (*Run, error) {
 		cmd.Process.Kill()
 
 		return nil, ErrScanTimeout
-	case err := <-done:
+	case <-done:
 		// Scan finished before timeout.
-		if err != nil {
-			return nil, err
-		}
-
 		if stderr.Len() > 0 {
 			return nil, errors.New(stderr.String())
 		}
@@ -857,14 +853,16 @@ func WithMTU(offset int) func(*Scanner) {
 // While this can be defeated through router path tracing, response-dropping,
 // and other active mechanisms, it is generally an effective technique for
 // hiding your IP address.
-// Separate each decoy host with commas, and you can optionally use ME as
-// one of the decoys to represent the position for your real IP address.
+// You can optionally use ME as one of the decoys to represent the position
+// for your real IP address.
 // If you put ME in the sixth position or later, some common port scan
 // detectors are unlikely to show your IP address at all.
-func WithDecoys(decoys string) func(*Scanner) {
+func WithDecoys(decoys []string) func(*Scanner) {
+	decoyList := strings.Join(decoys, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, "-D")
-		s.args = append(s.args, decoys)
+		s.args = append(s.args, decoyList)
 	}
 }
 
