@@ -114,17 +114,6 @@ linters-settings:
     range-loops: true # Report preallocation suggestions on range loops, true by default
     for-loops: false # Report preallocation suggestions on for loops, false by default
   gocritic:
-    # Which checks should be enabled; can't be combined with 'disabled-checks';
-    # See https://go-critic.github.io/overview#checks-overview
-    # To check which checks are enabled run `GL_DEBUG=gocritic golangci-lint run`
-    # By default list of stable checks is used.
-    enabled-checks:
-      - rangeValCopy
-
-    # Which checks should be disabled; can't be combined with 'enabled-checks'; default is empty
-    disabled-checks:
-      - regexpMust
-
     # Enable multiple checks by tags, run `GL_DEBUG=gocritic golangci-lint` run to see all tags and checks.
     # Empty list by default. See https://github.com/go-critic/go-critic#usage -> section "Tags".
     enabled-tags:
@@ -158,12 +147,6 @@ issues:
   # excluded by default patterns execute `golangci-lint run --help`
   exclude:
     - "Subprocess launching should be audited"
-
-  # Independently from option `exclude` we use default exclude patterns,
-  # it can be disabled by this option. To list all
-  # excluded by default patterns execute `golangci-lint run --help`.
-  # Default value for this option is true.
-  exclude-use-default: false
 
   # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
   max-per-linter: 0
