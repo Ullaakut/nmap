@@ -404,16 +404,16 @@ type TCPFlag int
 
 // Flag enumerations.
 const (
-	NULL TCPFlag = 0
-	FIN  TCPFlag = 1
-	SYN  TCPFlag = 2
-	RST  TCPFlag = 4
-	PSH  TCPFlag = 8
-	ACK  TCPFlag = 16
-	URG  TCPFlag = 32
-	ECE  TCPFlag = 64
-	CWR  TCPFlag = 128
-	NS   TCPFlag = 256
+	FlagNULL TCPFlag = 0
+	FlagFIN  TCPFlag = 1
+	FlagSYN  TCPFlag = 2
+	FlagRST  TCPFlag = 4
+	FlagPSH  TCPFlag = 8
+	FlagACK  TCPFlag = 16
+	FlagURG  TCPFlag = 32
+	FlagECE  TCPFlag = 64
+	FlagCWR  TCPFlag = 128
+	FlagNS   TCPFlag = 256
 )
 
 // WithTCPScanFlags sets the scan technique to use custom TCP flags.
@@ -696,17 +696,19 @@ func WithOSScanGuess() func(*Scanner) {
 
 /*** Timing and performance ***/
 
-// Timing represents a timing template for nmap
+// Timing represents a timing template for nmap.
+// These are meant to be used with the WithTimingTemplate method.
 type Timing int16
 
-// Timings supported by nmap.
+// Timings supported by nmap. These are meant to be used with
+// the WithTimingTemplate method.
 const (
-	Slowest Timing = 0
-	Slower  Timing = 1
-	Slow    Timing = 2
-	Fast    Timing = 3
-	Faster  Timing = 4
-	Fastest Timing = 5
+	TimingSlowest Timing = 0
+	TimingSlower  Timing = 1
+	TimingSlow    Timing = 2
+	TimingFast    Timing = 3
+	TimingFaster  Timing = 4
+	TimingFastest Timing = 5
 )
 
 // WithTimingTemplate sets the timing template for nmap.
@@ -917,5 +919,62 @@ func WithASCIIData(data string) func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--data-string")
 		s.args = append(s.args, data)
+	}
+}
+
+// WithDataLength appends a random payload of the given length to sent packets.
+func WithDataLength(length int) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--data-length")
+		s.args = append(s.args, fmt.Sprint(length))
+	}
+}
+
+// WithIPOptions uses the specified IP options to send packets.
+// You may be able to use the record route option to determine a
+// path to a target even when more traditional traceroute-style
+// approaches fail. See http://seclists.org/nmap-dev/2006/q3/52
+// for examples of use.
+func WithIPOptions(options string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--ip-options")
+		s.args = append(s.args, options)
+	}
+}
+
+// WithIPTimeToLive sets the IP time-to-live field of IP packets.
+func WithIPTimeToLive(ttl int16) func(*Scanner) {
+	return func(s *Scanner) {
+		if ttl < 0 || ttl > 255 {
+			panic("value given to nmap.WithIPTimeToLive() should be between 0 and 255")
+		}
+
+		s.args = append(s.args, "--ttl")
+		s.args = append(s.args, fmt.Sprint(ttl))
+	}
+}
+
+// WithSpoofMAC uses the given MAC address for all of the raw
+// ethernet frames the scanner sends. This option implies
+// --send-eth to ensure that Nmap actually sends ethernet-level
+// packets.
+// Valid argument examples are Apple, 0, 01:02:03:04:05:06,
+// deadbeefcafe, 0020F2, and Cisco.
+func WithSpoofMAC(argument string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--spoof-mac")
+		s.args = append(s.args, argument)
+	}
+}
+
+// WithBadSum makes nmap send an invalid TCP, UDP or SCTP checksum
+// for packets sent to target hosts. Since virtually all host IP
+// stacks properly drop these packets, any responses received are
+// likely coming from a firewall or IDS that didn't bother to
+// verify the checksum.
+func WithBadSum(options string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--ip-options")
+		s.args = append(s.args, options)
 	}
 }
