@@ -460,3 +460,487 @@ func TestHostDiscovery(t *testing.T) {
 		})
 	}
 }
+
+func TestScanTechniques(t *testing.T) {
+	tests := []struct {
+		description string
+
+		options []func(*Scanner)
+
+		expectedArgs []string
+	}{
+		{
+			description: "TCP SYN scan",
+
+			options: []func(*Scanner){
+				WithSYNScan(),
+			},
+
+			expectedArgs: []string{
+				"-sS",
+			},
+		},
+		{
+			description: "TCP Connect() scan",
+
+			options: []func(*Scanner){
+				WithConnectScan(),
+			},
+
+			expectedArgs: []string{
+				"-sT",
+			},
+		},
+		{
+			description: "TCP ACK scan",
+
+			options: []func(*Scanner){
+				WithACKScan(),
+			},
+
+			expectedArgs: []string{
+				"-sA",
+			},
+		},
+		{
+			description: "TCP Window scan",
+
+			options: []func(*Scanner){
+				WithWindowScan(),
+			},
+
+			expectedArgs: []string{
+				"-sW",
+			},
+		},
+		{
+			description: "Maimon scan",
+
+			options: []func(*Scanner){
+				WithMaimonScan(),
+			},
+
+			expectedArgs: []string{
+				"-sM",
+			},
+		},
+		{
+			description: "UDP scan",
+
+			options: []func(*Scanner){
+				WithUDPScan(),
+			},
+
+			expectedArgs: []string{
+				"-sU",
+			},
+		},
+		{
+			description: "TCP Null scan",
+
+			options: []func(*Scanner){
+				WithTCPNullScan(),
+			},
+
+			expectedArgs: []string{
+				"-sN",
+			},
+		},
+		{
+			description: "TCP FIN scan",
+
+			options: []func(*Scanner){
+				WithTCPFINScan(),
+			},
+
+			expectedArgs: []string{
+				"-sF",
+			},
+		},
+		{
+			description: "TCP Xmas scan",
+
+			options: []func(*Scanner){
+				WithTCPXmasScan(),
+			},
+
+			expectedArgs: []string{
+				"-sX",
+			},
+		},
+		{
+			description: "TCP custom scan flags",
+
+			options: []func(*Scanner){
+				WithTCPScanFlags(FlagACK, FlagFIN, FlagNULL),
+			},
+
+			expectedArgs: []string{
+				"--scanflags",
+				"11",
+			},
+		},
+		{
+			description: "idle scan through zombie host with probe port specified",
+
+			options: []func(*Scanner){
+				WithIdleScan("192.168.1.1", 61436),
+			},
+
+			expectedArgs: []string{
+				"-sI",
+				"192.168.1.1:61436",
+			},
+		},
+		{
+			description: "idle scan through zombie host without probe port specified",
+
+			options: []func(*Scanner){
+				WithIdleScan("192.168.1.1", 0),
+			},
+
+			expectedArgs: []string{
+				"-sI",
+				"192.168.1.1",
+			},
+		},
+		{
+			description: "SCTP INIT scan",
+
+			options: []func(*Scanner){
+				WithSCTPInitScan(),
+			},
+
+			expectedArgs: []string{
+				"-sY",
+			},
+		},
+		{
+			description: "SCTP COOKIE-ECHO scan",
+
+			options: []func(*Scanner){
+				WithSCTPCookieEchoScan(),
+			},
+
+			expectedArgs: []string{
+				"-sZ",
+			},
+		},
+		{
+			description: "IP protocol scan",
+
+			options: []func(*Scanner){
+				WithIPProtocolScan(),
+			},
+
+			expectedArgs: []string{
+				"-sO",
+			},
+		},
+		{
+			description: "FTP bounce scan",
+
+			options: []func(*Scanner){
+				WithFTPBounceScan("192.168.0.254"),
+			},
+
+			expectedArgs: []string{
+				"-b",
+				"192.168.0.254",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
+
+// func TestPortSpecAndScanOrder(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
+
+// func TestServiceDetection(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
+
+// func TestScriptScan(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
+
+// func TestOSDetection(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
+
+// func TestTimingAndPerformance(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
+
+// func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
+
+// func TestOutput(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
+
+// func TestMiscellaneous(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		options []func(*Scanner)
+
+// 		expectedArgs []string
+// 	}{
+// 		{
+// 			description: "",
+
+// 			options: []func(*Scanner){
+// 				WithXXX(),
+// 			},
+
+// 			expectedArgs: []string{
+// 				"--xxx",
+// 			},
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := New(test.options...)
+// 			if err != nil {
+// 				panic(err)
+// 			}
+
+// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+// 			}
+// 		})
+// 	}
+// }
