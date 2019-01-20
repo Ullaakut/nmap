@@ -1133,10 +1133,9 @@ func WithStylesheet(stylesheetPath string) func(*Scanner) {
 // WithWebXML makes nmap apply the default nmap.org stylesheet to transform
 // XML output to HTML. The stylesheet can be found at
 // https://nmap.org/svn/docs/nmap.xsl
-func WithWebXML(stylesheetPath string) func(*Scanner) {
+func WithWebXML() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--stylesheet")
-		s.args = append(s.args, stylesheetPath)
+		s.args = append(s.args, "--webxml")
 	}
 }
 

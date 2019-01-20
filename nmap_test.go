@@ -1458,40 +1458,153 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 	}
 }
 
-// func TestOutput(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestOutput(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options []func(*Scanner)
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedArgs []string
+	}{
+		{
+			description: "display reason",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithReason(),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"--reason",
+			},
+		},
+		{
+			description: "show only open ports",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithOpenOnly(),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"--open",
+			},
+		},
+		{
+			description: "enable packet trace",
+
+			options: []func(*Scanner){
+				WithPacketTrace(),
+			},
+
+			expectedArgs: []string{
+				"--packet-trace",
+			},
+		},
+		{
+			description: "enable interface listing",
+
+			options: []func(*Scanner){
+				WithInterfaceList(),
+			},
+
+			expectedArgs: []string{
+				"--iflist",
+			},
+		},
+		{
+			description: "enable interface listing",
+
+			options: []func(*Scanner){
+				WithInterfaceList(),
+			},
+
+			expectedArgs: []string{
+				"--iflist",
+			},
+		},
+		{
+			description: "enable appending output",
+
+			options: []func(*Scanner){
+				WithAppendOutput(),
+			},
+
+			expectedArgs: []string{
+				"--append-output",
+			},
+		},
+		{
+			description: "resume scan from file",
+
+			options: []func(*Scanner){
+				WithResumePreviousScan("/nmap_scan.xml"),
+			},
+
+			expectedArgs: []string{
+				"--resume",
+				"/nmap_scan.xml",
+			},
+		},
+		{
+			description: "use stylesheet from file",
+
+			options: []func(*Scanner){
+				WithStylesheet("/nmap_stylesheet.xsl"),
+			},
+
+			expectedArgs: []string{
+				"--stylesheet",
+				"/nmap_stylesheet.xsl",
+			},
+		},
+		{
+			description: "use stylesheet from file",
+
+			options: []func(*Scanner){
+				WithStylesheet("/nmap_stylesheet.xsl"),
+			},
+
+			expectedArgs: []string{
+				"--stylesheet",
+				"/nmap_stylesheet.xsl",
+			},
+		},
+		{
+			description: "use default nmap stylesheet",
+
+			options: []func(*Scanner){
+				WithWebXML(),
+			},
+
+			expectedArgs: []string{
+				"--webxml",
+			},
+		},
+		{
+			description: "disable stylesheets",
+
+			options: []func(*Scanner){
+				WithNoStylesheet(),
+			},
+
+			expectedArgs: []string{
+				"--no-stylesheet",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
 
 // func TestMiscellaneous(t *testing.T) {
 // 	tests := []struct {
