@@ -1,6 +1,8 @@
 package nmap
 
 import (
+	"bytes"
+	"encoding/xml"
 	"io/ioutil"
 	"testing"
 	"time"
@@ -31,6 +33,12 @@ func TestParseXML(t *testing.T) {
 				Start: Timestamp(time.Unix(1201479002, 0)),
 				Verbose: Verbose{
 					Level: 1,
+				},
+				Stats: Stats{
+					Finished: Finished{
+						Time:    Timestamp(time.Unix(1201481569, 0)),
+						TimeStr: "Sun Jan 27 21:52:49 2008",
+					},
 				},
 				Hosts: []Host{
 					{
@@ -474,21 +482,17 @@ func TestParseXML(t *testing.T) {
 			if err != test.expectedError {
 				t.Errorf("expected %+v got %+v", test.expectedError, err)
 			}
+
+			resultXML, err := xml.Marshal(result)
+			if err != nil {
+				t.Errorf("unable to marshal result: %v", err)
+			}
+
+			if !bytes.Equal(resultXML, rawXML) {
+				t.Errorf("marshalling result back to XML produces different result than original XML input")
+			}
 		})
 	}
 }
 
-const fingerprint = `SCAN(V=4.53%D=1/27%OT=80%CT=443%CU=%PV=N%G=N%TM=479D25ED%P=i686-pc-linux-gnu)
-SEQ(SP=F2%GCD=1%ISR=E9%TI=Z%TS=1C)
-OPS(O1=M5B4ST11NW0%O2=M5B4ST11NW0%O3=M5B4NNT11NW0%O4=M5B4ST11NW0%O5=M5B4ST11NW0%O6=M5B4ST11)
-WIN(W1=16A0%W2=16A0%W3=16A0%W4=16A0%W5=16A0%W6=16A0)
-ECN(R=Y%DF=Y%TG=40%W=16D0%O=M5B4NNSNW0%CC=N%Q=)
-T1(R=Y%DF=Y%TG=40%S=O%A=S+%F=AS%RD=0%Q=)
-T2(R=N)
-T3(R=Y%DF=Y%TG=40%W=16A0%S=O%A=S+%F=AS%O=M5B4ST11NW0%RD=0%Q=)
-T4(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)
-T5(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)
-T6(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)
-T7(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)
-U1(R=N)
-IE(R=N)`
+const fingerprint = "SCAN(V=4.53%D=1/27%OT=80%CT=443%CU=%PV=N%G=N%TM=479D25ED%P=i686-pc-linux-gnu)\nSEQ(SP=F2%GCD=1%ISR=E9%TI=Z%TS=1C)\nOPS(O1=M5B4ST11NW0%O2=M5B4ST11NW0%O3=M5B4NNT11NW0%O4=M5B4ST11NW0%O5=M5B4ST11NW0%O6=M5B4ST11)\nWIN(W1=16A0%W2=16A0%W3=16A0%W4=16A0%W5=16A0%W6=16A0)\nECN(R=Y%DF=Y%TG=40%W=16D0%O=M5B4NNSNW0%CC=N%Q=)\nT1(R=Y%DF=Y%TG=40%S=O%A=S+%F=AS%RD=0%Q=)\nT2(R=N)\nT3(R=Y%DF=Y%TG=40%W=16A0%S=O%A=S+%F=AS%O=M5B4ST11NW0%RD=0%Q=)\nT4(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)\nT5(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)\nT6(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)\nT7(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)\nU1(R=N)\nIE(R=N)"
