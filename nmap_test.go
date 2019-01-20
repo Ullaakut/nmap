@@ -345,6 +345,106 @@ func TestHostDiscovery(t *testing.T) {
 				"-PY443,8443",
 			},
 		},
+		{
+			description: "ICMP echo request discovery probes",
+
+			options: []func(*Scanner){
+				WithICMPEchoDiscovery(),
+			},
+
+			expectedArgs: []string{
+				"-PE",
+			},
+		},
+		{
+			description: "ICMP Timestamp request discovery probes",
+
+			options: []func(*Scanner){
+				WithICMPTimestampDiscovery(),
+			},
+
+			expectedArgs: []string{
+				"-PP",
+			},
+		},
+		{
+			description: "ICMP NetMask request discovery probes",
+
+			options: []func(*Scanner){
+				WithICMPNetMaskDiscovery(),
+			},
+
+			expectedArgs: []string{
+				"-PM",
+			},
+		},
+		{
+			description: "IP protocol ping",
+
+			options: []func(*Scanner){
+				WithIPProtocolPingDiscovery("1,2,4"),
+			},
+
+			expectedArgs: []string{
+				"-P01,2,4",
+			},
+		},
+		{
+			description: "disable DNS resolution during discovery",
+
+			options: []func(*Scanner){
+				WithDisabledDNSResolution(),
+			},
+
+			expectedArgs: []string{
+				"-n",
+			},
+		},
+		{
+			description: "enforce DNS resolution during discovery",
+
+			options: []func(*Scanner){
+				WithForcedDNSResolution(),
+			},
+
+			expectedArgs: []string{
+				"-R",
+			},
+		},
+		{
+			description: "custom DNS server",
+
+			options: []func(*Scanner){
+				WithCustomDNSServers("8.8.8.8,8.8.4.4"),
+			},
+
+			expectedArgs: []string{
+				"--dns-servers",
+				"8.8.8.8,8.8.4.4",
+			},
+		},
+		{
+			description: "use system DNS",
+
+			options: []func(*Scanner){
+				WithSystemDNS(),
+			},
+
+			expectedArgs: []string{
+				"--system-dns",
+			},
+		},
+		{
+			description: "traceroute",
+
+			options: []func(*Scanner){
+				WithTraceRoute(),
+			},
+
+			expectedArgs: []string{
+				"--traceroutes",
+			},
+		},
 	}
 
 	for _, test := range tests {
