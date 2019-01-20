@@ -4,7 +4,6 @@ package nmap
 import (
 	"bytes"
 	"context"
-	"encoding/hex"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -47,10 +46,11 @@ func (s *Scanner) Run() (*Run, error) {
 
 	select {
 	case <-s.ctx.Done():
-		// Context was done before the scan was finished. The process is killed and a timeout
-		// error is returned.
+		// Context was done before the scan was finished.
+		// The process is killed and a timeout error is returned.
 		cmd.Process.Kill()
-		return nil, ErrTimeout
+
+		return nil, ErrScanTimeout
 	case err := <-done:
 		// Scan finished before timeout.
 		if err != nil {
