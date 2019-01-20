@@ -163,6 +163,34 @@ type Port struct {
 	Scripts  []Script `xml:"script" json:"scripts"`
 }
 
+// PortStatus represents a port's state.
+type PortStatus string
+
+// Enumerates the different possible state values.
+const (
+	Open       PortStatus = "open"
+	Closed     PortStatus = "closed"
+	Filtered   PortStatus = "filtered"
+	Unfiltered PortStatus = "unfiltered"
+	Unknown    PortStatus = "unknown"
+)
+
+// Status returns the status of a port.
+func (p Port) Status() PortStatus {
+	switch p.State.State {
+	case "open":
+		return Open
+	case "closed":
+		return Closed
+	case "filtered":
+		return Filtered
+	case "unfiltered":
+		return Unfiltered
+	default:
+		return Unknown
+	}
+}
+
 // State contains information about a given port's status.
 // State will be open, closed, etc.
 type State struct {
