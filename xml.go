@@ -85,10 +85,10 @@ type Target struct {
 // Host represents a host that was scanned.
 type Host struct {
 	Distance      Distance      `xml:"distance" json:"distance"`
-	EndTime       Timestamp     `xml:"endtime,attr" json:"end_time"`
+	EndTime       Timestamp     `xml:"endtime,attr,omitempty" json:"end_time"`
 	IPIDSequence  IPIDSequence  `xml:"ipidsequence" json:"ip_id_sequence"`
 	OS            OS            `xml:"os" json:"os"`
-	StartTime     Timestamp     `xml:"starttime,attr" json:"start_time"`
+	StartTime     Timestamp     `xml:"starttime,attr,omitempty" json:"start_time"`
 	Status        Status        `xml:"status" json:"status"`
 	TCPSequence   TCPSequence   `xml:"tcpsequence" json:"tcp_sequence"`
 	TCPTSSequence TCPTSSequence `xml:"tcptssequence" json:"tcp_ts_sequence"`
@@ -486,6 +486,10 @@ func (t *Timestamp) UnmarshalJSON(b []byte) error {
 
 // MarshalXMLAttr implements the xml.MarshalerAttr interface.
 func (t Timestamp) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
+	if time.Time(t).IsZero() {
+		return xml.Attr{}, nil
+	}
+
 	return xml.Attr{Name: name, Value: t.FormatTime()}, nil
 }
 
