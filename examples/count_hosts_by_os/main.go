@@ -35,17 +35,13 @@ func countByOS(result *nmap.Run) {
 
 	// Count the number of each OS for all hosts.
 	for _, host := range result.Hosts {
-		for _, match := range host.OS.Matches {
-			for _, class := range match.Classes {
-				switch class.OSFamily() {
-				case osfamily.Linux:
-					linux++
-				case osfamily.Windows:
-					windows++
-				}
-				break
+		for _, class := range host.OS.Classes {
+			switch class.OSFamily() {
+			case osfamily.Linux:
+				linux++
+			case osfamily.Windows:
+				windows++
 			}
-			break
 		}
 	}
 
