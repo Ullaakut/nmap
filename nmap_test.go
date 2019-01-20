@@ -759,40 +759,85 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 	}
 }
 
-// func TestServiceDetection(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestServiceDetection(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options []func(*Scanner)
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedArgs []string
+	}{
+		{
+			description: "service detection",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithServiceInfo(),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"-sV",
+			},
+		},
+		{
+			description: "service detection custom intensity",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithVersionIntensity(1),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"--version-intensity",
+				"1",
+			},
+		},
+		{
+			description: "service detection light intensity",
+
+			options: []func(*Scanner){
+				WithVersionLight(),
+			},
+
+			expectedArgs: []string{
+				"--version-light",
+			},
+		},
+		{
+			description: "service detection highest intensity",
+
+			options: []func(*Scanner){
+				WithVersionAll(),
+			},
+
+			expectedArgs: []string{
+				"--version-all",
+			},
+		},
+		{
+			description: "service detection enable trace",
+
+			options: []func(*Scanner){
+				WithVersionTrace(),
+			},
+
+			expectedArgs: []string{
+				"--version-trace",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
 
 // func TestScriptScan(t *testing.T) {
 // 	tests := []struct {
