@@ -2,11 +2,29 @@
 
 This library aims at providing idiomatic `nmap` bindings for go developers, in order to make it easier to write security audit tools using golang.
 
-It allows not only to parse the XML output of nmap, but also to get the output of nmap as it is running, through a channel. This can be useful for computing a scan's progress, or simply displaying live information to your users.
+<!-- It allows not only to parse the XML output of nmap, but also to get the output of nmap as it is running, through a channel. This can be useful for computing a scan's progress, or simply displaying live information to your users. -->
 
 ## It's currently a work in progress
 
 This paragraph won't be removed until the library is ready to be used and properly documented.
+
+## Supported features
+
+- [x] All of `nmap`'s options as `WithXXX` methods.
+- [x] Cancellable contexts support.
+- [x] [Idiomatic go filters](examples/service_detection/main.go#L19).
+- [x] Helpful enums for most nmap commands. (time templates, os families, port states, etc.)
+- [x] Complete documentation of each option, mostly insipred from nmap's documentation.
+- [ ] Examples of usage - Work in progress
+
+## TODO
+
+- [ ] Complete unit tests
+- [ ] CI
+- [ ] golangci-lint
+- [ ] Coveralls
+- [ ] Asynchronous scan
+- [ ] Abort/Resume scans
 
 ## Example
 
