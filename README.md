@@ -7,6 +7,9 @@
     <a href="https://godoc.org/github.com/Ullaakut/nmap">
         <img src="https://godoc.org/github.com/Ullaakut/cameradar?status.svg" />
     </a>
+    <a href="https://goreportcard.com/report/github.com/ullaakut/nmap">
+        <img src="https://goreportcard.com/badge/github.com/ullaakut/nmap">
+    </a>
 <p>
 
 This library aims at providing idiomatic `nmap` bindings for go developers, in order to make it easier to write security audit tools using golang.
