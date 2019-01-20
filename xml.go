@@ -97,7 +97,7 @@ type Host struct {
 	Uptime        Uptime        `xml:"uptime" json:"uptime"`
 	Comment       string        `xml:"comment,attr" json:"comment"`
 	Addresses     []Address     `xml:"address" json:"addresses"`
-	ExtraPorts    []ExtraPorts  `xml:"ports>extraports" json:"extra_ports"`
+	ExtraPorts    []ExtraPort   `xml:"ports>extraports" json:"extra_ports"`
 	Hostnames     []Hostname    `xml:"hostnames>hostname" json:"hostnames"`
 	HostScripts   []Script      `xml:"hostscript>script" json:"host_scripts"`
 	Ports         []Port        `xml:"ports>port" json:"ports"`
@@ -141,8 +141,8 @@ type Smurf struct {
 	Responses string `xml:"responses,attr" json:"responses"`
 }
 
-// ExtraPorts contains the information about the closed and filtered ports.
-type ExtraPorts struct {
+// ExtraPort contains the information about the closed and filtered ports.
+type ExtraPort struct {
 	State   string   `xml:"state,attr" json:"state"`
 	Count   int      `xml:"count,attr" json:"count"`
 	Reasons []Reason `xml:"extrareasons" json:"reasons"`
@@ -346,16 +346,16 @@ type OS struct {
 
 // PortUsed is the port used to fingerprint an operating system.
 type PortUsed struct {
-	State  string `xml:"state,attr" json:"state"`
-	Proto  string `xml:"proto,attr" json:"proto"`
-	PortID int    `xml:"portid,attr" json:"port_id"`
+	State string `xml:"state,attr" json:"state"`
+	Proto string `xml:"proto,attr" json:"proto"`
+	ID    int    `xml:"portid,attr" json:"port_id"`
 }
 
 // OSMatch contains detailed information regarding an operating system fingerprint.
 type OSMatch struct {
 	Name     string    `xml:"name,attr" json:"name"`
-	Accuracy string    `xml:"accuracy,attr" json:"accuracy"`
-	Line     string    `xml:"line,attr" json:"line"`
+	Accuracy int       `xml:"accuracy,attr" json:"accuracy"`
+	Line     int       `xml:"line,attr" json:"line"`
 	Classes  []OSClass `xml:"osclass" json:"os_classes"`
 }
 
@@ -364,7 +364,7 @@ type OSClass struct {
 	Vendor       string `xml:"vendor,attr" json:"vendor"`
 	OSGeneration string `xml:"osgen,attr" json:"os_generation"`
 	Type         string `xml:"type,attr" json:"type"`
-	Accuracy     string `xml:"accuracy,attr" json:"accuracy"`
+	Accuracy     int    `xml:"accuracy,attr" json:"accuracy"`
 	Family       string `xml:"osfamily,attr" json:"os_family"`
 	CPEs         []CPE  `xml:"cpe" json:"cpes"`
 }
@@ -419,7 +419,7 @@ type Trace struct {
 // Hop is an IP hop to a host.
 type Hop struct {
 	TTL    float32 `xml:"ttl,attr" json:"ttl"`
-	RTT    float32 `xml:"rtt,attr" json:"rtt"`
+	RTT    string  `xml:"rtt,attr" json:"rtt"`
 	IPAddr string  `xml:"ipaddr,attr" json:"ip_addr"`
 	Host   string  `xml:"host,attr" json:"host"`
 }
