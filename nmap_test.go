@@ -991,40 +991,62 @@ func TestScriptScan(t *testing.T) {
 	}
 }
 
-// func TestOSDetection(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestOSDetection(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options []func(*Scanner)
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedArgs []string
+	}{
+		{
+			description: "enable OS detection",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithOSDetection(),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"-O",
+			},
+		},
+		{
+			description: "enable OS scan limit",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithOSScanLimit(),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"--osscan-limit",
+			},
+		},
+		{
+			description: "enable OS scan guess",
+
+			options: []func(*Scanner){
+				WithOSScanGuess(),
+			},
+
+			expectedArgs: []string{
+				"--osscan-guess",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
 
 // func TestTimingAndPerformance(t *testing.T) {
 // 	tests := []struct {
