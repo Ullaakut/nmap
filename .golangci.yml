@@ -119,12 +119,6 @@ linters-settings:
     enabled-tags:
       - performance
 
-    settings: # settings passed to gocritic
-      captLocal: # must be valid enabled check name
-        checkLocals: true
-      rangeValCopy:
-        sizeThreshold: 32
-
 linters:
   enable:
     - megacheck
