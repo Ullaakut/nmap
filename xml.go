@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"strconv"
 	"time"
+
+	family "github.com/Ullaakut/nmap/pkg/osfamilies"
 )
 
 // Run represents an nmap scanning run.
@@ -172,23 +174,11 @@ const (
 	Closed     PortStatus = "closed"
 	Filtered   PortStatus = "filtered"
 	Unfiltered PortStatus = "unfiltered"
-	Unknown    PortStatus = "unknown"
 )
 
 // Status returns the status of a port.
 func (p Port) Status() PortStatus {
-	switch p.State.State {
-	case "open":
-		return Open
-	case "closed":
-		return Closed
-	case "filtered":
-		return Filtered
-	case "unfiltered":
-		return Unfiltered
-	default:
-		return Unknown
-	}
+	return PortStatus(p.State.State)
 }
 
 // State contains information about a given port's status.
@@ -349,9 +339,9 @@ func (t *Table) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 
 // OS contains the fingerprinted operating system for a host.
 type OS struct {
-	PortsUsed      []PortUsed      `xml:"portused" json:"ports_used"`
-	OSMatches      []OSMatch       `xml:"osmatch" json:"os_matches"`
-	OSFingerprints []OSFingerprint `xml:"osfingerprint" json:"os_fingerprints"`
+	PortsUsed    []PortUsed      `xml:"portused" json:"ports_used"`
+	Matches      []OSMatch       `xml:"osmatch" json:"os_matches"`
+	Fingerprints []OSFingerprint `xml:"osfingerprint" json:"os_fingerprints"`
 }
 
 // PortUsed is the port used to fingerprint an operating system.
@@ -363,10 +353,10 @@ type PortUsed struct {
 
 // OSMatch contains detailed information regarding an operating system fingerprint.
 type OSMatch struct {
-	Name      string    `xml:"name,attr" json:"name"`
-	Accuracy  string    `xml:"accuracy,attr" json:"accuracy"`
-	Line      string    `xml:"line,attr" json:"line"`
-	OSClasses []OSClass `xml:"osclass" json:"os_classes"`
+	Name     string    `xml:"name,attr" json:"name"`
+	Accuracy string    `xml:"accuracy,attr" json:"accuracy"`
+	Line     string    `xml:"line,attr" json:"line"`
+	Classes  []OSClass `xml:"osclass" json:"os_classes"`
 }
 
 // OSClass contains vendor information about an operating system.
@@ -375,8 +365,13 @@ type OSClass struct {
 	OSGeneration string `xml:"osgen,attr" json:"os_generation"`
 	Type         string `xml:"type,attr" json:"type"`
 	Accuracy     string `xml:"accuracy,attr" json:"accuracy"`
-	OSFamily     string `xml:"osfamily,attr" json:"os_family"`
+	Family       string `xml:"osfamily,attr" json:"os_family"`
 	CPEs         []CPE  `xml:"cpe" json:"cpes"`
+}
+
+// OSFamily returns the OS family in an enumerated format.
+func (o OSClass) OSFamily() family.OSFamily {
+	return family.OSFamily(o.Family)
 }
 
 // OSFingerprint is the actual fingerprint string of an operating system.

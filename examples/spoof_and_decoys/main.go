@@ -1,22 +1,17 @@
 package main
 
 import (
-    "context"
     "fmt"
     "log"
-    "time"
 
     "github.com/Ullaakut/nmap"
 )
 
 func main() {
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-    defer cancel()
-
     // Equivalent to
     // nmap -sS 192.168.0.10 \
     // -D 192.168.0.2,192.168.0.3,192.168.0.4,192.168.0.5,192.168.0.6,ME,192.168.0.8 \
-    // 192.168.0.72`, with a 5 minute timeout.
+    // 192.168.0.72`.
     scanner, err := nmap.New(
         nmap.WithTarget("192.168.0.72"),
         nmap.WithSpoofIPAddress("192.168.0.10"),
@@ -29,7 +24,6 @@ func main() {
             "ME",
             "192.168.0.8",
         }),
-        nmap.WithContext(ctx),
     )
     if err != nil {
         log.Fatalf("unable to create nmap scanner: %v", err)
