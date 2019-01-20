@@ -1644,7 +1644,7 @@ func TestMiscellaneous(t *testing.T) {
 			},
 
 			expectedArgs: []string{
-				"--data-dir",
+				"--datadir",
 				"/etc/nmap/data",
 			},
 		},
