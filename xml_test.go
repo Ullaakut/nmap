@@ -96,7 +96,7 @@ func TestFormatTableXML(t *testing.T) {
 	})
 
 	expectedXML := []byte(fmt.Sprintf(
-		`<table><elem key="key">%s</elem><elem key="fingerprint">%s</elem><elem key="type">%s</elem><elem key="bits">%s</elem></table>`,
+		`<Table><elem key="key">%s</elem><elem key="fingerprint">%s</elem><elem key="type">%s</elem><elem key="bits">%s</elem></Table>`,
 		table["key"],
 		table["fingerprint"],
 		table["type"],
@@ -109,7 +109,7 @@ func TestFormatTableXML(t *testing.T) {
 	}
 
 	if !bytes.Equal(XML, expectedXML) {
-		t.Errorf("expected %v got %v", expectedXML, XML)
+		t.Errorf("expected %s got %s", expectedXML, XML)
 	}
 }
 

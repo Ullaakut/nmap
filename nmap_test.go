@@ -386,7 +386,7 @@ func TestHostDiscovery(t *testing.T) {
 			},
 
 			expectedArgs: []string{
-				"-P01,2,4",
+				"-PO1,2,4",
 			},
 		},
 		{
@@ -442,7 +442,7 @@ func TestHostDiscovery(t *testing.T) {
 			},
 
 			expectedArgs: []string{
-				"--traceroutes",
+				"--traceroute",
 			},
 		},
 	}
@@ -665,40 +665,99 @@ func TestScanTechniques(t *testing.T) {
 	}
 }
 
-// func TestPortSpecAndScanOrder(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestPortSpecAndScanOrder(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options []func(*Scanner)
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedArgs []string
+	}{
+		{
+			description: "specify ports to scan",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithPorts("554,8554"),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"-p",
+				"554,8554",
+			},
+		},
+		{
+			description: "exclude ports to scan",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithPortExclusions("554,8554"),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"--exclude-ports",
+				"554,8554",
+			},
+		},
+		{
+			description: "fast mode - scan fewer ports than the default scan",
+
+			options: []func(*Scanner){
+				WithFastMode(),
+			},
+
+			expectedArgs: []string{
+				"-F",
+			},
+		},
+		{
+			description: "consecutive port scanning",
+
+			options: []func(*Scanner){
+				WithConsecutivePortScanning(),
+			},
+
+			expectedArgs: []string{
+				"-r",
+			},
+		},
+		{
+			description: "scan most commonly open ports",
+
+			options: []func(*Scanner){
+				WithMostCommonPorts(5),
+			},
+
+			expectedArgs: []string{
+				"--top-ports",
+				"5",
+			},
+		},
+		{
+			description: "scan most commonly open ports given a ratio - should be rounded to 0.4",
+
+			options: []func(*Scanner){
+				WithPortRatio(0.42010101),
+			},
+
+			expectedArgs: []string{
+				"--port-ratio",
+				"0.4",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
 
 // func TestServiceDetection(t *testing.T) {
 // 	tests := []struct {
