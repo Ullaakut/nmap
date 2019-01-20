@@ -33,7 +33,6 @@ This paragraph won't be removed until the library is ready to be used and proper
 
 - [ ] Complete unit tests
 - [ ] CI
-- [ ] golangci-lint
 - [ ] Coveralls
 - [ ] Asynchronous scan
 - [ ] Abort/Resume scans
