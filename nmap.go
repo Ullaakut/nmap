@@ -17,6 +17,9 @@ type Scanner struct {
 	args       []string
 	binaryPath string
 	ctx        context.Context
+
+	portFilter func(Port) bool
+	hostFilter func(Host) bool
 }
 
 // Run runs nmap synchronously and returns the result of the scan.
@@ -57,8 +60,52 @@ func (s *Scanner) Run() (*Run, error) {
 			return nil, errors.New(stderr.String())
 		}
 
-		return Parse(stdout.Bytes())
+		result, err := Parse(stdout.Bytes())
+		if err != nil {
+			return nil, err
+		}
+
+		// Call filters if they are set.
+		if s.portFilter != nil {
+			result = choosePorts(result, s.portFilter)
+		}
+
+		if s.hostFilter != nil {
+			result = chooseHosts(result, s.hostFilter)
+		}
+
+		return result, nil
 	}
+}
+
+func chooseHosts(result *Run, filter func(Host) bool) *Run {
+	var filteredHosts []Host
+
+	for _, host := range result.Hosts {
+		if filter(host) {
+			filteredHosts = append(filteredHosts, host)
+		}
+	}
+
+	result.Hosts = filteredHosts
+
+	return result
+}
+
+func choosePorts(result *Run, filter func(Port) bool) *Run {
+	for _, host := range result.Hosts {
+		var filteredPorts []Port
+
+		for _, port := range host.Ports {
+			if filter(port) {
+				filteredPorts = append(filteredPorts, port)
+			}
+		}
+
+		host.Ports = filteredPorts
+	}
+
+	return result
 }
 
 func (s Scanner) String() string {
@@ -108,6 +155,26 @@ func WithBinaryPath(binaryPath string) func(*Scanner) {
 func WithCustomArguments(args ...string) func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, args...)
+	}
+}
+
+// WithFilterPort allows to set a custom function to filter out ports that
+// don't fullfil a given condition. When the given function returns true,
+// the port is kept, otherwise it is removed from the result. Can be used
+// along with WithFilterHost.
+func WithFilterPort(portFilter func(Port) bool) func(*Scanner) {
+	return func(s *Scanner) {
+		s.portFilter = portFilter
+	}
+}
+
+// WithFilterHost allows to set a custom function to filter out hosts that
+// don't fullfil a given condition. When the given function returns true,
+// the host is kept, otherwise it is removed from the result. Can be used
+// along with WithFilterPort.
+func WithFilterHost(hostFilter func(Host) bool) func(*Scanner) {
+	return func(s *Scanner) {
+		s.hostFilter = hostFilter
 	}
 }
 
