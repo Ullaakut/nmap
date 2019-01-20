@@ -252,7 +252,9 @@ func WithSkipHostDiscovery() func(*Scanner) {
 // WithSYNDiscovery sets the discovery mode to use SYN packets.
 // If the portList argument is empty, this will enable SYN discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithSYNDiscovery(portList string) func(*Scanner) {
+func WithSYNDiscovery(ports ...string) func(*Scanner) {
+	portList := strings.Join(ports, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("-PS%s", portList))
 	}
@@ -261,7 +263,9 @@ func WithSYNDiscovery(portList string) func(*Scanner) {
 // WithACKDiscovery sets the discovery mode to use ACK packets.
 // If the portList argument is empty, this will enable ACK discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithACKDiscovery(portList string) func(*Scanner) {
+func WithACKDiscovery(ports ...string) func(*Scanner) {
+	portList := strings.Join(ports, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("-PA%s", portList))
 	}
@@ -270,7 +274,9 @@ func WithACKDiscovery(portList string) func(*Scanner) {
 // WithUDPDiscovery sets the discovery mode to use UDP packets.
 // If the portList argument is empty, this will enable UDP discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithUDPDiscovery(portList string) func(*Scanner) {
+func WithUDPDiscovery(ports ...string) func(*Scanner) {
+	portList := strings.Join(ports, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("-PU%s", portList))
 	}
@@ -282,7 +288,9 @@ func WithUDPDiscovery(portList string) func(*Scanner) {
 // for all ports. Otherwise, it will be only for the specified ports.
 // Warning: on Unix, only the privileged user root is generally
 // able to send and receive raw SCTP packets.
-func WithSCTPDiscovery(portList string) func(*Scanner) {
+func WithSCTPDiscovery(ports ...string) func(*Scanner) {
+	portList := strings.Join(ports, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("-PY%s", portList))
 	}
@@ -326,7 +334,9 @@ func WithICMPNetMaskDiscovery() func(*Scanner) {
 // If no protocols are specified, the default is to send multiple IP
 // packets for ICMP (protocol 1), IGMP (protocol 2), and IP-in-IP
 // (protocol 4).
-func WithIPProtocolPingDiscovery(protocolList string) func(*Scanner) {
+func WithIPProtocolPingDiscovery(protocols ...string) func(*Scanner) {
+	protocolList := strings.Join(protocols, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("-PO%s", protocolList))
 	}
@@ -350,7 +360,9 @@ func WithForcedDNSResolution() func(*Scanner) {
 
 // WithCustomDNSServers sets custom DNS servers for the scan.
 // List format: dns1[,dns2],...
-func WithCustomDNSServers(dnsList string) func(*Scanner) {
+func WithCustomDNSServers(dnsServers ...string) func(*Scanner) {
+	dnsList := strings.Join(dnsServers, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, "--dns-servers")
 		s.args = append(s.args, dnsList)
@@ -566,18 +578,22 @@ func WithFTPBounceScan(FTPRelayHost string) func(*Scanner) {
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
-func WithPorts(ports string) func(*Scanner) {
+func WithPorts(ports ...string) func(*Scanner) {
+	portList := strings.Join(ports, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, "-p")
-		s.args = append(s.args, ports)
+		s.args = append(s.args, portList)
 	}
 }
 
 // WithPortExclusions sets the ports that the scanner should not scan on each host.
-func WithPortExclusions(ports string) func(*Scanner) {
+func WithPortExclusions(ports ...string) func(*Scanner) {
+	portList := strings.Join(ports, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, "--exclude-ports")
-		s.args = append(s.args, ports)
+		s.args = append(s.args, portList)
 	}
 }
 
@@ -684,7 +700,9 @@ func WithDefaultScript() func(*Scanner) {
 
 // WithScripts sets the scanner to perform a script scan using the enumerated
 // scripts, script directories and script categories.
-func WithScripts(scriptList string) func(*Scanner) {
+func WithScripts(scripts ...string) func(*Scanner) {
+	scriptList := strings.Join(scripts, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("--script=%s", scriptList))
 	}
@@ -975,7 +993,9 @@ func WithSourcePort(port int16) func(*Scanner) {
 }
 
 // WithProxies allows to relay connection through HTTP/SOCKS4 proxies.
-func WithProxies(proxyList string) func(*Scanner) {
+func WithProxies(proxies ...string) func(*Scanner) {
+	proxyList := strings.Join(proxies, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, "--proxies")
 		s.args = append(s.args, proxyList)
@@ -1048,10 +1068,9 @@ func WithSpoofMAC(argument string) func(*Scanner) {
 // stacks properly drop these packets, any responses received are
 // likely coming from a firewall or IDS that didn't bother to
 // verify the checksum.
-func WithBadSum(options string) func(*Scanner) {
+func WithBadSum() func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, "--ip-options")
-		s.args = append(s.args, options)
+		s.args = append(s.args, "--badsum")
 	}
 }
 

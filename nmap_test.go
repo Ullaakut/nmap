@@ -262,7 +262,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "TCP SYN packets for all ports",
 
 			options: []func(*Scanner){
-				WithSYNDiscovery(""),
+				WithSYNDiscovery(),
 			},
 
 			expectedArgs: []string{
@@ -273,7 +273,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "TCP SYN packets for specific ports",
 
 			options: []func(*Scanner){
-				WithSYNDiscovery("443,8443"),
+				WithSYNDiscovery("443", "8443"),
 			},
 
 			expectedArgs: []string{
@@ -284,7 +284,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "TCP ACK packets for all ports",
 
 			options: []func(*Scanner){
-				WithACKDiscovery(""),
+				WithACKDiscovery(),
 			},
 
 			expectedArgs: []string{
@@ -295,7 +295,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "TCP ACK packets for specific ports",
 
 			options: []func(*Scanner){
-				WithACKDiscovery("443,8443"),
+				WithACKDiscovery("443", "8443"),
 			},
 
 			expectedArgs: []string{
@@ -306,7 +306,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "UDP packets for all ports",
 
 			options: []func(*Scanner){
-				WithUDPDiscovery(""),
+				WithUDPDiscovery(),
 			},
 
 			expectedArgs: []string{
@@ -317,7 +317,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "UDP packets for specific ports",
 
 			options: []func(*Scanner){
-				WithUDPDiscovery("443,8443"),
+				WithUDPDiscovery("443", "8443"),
 			},
 
 			expectedArgs: []string{
@@ -328,7 +328,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "SCTP packets for all ports",
 
 			options: []func(*Scanner){
-				WithSCTPDiscovery(""),
+				WithSCTPDiscovery(),
 			},
 
 			expectedArgs: []string{
@@ -339,7 +339,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "SCTP packets for specific ports",
 
 			options: []func(*Scanner){
-				WithSCTPDiscovery("443,8443"),
+				WithSCTPDiscovery("443", "8443"),
 			},
 
 			expectedArgs: []string{
@@ -383,7 +383,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "IP protocol ping",
 
 			options: []func(*Scanner){
-				WithIPProtocolPingDiscovery("1,2,4"),
+				WithIPProtocolPingDiscovery("1", "2", "4"),
 			},
 
 			expectedArgs: []string{
@@ -416,7 +416,7 @@ func TestHostDiscovery(t *testing.T) {
 			description: "custom DNS server",
 
 			options: []func(*Scanner){
-				WithCustomDNSServers("8.8.8.8,8.8.4.4"),
+				WithCustomDNSServers("8.8.8.8", "8.8.4.4"),
 			},
 
 			expectedArgs: []string{
@@ -679,7 +679,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 			description: "specify ports to scan",
 
 			options: []func(*Scanner){
-				WithPorts("554,8554"),
+				WithPorts("554", "8554"),
 			},
 
 			expectedArgs: []string{
@@ -691,7 +691,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 			description: "exclude ports to scan",
 
 			options: []func(*Scanner){
-				WithPortExclusions("554,8554"),
+				WithPortExclusions("554", "8554"),
 			},
 
 			expectedArgs: []string{
@@ -904,7 +904,7 @@ func TestScriptScan(t *testing.T) {
 			description: "custom script list",
 
 			options: []func(*Scanner){
-				WithScripts("./scripts/,/etc/nmap/nse/scripts"),
+				WithScripts("./scripts/", "/etc/nmap/nse/scripts"),
 			},
 
 			expectedArgs: []string{
@@ -1239,40 +1239,224 @@ func TestTimingAndPerformance(t *testing.T) {
 	}
 }
 
-// func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options []func(*Scanner)
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedPanic string
+		expectedArgs  []string
+	}{
+		{
+			description: "fragment packets",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithFragmentPackets(),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"-f",
+			},
+		},
+		{
+			description: "custom fragment packet size",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithMTU(42),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"--mtu",
+				"42",
+			},
+		},
+		{
+			description: "enable decoys",
+
+			options: []func(*Scanner){
+				WithDecoys([]string{
+					"192.168.1.1",
+					"192.168.1.2",
+					"192.168.1.3",
+					"192.168.1.4",
+					"192.168.1.5",
+					"192.168.1.6",
+					"ME",
+					"192.168.1.8",
+				}),
+			},
+
+			expectedArgs: []string{
+				"-D",
+				"192.168.1.1,192.168.1.2,192.168.1.3,192.168.1.4,192.168.1.5,192.168.1.6,ME,192.168.1.8",
+			},
+		},
+		{
+			description: "spoof IP address",
+
+			options: []func(*Scanner){
+				WithSpoofIPAddress("192.168.1.1"),
+			},
+
+			expectedArgs: []string{
+				"-S",
+				"192.168.1.1",
+			},
+		},
+		{
+			description: "set interface",
+
+			options: []func(*Scanner){
+				WithInterface("eth0"),
+			},
+
+			expectedArgs: []string{
+				"-e",
+				"eth0",
+			},
+		},
+		{
+			description: "set source port",
+
+			options: []func(*Scanner){
+				WithSourcePort(4242),
+			},
+
+			expectedArgs: []string{
+				"--source-port",
+				"4242",
+			},
+		},
+		{
+			description: "set proxies",
+
+			options: []func(*Scanner){
+				WithProxies("4242", "8484"),
+			},
+
+			expectedArgs: []string{
+				"--proxies",
+				"4242,8484",
+			},
+		},
+		{
+			description: "set custom hex payload",
+
+			options: []func(*Scanner){
+				WithHexData("0x8b6c42"),
+			},
+
+			expectedArgs: []string{
+				"--data",
+				"0x8b6c42",
+			},
+		},
+		{
+			description: "set custom ascii payload",
+
+			options: []func(*Scanner){
+				WithASCIIData("pale brownish"),
+			},
+
+			expectedArgs: []string{
+				"--data-string",
+				"pale brownish",
+			},
+		},
+		{
+			description: "set custom random payload length",
+
+			options: []func(*Scanner){
+				WithDataLength(42),
+			},
+
+			expectedArgs: []string{
+				"--data-length",
+				"42",
+			},
+		},
+		{
+			description: "set custom IP options",
+
+			options: []func(*Scanner){
+				WithIPOptions("S 192.168.1.1 10.0.0.3"),
+			},
+
+			expectedArgs: []string{
+				"--ip-options",
+				"S 192.168.1.1 10.0.0.3",
+			},
+		},
+		{
+			description: "set custom TTL",
+
+			options: []func(*Scanner){
+				WithIPTimeToLive(254),
+			},
+
+			expectedArgs: []string{
+				"--ttl",
+				"254",
+			},
+		},
+		{
+			description: "set custom TTL - invalid value should panic",
+
+			options: []func(*Scanner){
+				WithIPTimeToLive(-254),
+			},
+
+			expectedPanic: "value given to nmap.WithIPTimeToLive() should be between 0 and 255",
+		},
+		{
+			description: "spoof mac address",
+
+			options: []func(*Scanner){
+				WithSpoofMAC("08:67:47:0A:78:E4"),
+			},
+
+			expectedArgs: []string{
+				"--spoof-mac",
+				"08:67:47:0A:78:E4",
+			},
+		},
+		{
+			description: "send packets with bad checksum",
+
+			options: []func(*Scanner){
+				WithBadSum(),
+			},
+
+			expectedArgs: []string{
+				"--badsum",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			if test.expectedPanic != "" {
+				defer func() {
+					recoveredMessage := recover()
+
+					if recoveredMessage != test.expectedPanic {
+						t.Errorf("expected panic message to be %q but got %q", test.expectedPanic, recoveredMessage)
+					}
+				}()
+			}
+
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
 
 // func TestOutput(t *testing.T) {
 // 	tests := []struct {
