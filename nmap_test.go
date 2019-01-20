@@ -1606,37 +1606,104 @@ func TestOutput(t *testing.T) {
 	}
 }
 
-// func TestMiscellaneous(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestMiscellaneous(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options []func(*Scanner)
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedArgs []string
+	}{
+		{
+			description: "enable ipv6 scanning",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithIPv6Scanning(),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"-6",
+			},
+		},
+		{
+			description: "enable aggressive scanning",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithAggressiveScan(),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"-A",
+			},
+		},
+		{
+			description: "set data dir",
+
+			options: []func(*Scanner){
+				WithDataDir("/etc/nmap/data"),
+			},
+
+			expectedArgs: []string{
+				"--data-dir",
+				"/etc/nmap/data",
+			},
+		},
+		{
+			description: "send packets over ethernet",
+
+			options: []func(*Scanner){
+				WithSendEthernet(),
+			},
+
+			expectedArgs: []string{
+				"--send-eth",
+			},
+		},
+		{
+			description: "send packets over IP",
+
+			options: []func(*Scanner){
+				WithSendIP(),
+			},
+
+			expectedArgs: []string{
+				"--send-ip",
+			},
+		},
+		{
+			description: "assume user is privileged",
+
+			options: []func(*Scanner){
+				WithPrivileged(),
+			},
+
+			expectedArgs: []string{
+				"--privileged",
+			},
+		},
+		{
+			description: "assume user is unprivileged",
+
+			options: []func(*Scanner){
+				WithUnprivileged(),
+			},
+
+			expectedArgs: []string{
+				"--unprivileged",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
