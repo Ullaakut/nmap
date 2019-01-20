@@ -704,6 +704,8 @@ func WithScriptArguments(arguments map[string]string) func(*Scanner) {
 		}, ",")
 	}
 
+	argList = strings.TrimLeft(argList, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("--script-args=%s", argList))
 	}

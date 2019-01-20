@@ -3,6 +3,7 @@ package nmap
 import (
 	"context"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -839,40 +840,116 @@ func TestServiceDetection(t *testing.T) {
 	}
 }
 
-// func TestScriptScan(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestScriptScan(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options       []func(*Scanner)
+		unorderedArgs bool
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedArgs []string
+	}{
+		{
+			description: "default script scan",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithDefaultScript(),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"-sC",
+			},
+		},
+		{
+			description: "custom script list",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithScripts("./scripts/,/etc/nmap/nse/scripts"),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"--script=./scripts/,/etc/nmap/nse/scripts",
+			},
+		},
+		{
+			description: "script arguments",
+
+			options: []func(*Scanner){
+				WithScriptArguments(map[string]string{
+					"user":                  "foo",
+					"pass":                  "\",{}=bar\"",
+					"whois":                 "{whodb=nofollow+ripe}",
+					"xmpp-info.server_name": "localhost",
+				}),
+			},
+
+			unorderedArgs: true,
+
+			expectedArgs: []string{
+				"--script-args=",
+				"user=foo",
+				"pass=\",{}=bar\"",
+				"whois={whodb=nofollow+ripe}",
+				"xmpp-info.server_name=localhost",
+			},
+		},
+		{
+			description: "script arguments file",
+
+			options: []func(*Scanner){
+				WithScriptArgumentsFile("/script_args.txt"),
+			},
+
+			expectedArgs: []string{
+				"--script-args-file=/script_args.txt",
+			},
+		},
+		{
+			description: "enable script trace",
+
+			options: []func(*Scanner){
+				WithScriptTrace(),
+			},
+
+			expectedArgs: []string{
+				"--script-trace",
+			},
+		},
+		{
+			description: "update script database",
+
+			options: []func(*Scanner){
+				WithScriptUpdateDB(),
+			},
+
+			expectedArgs: []string{
+				"--script-updatedb",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if test.unorderedArgs {
+				for _, expectedArg := range test.expectedArgs {
+					if !strings.Contains(s.args[0], expectedArg) {
+						t.Errorf("missing argument %s in %v", expectedArg, s.args)
+					}
+				}
+				return
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
 
 // func TestOSDetection(t *testing.T) {
 // 	tests := []struct {

@@ -95,21 +95,24 @@ func TestFormatTableXML(t *testing.T) {
 		"bits":        "2048",
 	})
 
-	expectedXML := []byte(fmt.Sprintf(
-		`<Table><elem key="key">%s</elem><elem key="fingerprint">%s</elem><elem key="type">%s</elem><elem key="bits">%s</elem></Table>`,
-		table["key"],
-		table["fingerprint"],
-		table["type"],
-		table["bits"],
-	))
+	expectedXML := [][]byte{
+		[]byte("<Table>"),
+		[]byte(fmt.Sprintf(`<elem key="key">%s</elem>`, table["key"])),
+		[]byte(fmt.Sprintf(`<elem key="fingerprint">%s</elem>`, table["fingerprint"])),
+		[]byte(fmt.Sprintf(`<elem key="type">%s</elem>`, table["type"])),
+		[]byte(fmt.Sprintf(`<elem key="bits">%s</elem>`, table["bits"])),
+		[]byte("</Table>"),
+	}
 
 	XML, err := xml.Marshal(table)
 	if err != nil {
 		panic(err)
 	}
 
-	if !bytes.Equal(XML, expectedXML) {
-		t.Errorf("expected %s got %s", expectedXML, XML)
+	for _, expectedXMLElement := range expectedXML {
+		if !bytes.Contains(XML, expectedXMLElement) {
+			t.Errorf("missing %s in %s", expectedXMLElement, XML)
+		}
 	}
 }
 
