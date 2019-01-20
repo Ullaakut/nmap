@@ -34,12 +34,11 @@ This paragraph won't be removed until the library is ready to be used and proper
 
 ## TODO
 
-- [ ] Examples of usage - Work in progress
-- [ ] Complete unit tests - Work in progress
+- [ ] Examples of usage - Work in progress (4/7 examples so far)
+- [ ] Complete unit tests - Work in progress (95% coverage so far)
 - [ ] CI
 - [ ] Coveralls
 - [ ] Asynchronous scan
-- [ ] Abort/Resume scans
 
 ## Example
 
