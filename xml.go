@@ -242,8 +242,8 @@ type Script struct {
 type Table map[string]string
 
 // MarshalXML implements the xml.Marshaler interface.
-func (t Table) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	tokens := []xml.Token{start}
+func (t Table) MarshalXML(e *xml.Encoder, startElem xml.StartElement) error {
+	tokens := []xml.Token{startElem}
 
 	// Add all key/value pairs as entries in the XML array.
 	for key, value := range t {
@@ -272,7 +272,7 @@ func (t Table) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	}
 
 	tokens = append(tokens, xml.EndElement{
-		Name: start.Name,
+		Name: startElem.Name,
 	})
 
 	// Encode all tokens.
