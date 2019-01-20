@@ -1,9 +1,8 @@
 package nmap
 
 import (
-	"bytes"
-	"encoding/xml"
 	"io/ioutil"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -16,7 +15,7 @@ func TestParseXML(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			inputFile: "test_xml/scan02.xml",
+			inputFile: "test_xml/scan01.xml",
 
 			expectedResult: &Run{
 				Args:             "nmap -A -v -oX sample-03.xml freshmeat.net sourceforge.net nmap.org kernel.org openbsd.org netbsd.org google.com gmail.com",
@@ -38,6 +37,11 @@ func TestParseXML(t *testing.T) {
 					Finished: Finished{
 						Time:    Timestamp(time.Unix(1201481569, 0)),
 						TimeStr: "Sun Jan 27 21:52:49 2008",
+					},
+					Hosts: HostStats{
+						Up:    8,
+						Total: 8,
+						Down:  0,
 					},
 				},
 				Hosts: []Host{
@@ -116,9 +120,197 @@ func TestParseXML(t *testing.T) {
 									Fingerprint: fingerprint,
 								},
 							},
+							Classes: []OSClass{
+								{
+									Vendor:       "MikroTik",
+									OSGeneration: "2.X",
+									Type:         "software router",
+									Accuracy:     94,
+									Family:       "RouterOS",
+								},
+								{
+									Vendor:       "Linksys",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     94,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "general purpose",
+									Accuracy:     94,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.6.X",
+									Type:         "general purpose",
+									Accuracy:     94,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "WebVOIZE",
+									Type:     "VoIP phone",
+									Accuracy: 94,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "D-Link",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Inventel",
+									Type:     "WAP",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "USRobotics",
+									Type:     "broadband router",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "broadband router",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "media device",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "VoIP gateway",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Netgear",
+									Type:     "WAP",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "QLogic",
+									Type:     "switch",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Sharp",
+									OSGeneration: "2.4.X",
+									Type:         "PDA",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "FON",
+									OSGeneration: "2.6.X",
+									Type:         "WAP",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "FON",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     90,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Belkin",
+									Type:     "WAP",
+									Accuracy: 90,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "Asus",
+									Type:     "WAP",
+									Accuracy: 90,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Netgear",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     90,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Xerox",
+									Type:     "printer",
+									Accuracy: 90,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Aladdin",
+									OSGeneration: "2.4.X",
+									Type:         "security-misc",
+									Accuracy:     89,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Occam",
+									Type:     "VoIP gateway",
+									Accuracy: 89,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "Roku",
+									Type:     "media device",
+									Accuracy: 89,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "Siemens",
+									Type:     "WAP",
+									Accuracy: 89,
+									Family:   "Linux",
+								},
+								{
+									Vendor:       "3Com",
+									OSGeneration: "2.4.X",
+									Type:         "broadband router",
+									Accuracy:     89,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Dream Multimedia",
+									OSGeneration: "2.6.X",
+									Type:         "media device",
+									Accuracy:     89,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Iomega",
+									OSGeneration: "2.6.X",
+									Type:         "storage-misc",
+									Accuracy:     89,
+									Family:       "Linux",
+								},
+							},
 						},
 						Status: Status{
-							State: "up",
+							State:  "up",
+							Reason: "reset",
 						},
 						TCPSequence: TCPSequence{
 							Index:      242,
@@ -180,13 +372,13 @@ func TestParseXML(t *testing.T) {
 								},
 								{
 									TTL:    9,
-									RTT:    "177.3",
+									RTT:    "177.30",
 									IPAddr: "208.173.90.89",
 									Host:   "bpr2-so-5-2-0.miamimit.savvis.net",
 								},
 								{
 									TTL:    10,
-									RTT:    "181.5",
+									RTT:    "181.50",
 									IPAddr: "208.172.97.169",
 									Host:   "cr2-pos-0-3-1-0.miami.savvis.net",
 								},
@@ -210,7 +402,7 @@ func TestParseXML(t *testing.T) {
 								},
 								{
 									TTL:    14,
-									RTT:    "322.9",
+									RTT:    "322.90",
 									IPAddr: "204.70.200.217",
 									Host:   "hr1-te-2-0-0.santaclarasc9.savvis.net",
 								},
@@ -244,7 +436,8 @@ func TestParseXML(t *testing.T) {
 						},
 						Addresses: []Address{
 							{
-								Addr: "66.35.250.168",
+								Addr:     "66.35.250.168",
+								AddrType: "ipv4",
 							},
 						},
 						ExtraPorts: []ExtraPort{
@@ -262,6 +455,7 @@ func TestParseXML(t *testing.T) {
 						Hostnames: []Hostname{
 							{
 								Name: "freshmeat.net",
+								Type: "PTR",
 							},
 						},
 						Ports: []Port{
@@ -269,10 +463,17 @@ func TestParseXML(t *testing.T) {
 								ID:       80,
 								Protocol: "tcp",
 								Service: Service{
-									Name: "http",
+									Name:          "http",
+									ExtraInfo:     "(Unix) PHP/4.4.7",
+									Method:        "probed",
+									Product:       "Apache httpd",
+									Version:       "1.3.39",
+									Configuration: 10,
 								},
 								State: State{
-									State: "open",
+									State:     "open",
+									Reason:    "syn-ack",
+									ReasonTTL: 45,
 								},
 								Scripts: []Script{
 									{
@@ -289,10 +490,14 @@ func TestParseXML(t *testing.T) {
 								ID:       443,
 								Protocol: "tcp",
 								Service: Service{
-									Name: "https",
+									Name:          "https",
+									Method:        "table",
+									Configuration: 3,
 								},
 								State: State{
-									State: "closed",
+									State:     "closed",
+									Reason:    "reset",
+									ReasonTTL: 46,
 								},
 							},
 						},
@@ -475,24 +680,147 @@ func TestParseXML(t *testing.T) {
 			// Remove rawXML before comparing
 			result.rawXML = []byte{}
 
-			// if result != test.expectedResult {
-			// 	t.Errorf("expected %+v got %+v", test.expectedResult, result)
-			// }
+			if result.Args != test.expectedResult.Args {
+				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.Args, result.Args)
+			}
+
+			if result.ProfileName != test.expectedResult.ProfileName {
+				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.ProfileName, result.ProfileName)
+			}
+
+			if result.Scanner != test.expectedResult.Scanner {
+				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.Scanner, result.Scanner)
+			}
+
+			if result.StartStr != test.expectedResult.StartStr {
+				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.StartStr, result.StartStr)
+			}
+
+			if !reflect.DeepEqual(result.Debugging, test.expectedResult.Debugging) {
+				t.Errorf("unexpected debugging, expected %+v got %+v", test.expectedResult.Debugging, result.Debugging)
+			}
+
+			if !reflect.DeepEqual(result.ScanInfo, test.expectedResult.ScanInfo) {
+				t.Errorf("unexpected scan info, expected %+v got %+v", test.expectedResult.ScanInfo, result.ScanInfo)
+			}
+
+			if !reflect.DeepEqual(result.Start, test.expectedResult.Start) {
+				t.Errorf("unexpected start time, expected %+v got %+v", test.expectedResult.Start, result.Start)
+			}
+
+			if !reflect.DeepEqual(result.Targets, test.expectedResult.Targets) {
+				t.Errorf("unexpected targets, expected %+v got %+v", test.expectedResult.Targets, result.Targets)
+			}
+
+			if len(test.expectedResult.TaskBegin) != len(result.TaskBegin) {
+				t.Errorf("unexpected tasks begin entries, expected to have %d entries, got %d instead", len(test.expectedResult.TaskBegin), len(result.TaskBegin))
+			} else {
+				for idx := range test.expectedResult.TaskBegin {
+					if !reflect.DeepEqual(result.TaskBegin[idx], test.expectedResult.TaskBegin[idx]) {
+						t.Errorf("unexpected task begin entry, expected %+v got %+v", test.expectedResult.TaskBegin[idx], result.TaskBegin[idx])
+					}
+				}
+			}
+
+			if len(test.expectedResult.TaskProgress) != len(result.TaskProgress) {
+				t.Errorf("unexpected tasks progress entries, expected to have %d entries, got %d instead", len(test.expectedResult.TaskProgress), len(result.TaskProgress))
+			} else {
+				for idx := range test.expectedResult.TaskProgress {
+					if !reflect.DeepEqual(result.TaskProgress[idx], test.expectedResult.TaskProgress[idx]) {
+						t.Errorf("unexpected task progress entry, expected %+v got %+v", test.expectedResult.TaskProgress[idx], result.TaskProgress[idx])
+					}
+				}
+			}
+
+			if len(test.expectedResult.TaskEnd) != len(result.TaskEnd) {
+				t.Errorf("unexpected tasks end entries, expected to have %d entries, got %d instead", len(test.expectedResult.TaskEnd), len(result.TaskEnd))
+			} else {
+				for idx := range test.expectedResult.TaskEnd {
+					if !reflect.DeepEqual(result.TaskEnd[idx], test.expectedResult.TaskEnd[idx]) {
+						t.Errorf("unexpected task end entry, expected %+v got %+v", test.expectedResult.TaskEnd[idx], result.TaskEnd[idx])
+					}
+				}
+			}
+
+			if len(test.expectedResult.Hosts) != len(result.Hosts) {
+				t.Errorf("unexpected number of hosts, expected to have %d hosts, got %d instead", len(test.expectedResult.Hosts), len(result.Hosts))
+			} else {
+				for idx := range test.expectedResult.Hosts {
+					if test.expectedResult.Hosts[idx].Comment != result.Hosts[idx].Comment {
+						t.Errorf("unexpected host comment, expected %v got %v", test.expectedResult.Hosts[idx].Comment, result.Hosts[idx].Comment)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Addresses, result.Hosts[idx].Addresses) {
+						t.Errorf("unexpected host addresses, expected %+v got %+v", test.expectedResult.Hosts[idx].Addresses, result.Hosts[idx].Addresses)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Distance, result.Hosts[idx].Distance) {
+						t.Errorf("unexpected host distance, expected %+v got %+v", test.expectedResult.Hosts[idx].Distance, result.Hosts[idx].Distance)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].ExtraPorts, result.Hosts[idx].ExtraPorts) {
+						t.Errorf("unexpected host extra ports, expected %+v got %+v", test.expectedResult.Hosts[idx].ExtraPorts, result.Hosts[idx].ExtraPorts)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].HostScripts, result.Hosts[idx].HostScripts) {
+						t.Errorf("unexpected host host scripts, expected %+v got %+v", test.expectedResult.Hosts[idx].HostScripts, result.Hosts[idx].HostScripts)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Hostnames, result.Hosts[idx].Hostnames) {
+						t.Errorf("unexpected host host names, expected %+v got %+v", test.expectedResult.Hosts[idx].Hostnames, result.Hosts[idx].Hostnames)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].IPIDSequence, result.Hosts[idx].IPIDSequence) {
+						t.Errorf("unexpected host IPIDSequence, expected %+v got %+v", test.expectedResult.Hosts[idx].IPIDSequence, result.Hosts[idx].IPIDSequence)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].OS, result.Hosts[idx].OS) {
+						t.Errorf("unexpected host OS, expected %+v got %+v", test.expectedResult.Hosts[idx].OS, result.Hosts[idx].OS)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Ports, result.Hosts[idx].Ports) {
+						t.Errorf("unexpected host ports, expected %+v got %+v", test.expectedResult.Hosts[idx].Ports, result.Hosts[idx].Ports)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Smurfs, result.Hosts[idx].Smurfs) {
+						t.Errorf("unexpected host smurfs, expected %+v got %+v", test.expectedResult.Hosts[idx].Smurfs, result.Hosts[idx].Smurfs)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].StartTime, result.Hosts[idx].StartTime) {
+						t.Errorf("unexpected host start time, expected %+v got %+v", test.expectedResult.Hosts[idx].StartTime, result.Hosts[idx].StartTime)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Status, result.Hosts[idx].Status) {
+						t.Errorf("unexpected host status, expected %+v got %+v", test.expectedResult.Hosts[idx].Status, result.Hosts[idx].Status)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].TCPSequence, result.Hosts[idx].TCPSequence) {
+						t.Errorf("unexpected host TCPSequence, expected %+v got %+v", test.expectedResult.Hosts[idx].TCPSequence, result.Hosts[idx].TCPSequence)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].TCPTSSequence, result.Hosts[idx].TCPTSSequence) {
+						t.Errorf("unexpected host TCPTSSequence, expected %+v got %+v", test.expectedResult.Hosts[idx].TCPTSSequence, result.Hosts[idx].TCPTSSequence)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Times, result.Hosts[idx].Times) {
+						t.Errorf("unexpected host times, expected %+v got %+v", test.expectedResult.Hosts[idx].Times, result.Hosts[idx].Times)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Trace, result.Hosts[idx].Trace) {
+						t.Errorf("unexpected host trace, expected %+v got %+v", test.expectedResult.Hosts[idx].Trace, result.Hosts[idx].Trace)
+					}
+
+					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Uptime, result.Hosts[idx].Uptime) {
+						t.Errorf("unexpected host uptime, expected %+v got %+v", test.expectedResult.Hosts[idx].Uptime, result.Hosts[idx].Uptime)
+					}
+				}
+			}
 
 			if err != test.expectedError {
-				t.Errorf("expected %+v got %+v", test.expectedError, err)
-			}
-
-			resultXML, err := xml.Marshal(result)
-			if err != nil {
-				t.Errorf("unable to marshal result: %v", err)
-			}
-
-			if !bytes.Equal(resultXML, rawXML) {
-				t.Errorf("marshalling result back to XML produces different result than original XML input, got %s", resultXML)
+				t.Errorf("expected %v got %v", test.expectedError, err)
 			}
 		})
 	}
 }
 
-const fingerprint = "SCAN(V=4.53%D=1/27%OT=80%CT=443%CU=%PV=N%G=N%TM=479D25ED%P=i686-pc-linux-gnu)\nSEQ(SP=F2%GCD=1%ISR=E9%TI=Z%TS=1C)\nOPS(O1=M5B4ST11NW0%O2=M5B4ST11NW0%O3=M5B4NNT11NW0%O4=M5B4ST11NW0%O5=M5B4ST11NW0%O6=M5B4ST11)\nWIN(W1=16A0%W2=16A0%W3=16A0%W4=16A0%W5=16A0%W6=16A0)\nECN(R=Y%DF=Y%TG=40%W=16D0%O=M5B4NNSNW0%CC=N%Q=)\nT1(R=Y%DF=Y%TG=40%S=O%A=S+%F=AS%RD=0%Q=)\nT2(R=N)\nT3(R=Y%DF=Y%TG=40%W=16A0%S=O%A=S+%F=AS%O=M5B4ST11NW0%RD=0%Q=)\nT4(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)\nT5(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)\nT6(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)\nT7(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)\nU1(R=N)\nIE(R=N)"
+const fingerprint = "SCAN(V=4.53%D=1/27%OT=80%CT=443%CU=%PV=N%G=N%TM=479D25ED%P=i686-pc-linux-gnu)\nSEQ(SP=F2%GCD=1%ISR=E9%TI=Z%TS=1C)\nOPS(O1=M5B4ST11NW0%O2=M5B4ST11NW0%O3=M5B4NNT11NW0%O4=M5B4ST11NW0%O5=M5B4ST11NW0%O6=M5B4ST11)\nWIN(W1=16A0%W2=16A0%W3=16A0%W4=16A0%W5=16A0%W6=16A0)\nECN(R=Y%DF=Y%TG=40%W=16D0%O=M5B4NNSNW0%CC=N%Q=)\nT1(R=Y%DF=Y%TG=40%S=O%A=S+%F=AS%RD=0%Q=)\nT2(R=N)\nT3(R=Y%DF=Y%TG=40%W=16A0%S=O%A=S+%F=AS%O=M5B4ST11NW0%RD=0%Q=)\nT4(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)\nT5(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)\nT6(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)\nT7(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)\nU1(R=N)\nIE(R=N)\n"

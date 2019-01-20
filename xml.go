@@ -111,9 +111,9 @@ type Status struct {
 	ReasonTTL float32 `xml:"reason_ttl,attr" json:"reason_ttl"`
 }
 
-func (s Status) String() string {
-	return s.State
-}
+// func (s Status) String() string {
+// 	return s.State
+// }
 
 // Address contains a IPv4 or IPv6 address for a host.
 type Address struct {
@@ -122,9 +122,9 @@ type Address struct {
 	Vendor   string `xml:"vendor,attr" json:"vendor"`
 }
 
-func (a Address) String() string {
-	return a.Addr
-}
+// func (a Address) String() string {
+// 	return a.Addr
+// }
 
 // Hostname is a name for a host.
 type Hostname struct {
@@ -132,9 +132,9 @@ type Hostname struct {
 	Type string `xml:"type,attr" json:"type"`
 }
 
-func (h Hostname) String() string {
-	return h.Name
-}
+// func (h Hostname) String() string {
+// 	return h.Name
+// }
 
 // Smurf contains repsonses from a smurf attack.
 type Smurf struct {
@@ -190,18 +190,18 @@ type State struct {
 	ReasonTTL float32 `xml:"reason_ttl,attr" json:"reason_ttl"`
 }
 
-func (s State) String() string {
-	return s.State
-}
+// func (s State) String() string {
+// 	return s.State
+// }
 
 // Owner contains the name of a port's owner.
 type Owner struct {
 	Name string `xml:"name,attr" json:"name"`
 }
 
-func (o Owner) String() string {
-	return o.Name
-}
+// func (o Owner) String() string {
+// 	return o.Name
+// }
 
 // Service contains detailed information about a service on an open port.
 type Service struct {
@@ -223,9 +223,9 @@ type Service struct {
 	CPEs          []CPE  `xml:"cpe" json:"cpes"`
 }
 
-func (s Service) String() string {
-	return s.Name
-}
+// func (s Service) String() string {
+// 	return s.Name
+// }
 
 // CPE (Common Platform Enumeration) is a standardized way to name software
 // applications, operating systems and hardware platforms.
@@ -342,6 +342,7 @@ type OS struct {
 	PortsUsed    []PortUsed      `xml:"portused" json:"ports_used"`
 	Matches      []OSMatch       `xml:"osmatch" json:"os_matches"`
 	Fingerprints []OSFingerprint `xml:"osfingerprint" json:"os_fingerprints"`
+	Classes      []OSClass       `xml:"osclass" json:"os_classes"`
 }
 
 // PortUsed is the port used to fingerprint an operating system.
@@ -353,10 +354,9 @@ type PortUsed struct {
 
 // OSMatch contains detailed information regarding an operating system fingerprint.
 type OSMatch struct {
-	Name     string    `xml:"name,attr" json:"name"`
-	Accuracy int       `xml:"accuracy,attr" json:"accuracy"`
-	Line     int       `xml:"line,attr" json:"line"`
-	Classes  []OSClass `xml:"osclass" json:"os_classes"`
+	Name     string `xml:"name,attr" json:"name"`
+	Accuracy int    `xml:"accuracy,attr" json:"accuracy"`
+	Line     int    `xml:"line,attr" json:"line"`
 }
 
 // OSClass contains vendor information about an operating system.
