@@ -956,7 +956,7 @@ func WithIPTimeToLive(ttl int16) func(*Scanner) {
 
 // WithSpoofMAC uses the given MAC address for all of the raw
 // ethernet frames the scanner sends. This option implies
-// --send-eth to ensure that Nmap actually sends ethernet-level
+// WithSendEthernet to ensure that Nmap actually sends ethernet-level
 // packets.
 // Valid argument examples are Apple, 0, 01:02:03:04:05:06,
 // deadbeefcafe, 0020F2, and Cisco.
@@ -976,5 +976,139 @@ func WithBadSum(options string) func(*Scanner) {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--ip-options")
 		s.args = append(s.args, options)
+	}
+}
+
+/*** Output ***/
+
+// WithReason makes nmap specify why a port is in a particular state.
+func WithReason() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--reason")
+	}
+}
+
+// WithOpenOnly makes nmap only show open ports.
+func WithOpenOnly() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--open")
+	}
+}
+
+// WithPacketTrace makes nmap show all packets sent and received.
+func WithPacketTrace() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--packet-trace")
+	}
+}
+
+// WithInterfaceList makes nmap print host interfaces and routes.
+func WithInterfaceList() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--iflist")
+	}
+}
+
+// WithAppendOutput makes nmap append to files instead of overwriting them.
+// Currently does nothing, since this library doesn't write in files.
+func WithAppendOutput() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--append-output")
+	}
+}
+
+// WithResumePreviousScan makes nmap continue a scan that was aborted,
+// from an output file.
+func WithResumePreviousScan(filePath string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--resume")
+		s.args = append(s.args, filePath)
+	}
+}
+
+// WithStylesheet makes nmap apply an XSL stylesheet to transform its
+// XML output to HTML.
+func WithStylesheet(stylesheetPath string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--stylesheet")
+		s.args = append(s.args, stylesheetPath)
+	}
+}
+
+// WithWebXML makes nmap apply the default nmap.org stylesheet to transform
+// XML output to HTML. The stylesheet can be found at
+// https://nmap.org/svn/docs/nmap.xsl
+func WithWebXML(stylesheetPath string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--stylesheet")
+		s.args = append(s.args, stylesheetPath)
+	}
+}
+
+// WithNoStylesheet prevents the use of XSL stylesheets with the XML output.
+func WithNoStylesheet() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--no-stylesheet")
+	}
+}
+
+/*** Misc ***/
+
+// WithIPv6Scanning enables the use of IPv6 scanning.
+func WithIPv6Scanning() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-6")
+	}
+}
+
+// WithAggressiveScan enables the use of aggressive scan options. This has
+// the same effect as using WithOSDetection, WithServiceInfo, WithDefaultScript
+// and WithTraceRoute at the same time.
+// Because script scanning with the default set is considered intrusive, you
+// should not use this method against target networks without permission.
+func WithAggressiveScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-A")
+	}
+}
+
+// WithDataDir specifies a custom data directory for nmap to get its
+// nmap-service-probes, nmap-services, nmap-protocols, nmap-rpc,
+// nmap-mac-prefixes, and nmap-os-db.
+func WithDataDir(directoryPath string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--datadir")
+		s.args = append(s.args, directoryPath)
+	}
+}
+
+// WithSendEthernet makes nmap send packets at the raw ethernet (data link)
+// layer rather than the higher IP (network) layer. By default, nmap chooses
+// the one which is generally best for the platform it is running on.
+func WithSendEthernet() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--send-eth")
+	}
+}
+
+// WithSendIP makes nmap send packets via raw IP sockets rather than sending
+// lower level ethernet frames.
+func WithSendIP() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--send-ip")
+	}
+}
+
+// WithPrivileged makes nmap assume that the user is fully privileged.
+func WithPrivileged() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--privileged")
+	}
+}
+
+// WithUnprivileged makes nmap assume that the user lacks raw socket privileges.
+func WithUnprivileged() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--unprivileged")
 	}
 }
