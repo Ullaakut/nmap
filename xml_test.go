@@ -1,13 +1,119 @@
 package nmap
 
 import (
+	"bytes"
+	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"reflect"
 	"testing"
 	"time"
+
+	family "github.com/Ullaakut/nmap/pkg/osfamilies"
 )
 
-func TestParseXML(t *testing.T) {
+func TestParseTime(t *testing.T) {
+	ts := Timestamp{}
+
+	err := ts.ParseTime("invalid")
+	if err == nil {
+		t.Errorf("expected strconv.ParseInt: parsing \"invalid\": invalid syntax got %v", err)
+	}
+}
+
+func TestFormatTime(t *testing.T) {
+	originalStr := "123456789"
+	ts := Timestamp{}
+
+	err := ts.ParseTime(originalStr)
+	if err != nil {
+		panic(err)
+	}
+
+	result := ts.FormatTime()
+
+	if result != originalStr {
+		t.Errorf("expected %s got %s", originalStr, result)
+	}
+}
+
+func TestOSFamily(t *testing.T) {
+	osc := OSClass{
+		Family: "Linux",
+	}
+
+	if osc.OSFamily() != family.Linux {
+		t.Errorf("expected OSClass.OSFamily() to be equal to %v, got %v", family.Linux, osc.OSFamily())
+	}
+}
+
+func TestParseTableXML(t *testing.T) {
+	expectedTable := map[string]string{
+		"key":         "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
+		"fingerprint": "79f809acd4e232421049d3bd208285ec",
+		"type":        "ssh-rsa",
+		"bits":        "2048",
+	}
+
+	input := []byte(fmt.Sprintf(
+		`<table><elem key="key">%s</elem><elem key="fingerprint">%s</elem><elem key="type">%s</elem><elem key="bits">%s</elem></table>`,
+		expectedTable["key"],
+		expectedTable["fingerprint"],
+		expectedTable["type"],
+		expectedTable["bits"],
+	))
+
+	var table Table
+
+	err := xml.Unmarshal(input, &table)
+	if err != nil {
+		panic(err)
+	}
+
+	if table["key"] != expectedTable["key"] {
+		t.Errorf("expected %v got %v", expectedTable["key"], table["key"])
+	}
+
+	if table["fingerprint"] != expectedTable["fingerprint"] {
+		t.Errorf("expected %v got %v", expectedTable["fingerprint"], table["fingerprint"])
+	}
+
+	if table["type"] != expectedTable["type"] {
+		t.Errorf("expected %v got %v", expectedTable["type"], table["type"])
+	}
+
+	if table["bits"] != expectedTable["bits"] {
+		t.Errorf("expected %v got %v", expectedTable["bits"], table["bits"])
+	}
+}
+
+func TestFormatTableXML(t *testing.T) {
+	table := Table(map[string]string{
+		"key":         "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
+		"fingerprint": "79f809acd4e232421049d3bd208285ec",
+		"type":        "ssh-rsa",
+		"bits":        "2048",
+	})
+
+	expectedXML := []byte(fmt.Sprintf(
+		`<table><elem key="key">%s</elem><elem key="fingerprint">%s</elem><elem key="type">%s</elem><elem key="bits">%s</elem></table>`,
+		table["key"],
+		table["fingerprint"],
+		table["type"],
+		table["bits"],
+	))
+
+	XML, err := xml.Marshal(table)
+	if err != nil {
+		panic(err)
+	}
+
+	if !bytes.Equal(XML, expectedXML) {
+		t.Errorf("expected %v got %v", expectedXML, XML)
+	}
+}
+
+func TestParseRunXML(t *testing.T) {
 	tests := []struct {
 		inputFile string
 
