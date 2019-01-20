@@ -672,7 +672,8 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 
 		options []func(*Scanner)
 
-		expectedArgs []string
+		expectedPanic string
+		expectedArgs  []string
 	}{
 		{
 			description: "specify ports to scan",
@@ -744,10 +745,29 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 				"0.4",
 			},
 		},
+		{
+			description: "scan most commonly open ports given a ratio - should be invalid and panic",
+
+			options: []func(*Scanner){
+				WithPortRatio(2),
+			},
+
+			expectedPanic: "value given to nmap.WithPortRatio() should be between 0 and 1",
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
+			if test.expectedPanic != "" {
+				defer func() {
+					recoveredMessage := recover()
+
+					if recoveredMessage != test.expectedPanic {
+						t.Errorf("expected panic message to be %q but got %q", test.expectedPanic, recoveredMessage)
+					}
+				}()
+			}
+
 			s, err := New(test.options...)
 			if err != nil {
 				panic(err)
@@ -766,7 +786,8 @@ func TestServiceDetection(t *testing.T) {
 
 		options []func(*Scanner)
 
-		expectedArgs []string
+		expectedPanic string
+		expectedArgs  []string
 	}{
 		{
 			description: "service detection",
@@ -790,6 +811,15 @@ func TestServiceDetection(t *testing.T) {
 				"--version-intensity",
 				"1",
 			},
+		},
+		{
+			description: "service detection custom intensity - should panic since not between 0 and 9",
+
+			options: []func(*Scanner){
+				WithVersionIntensity(42),
+			},
+
+			expectedPanic: "value given to nmap.WithVersionIntensity() should be between 0 and 9",
 		},
 		{
 			description: "service detection light intensity",
@@ -828,6 +858,16 @@ func TestServiceDetection(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
+			if test.expectedPanic != "" {
+				defer func() {
+					recoveredMessage := recover()
+
+					if recoveredMessage != test.expectedPanic {
+						t.Errorf("expected panic message to be %q but got %q", test.expectedPanic, recoveredMessage)
+					}
+				}()
+			}
+
 			s, err := New(test.options...)
 			if err != nil {
 				panic(err)

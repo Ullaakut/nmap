@@ -732,14 +732,6 @@ func WithScriptUpdateDB() func(*Scanner) {
 	}
 }
 
-// WithScriptHelp is not supported yet due to only using XML output.
-// Using it will do nothing until the RunAsync() feature is ready.
-func WithScriptHelp() func(*Scanner) {
-	return func(s *Scanner) {
-		s.args = append(s.args, "--script-updatedb")
-	}
-}
-
 /*** OS Detection ***/
 
 // WithOSDetection enables OS detection.
