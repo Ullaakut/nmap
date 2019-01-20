@@ -1,5 +1,14 @@
 # nmap
 
+<p>
+    <a href="LICENSE">
+        <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" />
+    </a>
+    <a href="https://godoc.org/github.com/Ullaakut/nmap">
+        <img src="https://godoc.org/github.com/Ullaakut/cameradar?status.svg" />
+    </a>
+<p>
+
 This library aims at providing idiomatic `nmap` bindings for go developers, in order to make it easier to write security audit tools using golang.
 
 <!-- It allows not only to parse the XML output of nmap, but also to get the output of nmap as it is running, through a channel. This can be useful for computing a scan's progress, or simply displaying live information to your users. -->
