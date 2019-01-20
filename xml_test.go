@@ -786,146 +786,150 @@ func TestParseRunXML(t *testing.T) {
 			// Remove rawXML before comparing
 			result.rawXML = []byte{}
 
-			if result.Args != test.expectedResult.Args {
-				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.Args, result.Args)
-			}
-
-			if result.ProfileName != test.expectedResult.ProfileName {
-				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.ProfileName, result.ProfileName)
-			}
-
-			if result.Scanner != test.expectedResult.Scanner {
-				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.Scanner, result.Scanner)
-			}
-
-			if result.StartStr != test.expectedResult.StartStr {
-				t.Errorf("unexpected arguments, expected %v got %v", test.expectedResult.StartStr, result.StartStr)
-			}
-
-			if !reflect.DeepEqual(result.Debugging, test.expectedResult.Debugging) {
-				t.Errorf("unexpected debugging, expected %+v got %+v", test.expectedResult.Debugging, result.Debugging)
-			}
-
-			if !reflect.DeepEqual(result.ScanInfo, test.expectedResult.ScanInfo) {
-				t.Errorf("unexpected scan info, expected %+v got %+v", test.expectedResult.ScanInfo, result.ScanInfo)
-			}
-
-			if !reflect.DeepEqual(result.Start, test.expectedResult.Start) {
-				t.Errorf("unexpected start time, expected %+v got %+v", test.expectedResult.Start, result.Start)
-			}
-
-			if !reflect.DeepEqual(result.Targets, test.expectedResult.Targets) {
-				t.Errorf("unexpected targets, expected %+v got %+v", test.expectedResult.Targets, result.Targets)
-			}
-
-			if len(test.expectedResult.TaskBegin) != len(result.TaskBegin) {
-				t.Errorf("unexpected tasks begin entries, expected to have %d entries, got %d instead", len(test.expectedResult.TaskBegin), len(result.TaskBegin))
-			} else {
-				for idx := range test.expectedResult.TaskBegin {
-					if !reflect.DeepEqual(result.TaskBegin[idx], test.expectedResult.TaskBegin[idx]) {
-						t.Errorf("unexpected task begin entry, expected %+v got %+v", test.expectedResult.TaskBegin[idx], result.TaskBegin[idx])
-					}
-				}
-			}
-
-			if len(test.expectedResult.TaskProgress) != len(result.TaskProgress) {
-				t.Errorf("unexpected tasks progress entries, expected to have %d entries, got %d instead", len(test.expectedResult.TaskProgress), len(result.TaskProgress))
-			} else {
-				for idx := range test.expectedResult.TaskProgress {
-					if !reflect.DeepEqual(result.TaskProgress[idx], test.expectedResult.TaskProgress[idx]) {
-						t.Errorf("unexpected task progress entry, expected %+v got %+v", test.expectedResult.TaskProgress[idx], result.TaskProgress[idx])
-					}
-				}
-			}
-
-			if len(test.expectedResult.TaskEnd) != len(result.TaskEnd) {
-				t.Errorf("unexpected tasks end entries, expected to have %d entries, got %d instead", len(test.expectedResult.TaskEnd), len(result.TaskEnd))
-			} else {
-				for idx := range test.expectedResult.TaskEnd {
-					if !reflect.DeepEqual(result.TaskEnd[idx], test.expectedResult.TaskEnd[idx]) {
-						t.Errorf("unexpected task end entry, expected %+v got %+v", test.expectedResult.TaskEnd[idx], result.TaskEnd[idx])
-					}
-				}
-			}
-
-			if len(test.expectedResult.Hosts) != len(result.Hosts) {
-				t.Errorf("unexpected number of hosts, expected to have %d hosts, got %d instead", len(test.expectedResult.Hosts), len(result.Hosts))
-			} else {
-				for idx := range test.expectedResult.Hosts {
-					if test.expectedResult.Hosts[idx].Comment != result.Hosts[idx].Comment {
-						t.Errorf("unexpected host comment, expected %v got %v", test.expectedResult.Hosts[idx].Comment, result.Hosts[idx].Comment)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Addresses, result.Hosts[idx].Addresses) {
-						t.Errorf("unexpected host addresses, expected %+v got %+v", test.expectedResult.Hosts[idx].Addresses, result.Hosts[idx].Addresses)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Distance, result.Hosts[idx].Distance) {
-						t.Errorf("unexpected host distance, expected %+v got %+v", test.expectedResult.Hosts[idx].Distance, result.Hosts[idx].Distance)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].ExtraPorts, result.Hosts[idx].ExtraPorts) {
-						t.Errorf("unexpected host extra ports, expected %+v got %+v", test.expectedResult.Hosts[idx].ExtraPorts, result.Hosts[idx].ExtraPorts)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].HostScripts, result.Hosts[idx].HostScripts) {
-						t.Errorf("unexpected host host scripts, expected %+v got %+v", test.expectedResult.Hosts[idx].HostScripts, result.Hosts[idx].HostScripts)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Hostnames, result.Hosts[idx].Hostnames) {
-						t.Errorf("unexpected host host names, expected %+v got %+v", test.expectedResult.Hosts[idx].Hostnames, result.Hosts[idx].Hostnames)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].IPIDSequence, result.Hosts[idx].IPIDSequence) {
-						t.Errorf("unexpected host IPIDSequence, expected %+v got %+v", test.expectedResult.Hosts[idx].IPIDSequence, result.Hosts[idx].IPIDSequence)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].OS, result.Hosts[idx].OS) {
-						t.Errorf("unexpected host OS, expected %+v got %+v", test.expectedResult.Hosts[idx].OS, result.Hosts[idx].OS)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Ports, result.Hosts[idx].Ports) {
-						t.Errorf("unexpected host ports, expected %+v got %+v", test.expectedResult.Hosts[idx].Ports, result.Hosts[idx].Ports)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Smurfs, result.Hosts[idx].Smurfs) {
-						t.Errorf("unexpected host smurfs, expected %+v got %+v", test.expectedResult.Hosts[idx].Smurfs, result.Hosts[idx].Smurfs)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].StartTime, result.Hosts[idx].StartTime) {
-						t.Errorf("unexpected host start time, expected %+v got %+v", test.expectedResult.Hosts[idx].StartTime, result.Hosts[idx].StartTime)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Status, result.Hosts[idx].Status) {
-						t.Errorf("unexpected host status, expected %+v got %+v", test.expectedResult.Hosts[idx].Status, result.Hosts[idx].Status)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].TCPSequence, result.Hosts[idx].TCPSequence) {
-						t.Errorf("unexpected host TCPSequence, expected %+v got %+v", test.expectedResult.Hosts[idx].TCPSequence, result.Hosts[idx].TCPSequence)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].TCPTSSequence, result.Hosts[idx].TCPTSSequence) {
-						t.Errorf("unexpected host TCPTSSequence, expected %+v got %+v", test.expectedResult.Hosts[idx].TCPTSSequence, result.Hosts[idx].TCPTSSequence)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Times, result.Hosts[idx].Times) {
-						t.Errorf("unexpected host times, expected %+v got %+v", test.expectedResult.Hosts[idx].Times, result.Hosts[idx].Times)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Trace, result.Hosts[idx].Trace) {
-						t.Errorf("unexpected host trace, expected %+v got %+v", test.expectedResult.Hosts[idx].Trace, result.Hosts[idx].Trace)
-					}
-
-					if !reflect.DeepEqual(test.expectedResult.Hosts[idx].Uptime, result.Hosts[idx].Uptime) {
-						t.Errorf("unexpected host uptime, expected %+v got %+v", test.expectedResult.Hosts[idx].Uptime, result.Hosts[idx].Uptime)
-					}
-				}
-			}
+			compareResults(t, test.expectedResult, result)
 
 			if err != test.expectedError {
 				t.Errorf("expected %v got %v", test.expectedError, err)
 			}
 		})
+	}
+}
+
+func compareResults(t *testing.T, expected, got *Run) {
+	if got.Args != expected.Args {
+		t.Errorf("unexpected arguments, expected %v got %v", expected.Args, got.Args)
+	}
+
+	if got.ProfileName != expected.ProfileName {
+		t.Errorf("unexpected arguments, expected %v got %v", expected.ProfileName, got.ProfileName)
+	}
+
+	if got.Scanner != expected.Scanner {
+		t.Errorf("unexpected arguments, expected %v got %v", expected.Scanner, got.Scanner)
+	}
+
+	if got.StartStr != expected.StartStr {
+		t.Errorf("unexpected arguments, expected %v got %v", expected.StartStr, got.StartStr)
+	}
+
+	if !reflect.DeepEqual(got.Debugging, expected.Debugging) {
+		t.Errorf("unexpected debugging, expected %+v got %+v", expected.Debugging, got.Debugging)
+	}
+
+	if !reflect.DeepEqual(got.ScanInfo, expected.ScanInfo) {
+		t.Errorf("unexpected scan info, expected %+v got %+v", expected.ScanInfo, got.ScanInfo)
+	}
+
+	if !reflect.DeepEqual(got.Start, expected.Start) {
+		t.Errorf("unexpected start time, expected %+v got %+v", expected.Start, got.Start)
+	}
+
+	if !reflect.DeepEqual(got.Targets, expected.Targets) {
+		t.Errorf("unexpected targets, expected %+v got %+v", expected.Targets, got.Targets)
+	}
+
+	if len(expected.TaskBegin) != len(got.TaskBegin) {
+		t.Errorf("unexpected tasks begin entries, expected to have %d entries, got %d instead", len(expected.TaskBegin), len(got.TaskBegin))
+	} else {
+		for idx := range expected.TaskBegin {
+			if !reflect.DeepEqual(got.TaskBegin[idx], expected.TaskBegin[idx]) {
+				t.Errorf("unexpected task begin entry, expected %+v got %+v", expected.TaskBegin[idx], got.TaskBegin[idx])
+			}
+		}
+	}
+
+	if len(expected.TaskProgress) != len(got.TaskProgress) {
+		t.Errorf("unexpected tasks progress entries, expected to have %d entries, got %d instead", len(expected.TaskProgress), len(got.TaskProgress))
+	} else {
+		for idx := range expected.TaskProgress {
+			if !reflect.DeepEqual(got.TaskProgress[idx], expected.TaskProgress[idx]) {
+				t.Errorf("unexpected task progress entry, expected %+v got %+v", expected.TaskProgress[idx], got.TaskProgress[idx])
+			}
+		}
+	}
+
+	if len(expected.TaskEnd) != len(got.TaskEnd) {
+		t.Errorf("unexpected tasks end entries, expected to have %d entries, got %d instead", len(expected.TaskEnd), len(got.TaskEnd))
+	} else {
+		for idx := range expected.TaskEnd {
+			if !reflect.DeepEqual(got.TaskEnd[idx], expected.TaskEnd[idx]) {
+				t.Errorf("unexpected task end entry, expected %+v got %+v", expected.TaskEnd[idx], got.TaskEnd[idx])
+			}
+		}
+	}
+
+	if len(expected.Hosts) != len(got.Hosts) {
+		t.Errorf("unexpected number of hosts, expected to have %d hosts, got %d instead", len(expected.Hosts), len(got.Hosts))
+	} else {
+		for idx := range expected.Hosts {
+			if expected.Hosts[idx].Comment != got.Hosts[idx].Comment {
+				t.Errorf("unexpected host comment, expected %v got %v", expected.Hosts[idx].Comment, got.Hosts[idx].Comment)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Addresses, got.Hosts[idx].Addresses) {
+				t.Errorf("unexpected host addresses, expected %+v got %+v", expected.Hosts[idx].Addresses, got.Hosts[idx].Addresses)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Distance, got.Hosts[idx].Distance) {
+				t.Errorf("unexpected host distance, expected %+v got %+v", expected.Hosts[idx].Distance, got.Hosts[idx].Distance)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].ExtraPorts, got.Hosts[idx].ExtraPorts) {
+				t.Errorf("unexpected host extra ports, expected %+v got %+v", expected.Hosts[idx].ExtraPorts, got.Hosts[idx].ExtraPorts)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].HostScripts, got.Hosts[idx].HostScripts) {
+				t.Errorf("unexpected host host scripts, expected %+v got %+v", expected.Hosts[idx].HostScripts, got.Hosts[idx].HostScripts)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Hostnames, got.Hosts[idx].Hostnames) {
+				t.Errorf("unexpected host host names, expected %+v got %+v", expected.Hosts[idx].Hostnames, got.Hosts[idx].Hostnames)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence) {
+				t.Errorf("unexpected host IPIDSequence, expected %+v got %+v", expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].OS, got.Hosts[idx].OS) {
+				t.Errorf("unexpected host OS, expected %+v got %+v", expected.Hosts[idx].OS, got.Hosts[idx].OS)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Ports, got.Hosts[idx].Ports) {
+				t.Errorf("unexpected host ports, expected %+v got %+v", expected.Hosts[idx].Ports, got.Hosts[idx].Ports)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Smurfs, got.Hosts[idx].Smurfs) {
+				t.Errorf("unexpected host smurfs, expected %+v got %+v", expected.Hosts[idx].Smurfs, got.Hosts[idx].Smurfs)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].StartTime, got.Hosts[idx].StartTime) {
+				t.Errorf("unexpected host start time, expected %+v got %+v", expected.Hosts[idx].StartTime, got.Hosts[idx].StartTime)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Status, got.Hosts[idx].Status) {
+				t.Errorf("unexpected host status, expected %+v got %+v", expected.Hosts[idx].Status, got.Hosts[idx].Status)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].TCPSequence, got.Hosts[idx].TCPSequence) {
+				t.Errorf("unexpected host TCPSequence, expected %+v got %+v", expected.Hosts[idx].TCPSequence, got.Hosts[idx].TCPSequence)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].TCPTSSequence, got.Hosts[idx].TCPTSSequence) {
+				t.Errorf("unexpected host TCPTSSequence, expected %+v got %+v", expected.Hosts[idx].TCPTSSequence, got.Hosts[idx].TCPTSSequence)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Times, got.Hosts[idx].Times) {
+				t.Errorf("unexpected host times, expected %+v got %+v", expected.Hosts[idx].Times, got.Hosts[idx].Times)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Trace, got.Hosts[idx].Trace) {
+				t.Errorf("unexpected host trace, expected %+v got %+v", expected.Hosts[idx].Trace, got.Hosts[idx].Trace)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].Uptime, got.Hosts[idx].Uptime) {
+				t.Errorf("unexpected host uptime, expected %+v got %+v", expected.Hosts[idx].Uptime, got.Hosts[idx].Uptime)
+			}
+		}
 	}
 }
 

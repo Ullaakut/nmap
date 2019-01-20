@@ -22,6 +22,29 @@ type Scanner struct {
 	hostFilter func(Host) bool
 }
 
+// New creates a new Scanner, and can take options to apply to the scanner.
+func New(options ...func(*Scanner)) (*Scanner, error) {
+	scanner := &Scanner{}
+
+	for _, option := range options {
+		option(scanner)
+	}
+
+	if scanner.binaryPath == "" {
+		var err error
+		scanner.binaryPath, err = exec.LookPath("nmap")
+		if err != nil {
+			return nil, ErrNmapNotInstalled
+		}
+	}
+
+	if scanner.ctx == nil {
+		scanner.ctx = context.Background()
+	}
+
+	return scanner, nil
+}
+
 // Run runs nmap synchronously and returns the result of the scan.
 func (s *Scanner) Run() (*Run, error) {
 	var stdout, stderr bytes.Buffer
@@ -113,25 +136,6 @@ func choosePorts(result *Run, filter func(Port) bool) *Run {
 
 func (s Scanner) String() string {
 	return fmt.Sprint(s.binaryPath, s.args)
-}
-
-// New creates a new Scanner, and can take options to apply to the scanner.
-func New(options ...func(*Scanner)) (*Scanner, error) {
-	scanner := &Scanner{}
-
-	for _, option := range options {
-		option(scanner)
-	}
-
-	if scanner.binaryPath == "" {
-		var err error
-		scanner.binaryPath, err = exec.LookPath("nmap")
-		if err != nil {
-			return nil, ErrNmapNotInstalled
-		}
-	}
-
-	return scanner, nil
 }
 
 // WithContext adds a context to a scanner, to make it cancellable and able to timeout.
