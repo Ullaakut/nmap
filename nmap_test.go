@@ -1048,40 +1048,196 @@ func TestOSDetection(t *testing.T) {
 	}
 }
 
-// func TestTimingAndPerformance(t *testing.T) {
-// 	tests := []struct {
-// 		description string
+func TestTimingAndPerformance(t *testing.T) {
+	tests := []struct {
+		description string
 
-// 		options []func(*Scanner)
+		options []func(*Scanner)
 
-// 		expectedArgs []string
-// 	}{
-// 		{
-// 			description: "",
+		expectedArgs []string
+	}{
+		{
+			description: "set timing template",
 
-// 			options: []func(*Scanner){
-// 				WithXXX(),
-// 			},
+			options: []func(*Scanner){
+				WithTimingTemplate(TimingFaster),
+			},
 
-// 			expectedArgs: []string{
-// 				"--xxx",
-// 			},
-// 		},
-// 	}
+			expectedArgs: []string{
+				"-T4",
+			},
+		},
+		{
+			description: "set min hostgroup",
 
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := New(test.options...)
-// 			if err != nil {
-// 				panic(err)
-// 			}
+			options: []func(*Scanner){
+				WithMinHostgroup(42),
+			},
 
-// 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
-// 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
-// 			}
-// 		})
-// 	}
-// }
+			expectedArgs: []string{
+				"--min-hostgroup",
+				"42",
+			},
+		},
+		{
+			description: "set max hostgroup",
+
+			options: []func(*Scanner){
+				WithMaxHostgroup(42),
+			},
+
+			expectedArgs: []string{
+				"--max-hostgroup",
+				"42",
+			},
+		},
+		{
+			description: "set min parallelism",
+
+			options: []func(*Scanner){
+				WithMinParallelism(42),
+			},
+
+			expectedArgs: []string{
+				"--min-parallelism",
+				"42",
+			},
+		},
+		{
+			description: "set max parallelism",
+
+			options: []func(*Scanner){
+				WithMaxParallelism(42),
+			},
+
+			expectedArgs: []string{
+				"--max-parallelism",
+				"42",
+			},
+		},
+		{
+			description: "set min rtt-timeout",
+
+			options: []func(*Scanner){
+				WithMinRTTTimeout(2 * time.Minute),
+			},
+
+			expectedArgs: []string{
+				"--min-rtt-timeout",
+				"120000ms",
+			},
+		},
+		{
+			description: "set max rtt-timeout",
+
+			options: []func(*Scanner){
+				WithMaxRTTTimeout(8 * time.Hour),
+			},
+
+			expectedArgs: []string{
+				"--max-rtt-timeout",
+				"28800000ms",
+			},
+		},
+		{
+			description: "set initial rtt-timeout",
+
+			options: []func(*Scanner){
+				WithInitialRTTTimeout(8 * time.Hour),
+			},
+
+			expectedArgs: []string{
+				"--initial-rtt-timeout",
+				"28800000ms",
+			},
+		},
+		{
+			description: "set max retries",
+
+			options: []func(*Scanner){
+				WithMaxRetries(42),
+			},
+
+			expectedArgs: []string{
+				"--max-retries",
+				"42",
+			},
+		},
+		{
+			description: "set host timeout",
+
+			options: []func(*Scanner){
+				WithHostTimeout(42 * time.Second),
+			},
+
+			expectedArgs: []string{
+				"--host-timeout",
+				"42000ms",
+			},
+		},
+		{
+			description: "set scan delay",
+
+			options: []func(*Scanner){
+				WithScanDelay(42 * time.Millisecond),
+			},
+
+			expectedArgs: []string{
+				"--scan-delay",
+				"42ms",
+			},
+		},
+		{
+			description: "set max scan delay",
+
+			options: []func(*Scanner){
+				WithMaxScanDelay(42 * time.Millisecond),
+			},
+
+			expectedArgs: []string{
+				"--max-scan-delay",
+				"42ms",
+			},
+		},
+		{
+			description: "set min rate",
+
+			options: []func(*Scanner){
+				WithMinRate(42),
+			},
+
+			expectedArgs: []string{
+				"--min-rate",
+				"42",
+			},
+		},
+		{
+			description: "set max rate",
+
+			options: []func(*Scanner){
+				WithMaxRate(42),
+			},
+
+			expectedArgs: []string{
+				"--max-rate",
+				"42",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := New(test.options...)
+			if err != nil {
+				panic(err)
+			}
+
+			if !reflect.DeepEqual(s.args, test.expectedArgs) {
+				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
+			}
+		})
+	}
+}
 
 // func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 // 	tests := []struct {

@@ -834,6 +834,16 @@ func WithMaxRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
 	}
 }
 
+// WithInitialRTTTimeout sets the initial probe round trip time.
+func WithInitialRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
+	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--initial-rtt-timeout")
+		s.args = append(s.args, fmt.Sprintf("%dms", int(milliseconds)))
+	}
+}
+
 // WithMaxRetries sets the maximal number of port scan probe retransmissions.
 func WithMaxRetries(tries int) func(*Scanner) {
 	return func(s *Scanner) {
@@ -844,11 +854,11 @@ func WithMaxRetries(tries int) func(*Scanner) {
 
 // WithHostTimeout sets the time after which nmap should give up on a target host.
 func WithHostTimeout(timeout time.Duration) func(*Scanner) {
-	milliseconds := timeout.Round(time.Nanosecond).Seconds()
+	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
 		s.args = append(s.args, "--host-timeout")
-		s.args = append(s.args, fmt.Sprintf("%ds", int(milliseconds)))
+		s.args = append(s.args, fmt.Sprintf("%dms", int(milliseconds)))
 	}
 }
 
