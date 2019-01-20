@@ -31,11 +31,11 @@ This paragraph won't be removed until the library is ready to be used and proper
 - [x] [Idiomatic go filters](examples/service_detection/main.go#L19).
 - [x] Helpful enums for most nmap commands. (time templates, os families, port states, etc.)
 - [x] Complete documentation of each option, mostly insipred from nmap's documentation.
-- [ ] Examples of usage - Work in progress
 
 ## TODO
 
-- [ ] Complete unit tests
+- [ ] Examples of usage - Work in progress
+- [ ] Complete unit tests - Work in progress
 - [ ] CI
 - [ ] Coveralls
 - [ ] Asynchronous scan
