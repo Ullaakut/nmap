@@ -94,7 +94,7 @@ type Host struct {
 	Smurfs        []Smurf       `xml:"smurf" json:"smurfs"`
 }
 
-// Status represents the host's status.
+// Status represents a host's status.
 type Status struct {
 	State     string  `xml:"state,attr" json:"state"`
 	Reason    string  `xml:"reason,attr" json:"reason"`
@@ -105,7 +105,7 @@ func (s Status) String() string {
 	return s.State
 }
 
-// Address contains a IPv4 or IPv6 address for a Host.
+// Address contains a IPv4 or IPv6 address for a host.
 type Address struct {
 	Addr     string `xml:"addr,attr" json:"addr"`
 	AddrType string `xml:"addrtype,attr" json:"addr_type"`
@@ -116,7 +116,7 @@ func (a Address) String() string {
 	return a.Addr
 }
 
-// Hostname is a single name for a Host.
+// Hostname is a name for a host.
 type Hostname struct {
 	Name string `xml:"name,attr" json:"name"`
 	Type string `xml:"type,attr" json:"type"`
@@ -139,6 +139,7 @@ type ExtraPorts struct {
 }
 
 // Reason represents a reason why a port is closed or filtered.
+// This won't be in the scan results unless WithReason is used.
 type Reason struct {
 	Reason string `xml:"reason,attr" json:"reason"`
 	Count  int    `xml:"count,attr" json:"count"`
@@ -167,7 +168,7 @@ func (s State) String() string {
 	return s.State
 }
 
-// Owner contains the name of Port.Owner.
+// Owner contains the name of a port's owner.
 type Owner struct {
 	Name string `xml:"name,attr" json:"name"`
 }
@@ -176,8 +177,7 @@ func (o Owner) String() string {
 	return o.Name
 }
 
-// Service contains detailed information about a Port's
-// service details.
+// Service contains detailed information about a service on an open port.
 type Service struct {
 	DeviceType    string `xml:"devicetype,attr" json:"device_type"`
 	ExtraInfo     string `xml:"extrainfo,attr" json:"extra_info"`
@@ -325,7 +325,7 @@ type PortUsed struct {
 	PortID int    `xml:"portid,attr" json:"port_id"`
 }
 
-// OSMatch contains detailed information regarding an operating system's fingerprint.
+// OSMatch contains detailed information regarding an operating system fingerprint.
 type OSMatch struct {
 	Name      string    `xml:"name,attr" json:"name"`
 	Accuracy  string    `xml:"accuracy,attr" json:"accuracy"`
