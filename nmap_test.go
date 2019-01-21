@@ -43,7 +43,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "context timeout",
 			options: []func(*Scanner){
-				WithTarget("0.0.0.0/16"),
+				WithTargets("0.0.0.0/16"),
 			},
 
 			testTimeout: true,
@@ -54,7 +54,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "scan localhost",
 			options: []func(*Scanner){
-				WithTarget("localhost"),
+				WithTargets("localhost"),
 			},
 
 			expectedResult: &Run{
@@ -65,7 +65,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "scan localhost with filters",
 			options: []func(*Scanner){
-				WithTarget("localhost"),
+				WithTargets("localhost"),
 				WithFilterHost(func(Host) bool {
 					return true
 				}),
@@ -152,7 +152,7 @@ func TestTargetSpecification(t *testing.T) {
 			description: "set target",
 
 			options: []func(*Scanner){
-				WithTarget("0.0.0.0/24"),
+				WithTargets("0.0.0.0/24"),
 			},
 
 			expectedArgs: []string{
@@ -163,7 +163,7 @@ func TestTargetSpecification(t *testing.T) {
 			description: "set multiple targets",
 
 			options: []func(*Scanner){
-				WithTarget("0.0.0.0 192.168.1.1"),
+				WithTargets("0.0.0.0", "192.168.1.1"),
 			},
 
 			expectedArgs: []string{

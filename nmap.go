@@ -186,10 +186,10 @@ func WithFilterHost(hostFilter func(Host) bool) func(*Scanner) {
 
 /*** Target specification ***/
 
-// WithTarget sets the target of a scanner.
-func WithTarget(target string) func(*Scanner) {
+// WithTargets sets the target of a scanner.
+func WithTargets(targets ...string) func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, strings.Split(target, " ")...)
+		s.args = append(s.args, targets...)
 	}
 }
 

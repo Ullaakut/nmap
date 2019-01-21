@@ -9,9 +9,9 @@ import (
 // that are given to nmap.
 func ExampleScanner_simple() {
 	s, err := New(
-		WithTarget("google.com facebook.com youtube.com"),
+		WithTargets("google.com", "facebook.com", "youtube.com"),
 		WithCustomDNSServers("8.8.8.8", "8.8.4.4"),
-		WithTimingTemplate(TimingFast),
+		WithTimingTemplate(TimingFastest),
 		WithTCPScanFlags(FlagACK, FlagNULL, FlagRST),
 	)
 	if err != nil {
@@ -34,7 +34,7 @@ func ExampleScanner_simple() {
 // and ports.
 func ExampleScanner_filters() {
 	s, err := New(
-		WithTarget("google.com facebook.com"), // one host has open ports
+		WithTargets("google.com", "facebook.com"), // one host has open ports
 		WithPorts("843"),
 		WithFilterHost(func(h Host) bool {
 			// Filter out hosts with no open ports.
