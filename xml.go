@@ -307,21 +307,16 @@ func (t *Table) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 			break
 		}
 
-		switch token.(type) {
+		switch element := token.(type) {
 		case xml.StartElement:
-			element := token.(xml.StartElement)
-
 			for _, attribute := range element.Attr {
 				if attribute.Name.Local == "key" {
 					currentKey = attribute.Value
 					break
 				}
 			}
-
 		case xml.CharData:
-			element := token.(xml.CharData)
 			currentValue = string(element)
-
 		case xml.EndElement:
 			// Insert the current key/value pair.
 			table[currentKey] = currentValue
