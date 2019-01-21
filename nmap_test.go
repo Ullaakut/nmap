@@ -1078,7 +1078,7 @@ func TestTimingAndPerformance(t *testing.T) {
 			description: "set timing template",
 
 			options: []func(*Scanner){
-				WithTimingTemplate(TimingFaster),
+				WithTimingTemplate(TimingAggressive),
 			},
 
 			expectedArgs: []string{

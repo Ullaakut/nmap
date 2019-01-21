@@ -14,7 +14,7 @@ func main() {
 		nmap.WithTargets("192.168.0.0/24"),
 		nmap.WithPorts("554", "8554"),
 		nmap.WithServiceInfo(),
-		nmap.WithTimingTemplate(nmap.TimingFast),
+		nmap.WithTimingTemplate(nmap.TimingAggressive),
 		// Filter out ports that are not RTSP
 		nmap.WithFilterPort(func(p nmap.Port) bool {
 			return p.Service.Name == "rtsp"

@@ -781,14 +781,18 @@ func WithOSScanGuess() func(*Scanner) {
 // These are meant to be used with the WithTimingTemplate method.
 type Timing int16
 
-// Timings supported by nmap. These are meant to be used with
-// the WithTimingTemplate method.
 const (
+	// TimingSlowest, also called paranoiac		NO PARALLELISM | 5min  timeout | 100ms to 10s    round-trip time timeout	| 5mn   scan delay
 	TimingSlowest Timing = 0
-	TimingSlower  Timing = 1
-	TimingSlow    Timing = 2
-	TimingFast    Timing = 3
-	TimingFaster  Timing = 4
+	// TimingSneaky								NO PARALLELISM | 15sec timeout | 100ms to 10s    round-trip time timeout	| 15s   scan delay
+	TimingSneaky Timing = 1
+	// TimingPolite								NO PARALLELISM | 1sec  timeout | 100ms to 10s    round-trip time timeout	| 400ms scan delay
+	TimingPolite Timing = 2
+	// TimingNormal								PARALLELISM	   | 1sec  timeout | 100ms to 10s    round-trip time timeout	| 0s    scan delay
+	TimingNormal Timing = 3
+	// TimingAggressive							PARALLELISM	   | 500ms timeout | 100ms to 1250ms round-trip time timeout	| 0s    scan delay
+	TimingAggressive Timing = 4
+	// TimingFastest, also called insane		PARALLELISM	   | 250ms timeout |  50ms to 300ms  round-trip time timeout	| 0s    scan delay
 	TimingFastest Timing = 5
 )
 
