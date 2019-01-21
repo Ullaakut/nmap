@@ -62,12 +62,11 @@ func main() {
     ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
     defer cancel()
 
-    // Equivalent to `/usr/local/bin/nmap -p 554,8554,18554-18654 172.17.100.0/24`,
+    // Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
     // with a 5 minute timeout.
     scanner, err := nmap.New(
-        nmap.WithBinaryPath("/usr/local/bin/nmap"),
-        nmap.WithTarget("172.17.100.0/24"),
-        nmap.WithPorts("554","8554","18554-18654"),
+        nmap.WithTarget("google.com facebook.com youtube.com"),
+        nmap.WithPorts("80,443,843"),
         nmap.WithContext(ctx),
     )
     if err != nil {
@@ -99,20 +98,17 @@ func main() {
 The program above outputs:
 
 ```bash
-Host "172.17.100.65":
-    Port 554/tcp open rtsp
-    Port 8554/tcp open rtsp-alt
-    Port 18554/tcp open unknown
-
-Host "172.17.100.70":
-    Port 554/tcp open rtsp
-    Port 8554/tcp open rtsp-alt
-    Port 18554/tcp open unknown
-
-Host "172.17.100.72":
-    Port 554/tcp open rtsp
-    Port 8554/tcp open rtsp-alt
-    Port 18554/tcp open unknown
-
-Nmap done: 3 hosts up scanned in 6.15 seconds
+Host "172.217.16.46":
+    Port 80/tcp open http
+    Port 443/tcp open https
+    Port 843/tcp filtered unknown
+Host "31.13.81.36":
+    Port 80/tcp open http
+    Port 443/tcp open https
+    Port 843/tcp open unknown
+Host "216.58.215.110":
+    Port 80/tcp open http
+    Port 443/tcp open https
+    Port 843/tcp filtered unknown
+Nmap done: 3 hosts up scanned in 1.29 seconds
 ```
