@@ -11,6 +11,8 @@ import (
 
 // Run represents an nmap scanning run.
 type Run struct {
+	XMLName xml.Name `xml:"nmaprun"`
+
 	Args             string         `xml:"args,attr" json:"args"`
 	ProfileName      string         `xml:"profile_name,attr" json:"profile_name"`
 	Scanner          string         `xml:"scanner,attr" json:"scanner"`
