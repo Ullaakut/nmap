@@ -4,12 +4,11 @@ package nmap
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // Scanner represents an Nmap scanner.
