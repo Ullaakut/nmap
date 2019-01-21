@@ -12,8 +12,8 @@ func main() {
 	// nmap -sS 192.168.0.10 \
 	// -D 192.168.0.2,192.168.0.3,192.168.0.4,192.168.0.5,192.168.0.6,ME,192.168.0.8 \
 	// 192.168.0.72`.
-	scanner, err := nmap.New(
-		nmap.WithTargets("192.168.0.72"),
+	scanner, err := nmap.NewScanner(
+		[]string{"192.168.0.72"},
 		nmap.WithSpoofIPAddress("192.168.0.10"),
 		nmap.WithDecoys(
 			"192.168.0.2",

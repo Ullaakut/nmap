@@ -21,9 +21,11 @@ type Scanner struct {
 	hostFilter func(Host) bool
 }
 
-// New creates a new Scanner, and can take options to apply to the scanner.
-func New(options ...func(*Scanner)) (*Scanner, error) {
-	scanner := &Scanner{}
+// NewScanner creates a new Scanner, and can take options to apply to the scanner.
+func NewScanner(targets []string, options ...func(*Scanner)) (*Scanner, error) {
+	scanner := &Scanner{
+		args: targets,
+	}
 
 	for _, option := range options {
 		option(scanner)

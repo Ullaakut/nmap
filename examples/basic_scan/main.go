@@ -15,8 +15,8 @@ func main() {
 
 	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
 	// with a 5 minute timeout.
-	scanner, err := nmap.New(
-		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
+	scanner, err := nmap.NewScanner(
+		[]string{"google.com", "facebook.com", "youtube.com"},
 		nmap.WithPorts("80,443,843"),
 		nmap.WithContext(ctx),
 	)

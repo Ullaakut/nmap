@@ -11,8 +11,8 @@ import (
 func main() {
 	// Equivalent to
 	// nmap -F -O 192.168.0.0/24
-	scanner, err := nmap.New(
-		nmap.WithTargets("192.168.0.0/24"),
+	scanner, err := nmap.NewScanner(
+		[]string{"192.168.0.0/24"},
 		nmap.WithFastMode(),
 		nmap.WithOSDetection(),
 	)

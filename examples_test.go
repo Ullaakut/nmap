@@ -8,8 +8,8 @@ import (
 // A scanner can be instanciated with options to set the arguments
 // that are given to nmap.
 func ExampleScanner_simple() {
-	s, err := New(
-		WithTargets("google.com", "facebook.com", "youtube.com"),
+	s, err := NewScanner(
+		[]string{"google.com", "facebook.com", "youtube.com"},
 		WithCustomDNSServers("8.8.8.8", "8.8.4.4"),
 		WithTimingTemplate(TimingFastest),
 		WithTCPScanFlags(FlagACK, FlagNULL, FlagRST),
@@ -33,8 +33,8 @@ func ExampleScanner_simple() {
 // A scanner can be given custom idiomatic filters for both hosts
 // and ports.
 func ExampleScanner_filters() {
-	s, err := New(
-		WithTargets("google.com", "facebook.com"), // one host has open ports
+	s, err := NewScanner(
+		[]string{"google.com", "facebook.com"},
 		WithPorts("843"),
 		WithFilterHost(func(h Host) bool {
 			// Filter out hosts with no open ports.
@@ -43,7 +43,6 @@ func ExampleScanner_filters() {
 					return true
 				}
 			}
-
 			return false
 		}),
 	)

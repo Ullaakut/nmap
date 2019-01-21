@@ -17,7 +17,9 @@ func TestRun(t *testing.T) {
 
 	tests := []struct {
 		description string
-		options     []func(*Scanner)
+
+		targets []string
+		options []func(*Scanner)
 
 		testTimeout bool
 
@@ -42,9 +44,8 @@ func TestRun(t *testing.T) {
 		},
 		{
 			description: "context timeout",
-			options: []func(*Scanner){
-				WithTargets("0.0.0.0/16"),
-			},
+
+			targets: []string{"0.0.0.0/16"},
 
 			testTimeout: true,
 
@@ -53,29 +54,32 @@ func TestRun(t *testing.T) {
 		},
 		{
 			description: "scan localhost",
+
+			targets: []string{"localhost"},
 			options: []func(*Scanner){
-				WithTargets("localhost"),
+				WithTimingTemplate(TimingFastest),
 			},
 
 			expectedResult: &Run{
-				Args:    nmapPath + " -oX - localhost",
+				Args:    nmapPath + " -T5 -oX - localhost",
 				Scanner: "nmap",
 			},
 		},
 		{
 			description: "scan localhost with filters",
+			targets:     []string{"localhost"},
 			options: []func(*Scanner){
-				WithTargets("localhost"),
 				WithFilterHost(func(Host) bool {
 					return true
 				}),
 				WithFilterPort(func(Port) bool {
 					return true
 				}),
+				WithTimingTemplate(TimingFastest),
 			},
 
 			expectedResult: &Run{
-				Args:    nmapPath + " -oX - localhost",
+				Args:    nmapPath + " -T5 -oX - localhost",
 				Scanner: "nmap",
 			},
 		},
@@ -94,7 +98,7 @@ func TestRun(t *testing.T) {
 				})()
 			}
 
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
@@ -133,6 +137,7 @@ func TestTargetSpecification(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -151,9 +156,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "set target",
 
-			options: []func(*Scanner){
-				WithTargets("0.0.0.0/24"),
-			},
+			targets: []string{"0.0.0.0/24"},
 
 			expectedArgs: []string{
 				"0.0.0.0/24",
@@ -162,9 +165,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "set multiple targets",
 
-			options: []func(*Scanner){
-				WithTargets("0.0.0.0", "192.168.1.1"),
-			},
+			targets: []string{"0.0.0.0", "192.168.1.1"},
 
 			expectedArgs: []string{
 				"0.0.0.0",
@@ -223,7 +224,7 @@ func TestTargetSpecification(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -239,6 +240,7 @@ func TestHostDiscovery(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -468,7 +470,7 @@ func TestHostDiscovery(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -484,6 +486,7 @@ func TestScanTechniques(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -672,7 +675,7 @@ func TestScanTechniques(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -688,6 +691,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedPanic string
@@ -786,7 +790,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 				}()
 			}
 
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -802,6 +806,7 @@ func TestServiceDetection(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedPanic string
@@ -886,7 +891,7 @@ func TestServiceDetection(t *testing.T) {
 				}()
 			}
 
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -902,6 +907,7 @@ func TestScriptScan(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets       []string
 		options       []func(*Scanner)
 		unorderedArgs bool
 
@@ -988,7 +994,7 @@ func TestScriptScan(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1013,6 +1019,7 @@ func TestOSDetection(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1054,7 +1061,7 @@ func TestOSDetection(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1070,6 +1077,7 @@ func TestTimingAndPerformance(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1245,7 +1253,7 @@ func TestTimingAndPerformance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1261,6 +1269,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedPanic string
@@ -1464,7 +1473,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 				}()
 			}
 
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1480,6 +1489,7 @@ func TestOutput(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1612,7 +1622,7 @@ func TestOutput(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1628,6 +1638,7 @@ func TestMiscellaneous(t *testing.T) {
 	tests := []struct {
 		description string
 
+		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1714,7 +1725,7 @@ func TestMiscellaneous(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := New(test.options...)
+			s, err := NewScanner(test.targets, test.options...)
 			if err != nil {
 				panic(err)
 			}
