@@ -14,6 +14,12 @@
     <a href="https://goreportcard.com/report/github.com/ullaakut/nmap">
         <img src="https://goreportcard.com/badge/github.com/ullaakut/nmap">
     </a>
+    <a href="https://travis-ci.org/Ullaakut/nmap">
+        <img src="https://travis-ci.org/Ullaakut/nmap.svg?branch=master">
+    </a>
+    <a href="https://coveralls.io/github/Ullaakut/nmap?branch=master">
+        <img src="https://coveralls.io/repos/github/Ullaakut/nmap/badge.svg?branch=master">
+    </a>
 <p>
 
 This library aims at providing idiomatic `nmap` bindings for go developers, in order to make it easier to write security audit tools using golang.
@@ -36,8 +42,6 @@ This paragraph won't be removed until the library is ready to be used and proper
 
 - [ ] Examples of usage - Work in progress (4/7 examples so far)
 - [ ] Complete unit tests - Work in progress (95% coverage so far)
-- [ ] CI
-- [ ] Coveralls
 - [ ] Asynchronous scan
 
 ## Example
