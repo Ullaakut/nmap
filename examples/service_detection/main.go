@@ -12,7 +12,7 @@ func main() {
 	// nmap -sV -T4 192.168.0.0/24 with a filter to remove non-RTSP ports.
 	scanner, err := nmap.New(
 		nmap.WithTarget("192.168.0.0/24"),
-		nmap.WithPorts("554,8554"),
+		nmap.WithPorts("554", "8554"),
 		nmap.WithServiceInfo(),
 		nmap.WithTimingTemplate(nmap.TimingFast),
 		// Filter out ports that are not RTSP

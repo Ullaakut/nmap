@@ -63,7 +63,7 @@ func main() {
     scanner, err := nmap.New(
         nmap.WithBinaryPath("/usr/local/bin/nmap"),
         nmap.WithTarget("172.17.100.0/24"),
-        nmap.WithPorts("554,8554,18554-18654"),
+        nmap.WithPorts("554","8554","18554-18654"),
         nmap.WithContext(ctx),
     )
     if err != nil {

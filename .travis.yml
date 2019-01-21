@@ -1,0 +1,48 @@
+dist: trusty
+sudo: required
+language: go
+
+env:
+  - DEP_VERSION="0.5.0"
+
+services:
+    - docker
+
+before_install:
+- go get github.com/mattn/goveralls
+- go get github.com/pkg/errors
+- go get gopkg.in/go-playground/validator.v9
+- go get github.com/stretchr/testify/assert
+- docker version
+- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
+- chmod +x $GOPATH/bin/dep
+
+install:
+- dep ensure
+- docker build -t cameradar .
+
+script:
+# Run unit tests
+- go test -v -covermode=count -coverprofile=coverage.out
+- $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken=$COVERALLS_TOKEN
+# Launch a fake camera to check if cameradar is able to access it
+- docker run -d --name=fake_camera -e RTSP_USERNAME=admin -e RTSP_PASSWORD=12345 -p 8554:8554 ullaakut/rtspatt
+# Launch cameradar on the local machine
+- docker run --net=host -t cameradar -t 0.0.0.0 -l > logs.txt
+- docker logs fake_camera > camera_logs.txt
+# Stop the fake camera
+- docker stop fake_camera
+# Print logs
+- cat camera_logs.txt
+- cat logs.txt
+# check if file contains more than one line
+# 1 line: Error message because no streams were found
+# More lines: Logs for all found cameras
+- if [[ $(wc -l <logs.txt) -lt 2 ]]; then exit 1; fi
+
+notifications:
+  email:
+    recipients:
+      - brendan.le-glaunec@epitech.eu
+    on_success: never
+    on_failure: always

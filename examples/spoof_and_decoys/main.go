@@ -15,7 +15,7 @@ func main() {
 	scanner, err := nmap.New(
 		nmap.WithTarget("192.168.0.72"),
 		nmap.WithSpoofIPAddress("192.168.0.10"),
-		nmap.WithDecoys([]string{
+		nmap.WithDecoys(
 			"192.168.0.2",
 			"192.168.0.3",
 			"192.168.0.4",
@@ -23,7 +23,7 @@ func main() {
 			"192.168.0.6",
 			"ME",
 			"192.168.0.8",
-		}),
+		),
 	)
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)

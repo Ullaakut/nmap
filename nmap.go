@@ -953,7 +953,7 @@ func WithMTU(offset int) func(*Scanner) {
 // for your real IP address.
 // If you put ME in the sixth position or later, some common port scan
 // detectors are unlikely to show your IP address at all.
-func WithDecoys(decoys []string) func(*Scanner) {
+func WithDecoys(decoys ...string) func(*Scanner) {
 	decoyList := strings.Join(decoys, ",")
 
 	return func(s *Scanner) {

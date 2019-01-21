@@ -1275,7 +1275,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 			description: "enable decoys",
 
 			options: []func(*Scanner){
-				WithDecoys([]string{
+				WithDecoys(
 					"192.168.1.1",
 					"192.168.1.2",
 					"192.168.1.3",
@@ -1284,7 +1284,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 					"192.168.1.6",
 					"ME",
 					"192.168.1.8",
-				}),
+				),
 			},
 
 			expectedArgs: []string{
