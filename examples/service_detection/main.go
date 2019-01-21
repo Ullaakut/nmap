@@ -19,9 +19,16 @@ func main() {
 		nmap.WithFilterPort(func(p nmap.Port) bool {
 			return p.Service.Name == "rtsp"
 		}),
-		// Filter out hosts that don't have any open ports or a valid address
+		// Filter out hosts that don't have any open ports
 		nmap.WithFilterHost(func(h nmap.Host) bool {
-			return len(h.Ports) != 0 && len(h.Addresses) != 0
+			// Filter out hosts with no open ports.
+			for idx := range h.Ports {
+				if h.Ports[idx].Status() == "open" {
+					return true
+				}
+			}
+
+			return false
 		}),
 	)
 	if err != nil {

@@ -160,6 +160,18 @@ func TestTargetSpecification(t *testing.T) {
 			},
 		},
 		{
+			description: "set multiple targets",
+
+			options: []func(*Scanner){
+				WithTarget("0.0.0.0 192.168.1.1"),
+			},
+
+			expectedArgs: []string{
+				"0.0.0.0",
+				"192.168.1.1",
+			},
+		},
+		{
 			description: "set target from file",
 
 			options: []func(*Scanner){
