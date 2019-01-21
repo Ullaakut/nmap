@@ -2,6 +2,7 @@ package nmap
 
 import (
 	"context"
+	"os/exec"
 	"reflect"
 	"strings"
 	"testing"
@@ -9,6 +10,11 @@ import (
 )
 
 func TestRun(t *testing.T) {
+	nmapPath, err := exec.LookPath("nmap")
+	if err != nil {
+		panic("nmap is required to run those tests")
+	}
+
 	tests := []struct {
 		description string
 		options     []func(*Scanner)
@@ -52,7 +58,7 @@ func TestRun(t *testing.T) {
 			},
 
 			expectedResult: &Run{
-				Args:    "/usr/local/bin/nmap -oX - localhost",
+				Args:    nmapPath + " -oX - localhost",
 				Scanner: "nmap",
 			},
 		},
@@ -69,7 +75,7 @@ func TestRun(t *testing.T) {
 			},
 
 			expectedResult: &Run{
-				Args:    "/usr/local/bin/nmap -oX - localhost",
+				Args:    nmapPath + " -oX - localhost",
 				Scanner: "nmap",
 			},
 		},
