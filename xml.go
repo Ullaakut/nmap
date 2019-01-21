@@ -159,7 +159,7 @@ type Reason struct {
 
 // Port contains all the information about a scanned port.
 type Port struct {
-	ID       int      `xml:"portid,attr" json:"id"`
+	ID       uint16   `xml:"portid,attr" json:"id"`
 	Protocol string   `xml:"protocol,attr" json:"protocol"`
 	Owner    Owner    `xml:"owner" json:"owner"`
 	Service  Service  `xml:"service" json:"service"`
