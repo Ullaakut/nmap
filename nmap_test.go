@@ -2,12 +2,65 @@ package nmap
 
 import (
 	"context"
+	"errors"
 	"os/exec"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 )
+
+// func TestNewScanner(t *testing.T) {
+// 	tests := []struct {
+// 		description string
+
+// 		expectedErr     error
+// 		expectedScanner *Scanner
+// 	}{
+// 		{
+// 			description: "valid targets, no errors",
+
+// 			targets: []string{"80"},
+
+// 			expectedScanner: &Scanner{
+// 				args: []string{"80"},
+// 			},
+// 		},
+// 		{
+// 			description: "invalid targets (nil), error",
+
+// 			targets: nil,
+
+// 			expectedErr: ErrNoTargetsSpecified,
+// 		},
+// 		{
+// 			description: "invalid targets (nil), error",
+
+// 			targets: []string{},
+
+// 			expectedErr: ErrNoTargetsSpecified,
+// 		},
+// 	}
+
+// 	for _, test := range tests {
+// 		t.Run(test.description, func(t *testing.T) {
+// 			s, err := NewScanner(test.targets)
+// 			if err != test.expectedErr {
+// 				t.Errorf("expected error to be %v, got %v", test.expectedErr, err)
+// 			}
+
+// 			if test.expectedScanner == nil && s != nil {
+// 				t.Errorf("expected scanner to be nil, got %+v", s)
+// 			} else if test.expectedScanner != nil && s == nil {
+// 				t.Errorf("expected scanner to be %+v, got nil", test.expectedScanner)
+// 			} else if test.expectedScanner != nil && s != nil {
+// 				if !reflect.DeepEqual(test.expectedScanner.args, s.args) {
+// 					t.Errorf("expected scanner arguments to be %v, got %v", test.expectedScanner.args, s.args)
+// 				}
+// 			}
+// 		})
+// 	}
+// }
 
 func TestRun(t *testing.T) {
 	nmapPath, err := exec.LookPath("nmap")
@@ -18,45 +71,41 @@ func TestRun(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		testTimeout bool
 
-		expectedResult   *Run
-		expectedErrorStr string
+		expectedResult *Run
+		expectedErr    error
 	}{
 		{
-			description: "no-target",
-			options:     nil,
-
-			expectedResult:   nil,
-			expectedErrorStr: "WARNING: No targets were specified, so 0 hosts scanned.\n",
-		},
-		{
 			description: "invalid binary path",
+
 			options: []func(*Scanner){
+				WithTargets("0.0.0.0"),
 				WithBinaryPath("/invalid"),
 			},
 
-			expectedResult:   nil,
-			expectedErrorStr: "nmap scan failed: fork/exec /invalid: no such file or directory",
+			expectedResult: nil,
+			expectedErr:    errors.New("fork/exec /invalid: no such file or directory"),
 		},
 		{
 			description: "context timeout",
 
-			targets: []string{"0.0.0.0/16"},
+			options: []func(*Scanner){
+				WithTargets("0.0.0.0/16"),
+			},
 
 			testTimeout: true,
 
-			expectedResult:   nil,
-			expectedErrorStr: "nmap scan timed out",
+			expectedResult: nil,
+			expectedErr:    ErrScanTimeout,
 		},
 		{
 			description: "scan localhost",
 
-			targets: []string{"localhost"},
 			options: []func(*Scanner){
+				WithTargets("localhost"),
 				WithTimingTemplate(TimingFastest),
 			},
 
@@ -67,8 +116,8 @@ func TestRun(t *testing.T) {
 		},
 		{
 			description: "scan localhost with filters",
-			targets:     []string{"localhost"},
 			options: []func(*Scanner){
+				WithTargets("localhost"),
 				WithFilterHost(func(Host) bool {
 					return true
 				}),
@@ -98,18 +147,16 @@ func TestRun(t *testing.T) {
 				})()
 			}
 
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
 			result, err := s.Run()
-			if err == nil {
-				if test.expectedErrorStr != "" {
-					t.Errorf("expected error %s got nil", test.expectedErrorStr)
+			if err != test.expectedErr {
+				if err.Error() != test.expectedErr.Error() {
+					t.Errorf("expected error %v got %v", test.expectedErr, err)
 				}
-			} else if err.Error() != test.expectedErrorStr {
-				t.Errorf("expected error %q got %q", test.expectedErrorStr, err.Error())
 			}
 
 			if result == nil && test.expectedResult == nil {
@@ -137,7 +184,6 @@ func TestTargetSpecification(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -146,17 +192,21 @@ func TestTargetSpecification(t *testing.T) {
 			description: "custom arguments",
 
 			options: []func(*Scanner){
+				WithTargets("0.0.0.0/24"),
 				WithCustomArguments("--invalid-argument"),
 			},
 
 			expectedArgs: []string{
+				"0.0.0.0/24",
 				"--invalid-argument",
 			},
 		},
 		{
 			description: "set target",
 
-			targets: []string{"0.0.0.0/24"},
+			options: []func(*Scanner){
+				WithTargets("0.0.0.0/24"),
+			},
 
 			expectedArgs: []string{
 				"0.0.0.0/24",
@@ -165,7 +215,9 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "set multiple targets",
 
-			targets: []string{"0.0.0.0", "192.168.1.1"},
+			options: []func(*Scanner){
+				WithTargets("0.0.0.0", "192.168.1.1"),
+			},
 
 			expectedArgs: []string{
 				"0.0.0.0",
@@ -224,7 +276,7 @@ func TestTargetSpecification(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -240,7 +292,6 @@ func TestHostDiscovery(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -470,7 +521,7 @@ func TestHostDiscovery(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -486,7 +537,6 @@ func TestScanTechniques(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -675,7 +725,7 @@ func TestScanTechniques(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -691,7 +741,6 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedPanic string
@@ -790,7 +839,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 				}()
 			}
 
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -806,7 +855,6 @@ func TestServiceDetection(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedPanic string
@@ -891,7 +939,7 @@ func TestServiceDetection(t *testing.T) {
 				}()
 			}
 
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -994,7 +1042,7 @@ func TestScriptScan(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1019,7 +1067,6 @@ func TestOSDetection(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1061,7 +1108,7 @@ func TestOSDetection(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1077,7 +1124,6 @@ func TestTimingAndPerformance(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1253,7 +1299,7 @@ func TestTimingAndPerformance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1269,7 +1315,6 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedPanic string
@@ -1473,7 +1518,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 				}()
 			}
 
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1489,7 +1534,6 @@ func TestOutput(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1622,7 +1666,7 @@ func TestOutput(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1638,7 +1682,6 @@ func TestMiscellaneous(t *testing.T) {
 	tests := []struct {
 		description string
 
-		targets []string
 		options []func(*Scanner)
 
 		expectedArgs []string
@@ -1725,7 +1768,7 @@ func TestMiscellaneous(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.targets, test.options...)
+			s, err := NewScanner(test.options...)
 			if err != nil {
 				panic(err)
 			}

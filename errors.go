@@ -12,4 +12,7 @@ var (
 
 	// ErrScanTimeout means that the provided context was done before the scanner finished its scan.
 	ErrScanTimeout = errors.New("nmap scan timed out")
+
+	// ErrNoTargetsSpecified means that no targets were specified.
+	ErrNoTargetsSpecified = errors.New("no targets specified")
 )

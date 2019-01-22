@@ -27,10 +27,8 @@ type Scanner struct {
 }
 
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
-func NewScanner(targets []string, options ...func(*Scanner)) (*Scanner, error) {
-	scanner := &Scanner{
-		args: targets,
-	}
+func NewScanner(options ...func(*Scanner)) (*Scanner, error) {
+	scanner := &Scanner{}
 
 	for _, option := range options {
 		option(scanner)
@@ -67,7 +65,7 @@ func (s *Scanner) Run() (*Run, error) {
 
 	err := cmd.Start()
 	if err != nil {
-		return nil, fmt.Errorf("nmap scan failed: %v", err)
+		return nil, err
 	}
 
 	// Make a goroutine to notify the select when the scan is done.
