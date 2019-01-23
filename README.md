@@ -30,11 +30,15 @@ Nmap (Network Mapper) is a free and open-source network scanner created by [Gord
 
 Nmap provides a number of features for probing computer networks, including host discovery and service and operating system detection. These features are extensible by scripts that provide more advanced service detection, vulnerability detection, and other features. Nmap can adapt to network conditions including latency and congestion during a scan.
 
+## Why use go for penetration testing
+
+Most pentest tools are currently written using Python and not Go, because it is easy to quickly write scripts, lots of libraries are available, and it's a simple language to use. However, for writing robust and reliable applications, Go is the better tool. It is statically compiled, has a static type system, much better performance, it is also a very simple language to use and goroutines are awesome... But I might be slighly biased, so feel free to disagree.
+
 ## Supported features
 
-- [x] All of `nmap`'s options as `WithXXX` methods.
-- [x] Cancellable contexts support.
-- [x] [Idiomatic go filters](examples/service_detection/main.go#L19).
+- [x] All of `nmap`'s native options.
+- [x] Additional [idiomatic go filters](examples/service_detection/main.go#L19) for filtering hosts and ports.
+- [x] [Cancellable contexts support](examples/basic_scan/main.go).
 - [x] Helpful enums for nmap commands. (time templates, os families, port states, etc.)
 - [x] Complete documentation of each option, mostly insipred from nmap's documentation.
 
