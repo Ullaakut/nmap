@@ -2,6 +2,7 @@ package nmap
 
 import (
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -172,6 +173,59 @@ func TestToFile(t *testing.T) {
 	err := r.ToFile("/tmp/toto.txt")
 	if err != nil {
 		t.Error("expected ToFile method to properly call ioutil.WriteFile")
+	}
+}
+
+func TestTimestampJSONMarshaling(t *testing.T) {
+	dateTime := time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC)
+	dateBytes := []byte("943920000")
+
+	ts := Timestamp(dateTime)
+	ts2 := Timestamp{}
+
+	b, err := ts.MarshalJSON()
+	if err != nil {
+		t.Errorf("expected marshaljson to never return an error, got %v", err)
+	}
+
+	if !bytes.Equal(b, dateBytes) {
+		t.Errorf("expected json-encoded timestamp to be %s got %s", dateBytes, b)
+	}
+
+	err = json.Unmarshal(dateBytes, &ts2)
+	if err != nil {
+		t.Errorf("expected datebytes to be unmarshaled in ts2, got error %v", err)
+	}
+
+	if ts.FormatTime() != ts2.FormatTime() {
+		t.Errorf("expected timestamps to be equal, got %s and %s", ts.FormatTime(), ts2.FormatTime())
+	}
+}
+
+func TestTimestampXMLMarshaling(t *testing.T) {
+	attrName := xml.Name{Local: "ts"}
+	dateTime := time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC)
+	dateXML := xml.Attr{Name: attrName, Value: "943920000"}
+
+	ts := Timestamp(dateTime)
+	ts2 := Timestamp{}
+
+	x, err := ts.MarshalXMLAttr(attrName)
+	if err != nil {
+		t.Errorf("expected marshaljson to never return an error, got %v", err)
+	}
+
+	if x.Value != dateXML.Value {
+		t.Errorf("expected xml-encoded timestamp to be %s got %s", dateXML.Value, x.Value)
+	}
+
+	err = ts2.UnmarshalXMLAttr(dateXML)
+	if err != nil {
+		t.Errorf("expected datebytes to be unmarshaled in ts2, got error %v", err)
+	}
+
+	if ts.FormatTime() != ts2.FormatTime() {
+		t.Errorf("expected timestamps to be equal, got %s and %s", ts.FormatTime(), ts2.FormatTime())
 	}
 }
 
