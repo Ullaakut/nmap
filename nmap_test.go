@@ -99,7 +99,7 @@ func TestRun(t *testing.T) {
 				WithTimingTemplate(TimingFastest),
 			},
 
-			expectedErr: errors.New("WARNING: No targets were specified, so 0 hosts scanned.\n"),
+			expectedErr: errors.New("WARNING: No targets were specified, so 0 hosts scanned"),
 		},
 		{
 			description: "scan localhost with filters",

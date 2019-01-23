@@ -84,7 +84,7 @@ func (s *Scanner) Run() (*Run, error) {
 	case <-done:
 		// Scan finished before timeout.
 		if stderr.Len() > 0 {
-			return nil, errors.New(stderr.String())
+			return nil, errors.New(strings.Trim(stderr.String(), ".\n"))
 		}
 
 		result, err := Parse(stdout.Bytes())
