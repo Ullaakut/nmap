@@ -116,6 +116,56 @@ func TestFormatTableXML(t *testing.T) {
 	}
 }
 
+func TestStringMethods(t *testing.T) {
+	s := Status{
+		State: "up",
+	}
+
+	if s.String() != s.State {
+		t.Errorf("expected string method to output %s, got %s", s.State, s.String())
+	}
+
+	a := Address{
+		Addr: "192.168.1.1",
+	}
+
+	if a.String() != a.Addr {
+		t.Errorf("expected string method to output %s, got %s", a.Addr, a.String())
+	}
+
+	h := Hostname{
+		Name: "toto.test",
+	}
+
+	if h.String() != h.Name {
+		t.Errorf("expected string method to output %s, got %s", h.Name, h.String())
+	}
+
+	s2 := State{
+		State: "open",
+	}
+
+	if s2.String() != s2.State {
+		t.Errorf("expected string method to output %s, got %s", s2.State, s2.String())
+	}
+
+	o := Owner{
+		Name: "test",
+	}
+
+	if o.String() != o.Name {
+		t.Errorf("expected string method to output %s, got %s", o.Name, o.String())
+	}
+
+	s3 := Service{
+		Name: "http",
+	}
+
+	if s3.String() != s3.Name {
+		t.Errorf("expected string method to output %s, got %s", s3.Name, s3.String())
+	}
+}
+
 func TestParseRunXML(t *testing.T) {
 	tests := []struct {
 		inputFile string
