@@ -285,12 +285,6 @@ func (t Table) MarshalXML(e *xml.Encoder, startElem xml.StartElement) error {
 		}
 	}
 
-	// Flush the encoder to ensure that the tokens are written.
-	err := e.Flush()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 

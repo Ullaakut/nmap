@@ -1,6 +1,7 @@
 package nmap
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
@@ -88,6 +89,12 @@ func TestParseTableXML(t *testing.T) {
 	}
 }
 
+type mockWriter struct {
+	wr       *bufio.Writer
+	writeErr error
+	flushErr error
+}
+
 func TestFormatTableXML(t *testing.T) {
 	table := Table(map[string]string{
 		"key":         "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
@@ -114,6 +121,11 @@ func TestFormatTableXML(t *testing.T) {
 		if !bytes.Contains(XML, expectedXMLElement) {
 			t.Errorf("missing %s in %s", expectedXMLElement, XML)
 		}
+	}
+
+	err = table.MarshalXML(&xml.Encoder{}, xml.StartElement{})
+	if err == nil {
+		t.Error("expected error when marshalling with an empty encoder")
 	}
 }
 

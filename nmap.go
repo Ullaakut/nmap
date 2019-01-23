@@ -135,10 +135,6 @@ func choosePorts(result *Run, filter func(Port) bool) *Run {
 	return result
 }
 
-func (s Scanner) String() string {
-	return fmt.Sprint(s.binaryPath, s.args)
-}
-
 // WithContext adds a context to a scanner, to make it cancellable and able to timeout.
 func WithContext(ctx context.Context) func(*Scanner) {
 	return func(s *Scanner) {
