@@ -26,10 +26,6 @@ This library aims at providing idiomatic `nmap` bindings for go developers, in o
 
 <!-- It allows not only to parse the XML output of nmap, but also to get the output of nmap as it is running, through a channel. This can be useful for computing a scan's progress, or simply displaying live information to your users. -->
 
-## It's currently a work in progress
-
-This paragraph won't be removed until the library is ready to be used and properly documented.
-
 ## Supported features
 
 - [x] All of `nmap`'s options as `WithXXX` methods.
@@ -40,11 +36,9 @@ This paragraph won't be removed until the library is ready to be used and proper
 
 ## TODO
 
-- [ ] Examples of usage - Work in progress (4/7 examples so far)
-- [ ] Complete unit tests - Work in progress (95% coverage so far)
-- [ ] Asynchronous scan
+- [ ] Add asynchronous scan, send scan progress percentage and time estimation through channel
 
-## Example
+## Simple example
 
 ```go
 package main
@@ -112,3 +106,17 @@ Host "216.58.215.110":
     Port 843/tcp filtered unknown
 Nmap done: 3 hosts up scanned in 1.29 seconds
 ```
+
+## Advanced example
+
+[Cameradar](https://github.com/Ullaakut/cameradar) already uses this library at its core to communicate with nmap, discover RTSP streams and access them remotely.
+
+<p align="center">
+   <img src="https://raw.githubusercontent.com/Ullaakut/cameradar/master/images/Cameradar.gif" width="100%"/>
+</p>
+
+More examples:
+
+- [Count hosts for each operating system on a network](examples/count_hosts_by_os/main.go)
+- [Service detection](examples/service_detection/main.go)
+- [IP address spoofing and decoys](examples/spoof_and_decoys/main.go)
