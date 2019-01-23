@@ -166,6 +166,15 @@ func TestStringMethods(t *testing.T) {
 	}
 }
 
+func TestToFile(t *testing.T) {
+	r := &Run{}
+
+	err := r.ToFile("/tmp/toto.txt")
+	if err != nil {
+		t.Error("expected ToFile method to properly call ioutil.WriteFile")
+	}
+}
+
 func TestParseRunXML(t *testing.T) {
 	tests := []struct {
 		inputFile string
