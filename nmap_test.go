@@ -93,6 +93,15 @@ func TestRun(t *testing.T) {
 			},
 		},
 		{
+			description: "scan invalid target",
+
+			options: []func(*Scanner){
+				WithTimingTemplate(TimingFastest),
+			},
+
+			expectedErr: errors.New("WARNING: No targets were specified, so 0 hosts scanned.\n"),
+		},
+		{
 			description: "scan localhost with filters",
 			options: []func(*Scanner){
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
@@ -167,7 +176,7 @@ func TestRun(t *testing.T) {
 			result, err := s.Run()
 			if err != test.expectedErr {
 				if err.Error() != test.expectedErr.Error() {
-					t.Errorf("expected error %v got %v", test.expectedErr, err)
+					t.Errorf("expected error %q got %q", test.expectedErr, err)
 				}
 			}
 

@@ -219,6 +219,16 @@ func TestTimestampXMLMarshaling(t *testing.T) {
 		t.Errorf("expected xml-encoded timestamp to be %s got %s", dateXML.Value, x.Value)
 	}
 
+	x, err = ts2.MarshalXMLAttr(attrName)
+	if err != nil {
+		t.Errorf("expected marshaljson to never return an error, got %v", err)
+	}
+
+	emptyAttr := xml.Attr{}
+	if x != emptyAttr {
+		t.Errorf("expected zero time to return empty attribute, got %v", x)
+	}
+
 	err = ts2.UnmarshalXMLAttr(dateXML)
 	if err != nil {
 		t.Errorf("expected datebytes to be unmarshaled in ts2, got error %v", err)
