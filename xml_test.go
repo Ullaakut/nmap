@@ -124,7 +124,7 @@ func TestParseRunXML(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			inputFile: "test_xml/scan01.xml",
+			inputFile: "tests/xml/scan01.xml",
 
 			expectedResult: &Run{
 				Args:             "nmap -A -v -oX sample-03.xml freshmeat.net sourceforge.net nmap.org kernel.org openbsd.org netbsd.org google.com gmail.com",

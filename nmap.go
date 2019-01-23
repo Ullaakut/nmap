@@ -89,7 +89,7 @@ func (s *Scanner) Run() (*Run, error) {
 
 		result, err := Parse(stdout.Bytes())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to parse nmap output: %v", err)
 		}
 
 		// Call filters if they are set.

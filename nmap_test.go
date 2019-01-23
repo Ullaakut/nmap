@@ -104,6 +104,17 @@ func TestRun(t *testing.T) {
 			expectedErr:    errors.New("fork/exec /invalid: no such file or directory"),
 		},
 		{
+			description: "output can't be parsed",
+
+			options: []func(*Scanner){
+				WithTargets("0.0.0.0"),
+				WithBinaryPath("echo"),
+			},
+
+			expectedResult: nil,
+			expectedErr:    errors.New("unable to parse nmap output: EOF"),
+		},
+		{
 			description: "context timeout",
 
 			options: []func(*Scanner){
