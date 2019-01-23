@@ -3,6 +3,7 @@ package nmap
 import (
 	"context"
 	"errors"
+	"os"
 	"os/exec"
 	"reflect"
 	"strings"
@@ -61,6 +62,19 @@ import (
 // 		})
 // 	}
 // }
+
+func TestNmapNotInstalled(t *testing.T) {
+	os.Setenv("PATH", "")
+
+	s, err := NewScanner()
+	if err == nil {
+		t.Error("expected NewScanner to fail if nmap is not found in $PATH")
+	}
+
+	if s != nil {
+		t.Error("expected NewScanner to return a nil scanner if nmap is not found in $PATH")
+	}
+}
 
 func TestRun(t *testing.T) {
 	nmapPath, err := exec.LookPath("nmap")
