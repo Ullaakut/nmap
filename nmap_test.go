@@ -2,6 +2,7 @@ package nmap
 
 import (
 	"context"
+	"encoding/xml"
 	"errors"
 	"os"
 	"os/exec"
@@ -11,59 +12,8 @@ import (
 	"time"
 )
 
-// func TestNewScanner(t *testing.T) {
-// 	tests := []struct {
-// 		description string
-
-// 		expectedErr     error
-// 		expectedScanner *Scanner
-// 	}{
-// 		{
-// 			description: "valid targets, no errors",
-
-// 			targets: []string{"80"},
-
-// 			expectedScanner: &Scanner{
-// 				args: []string{"80"},
-// 			},
-// 		},
-// 		{
-// 			description: "invalid targets (nil), error",
-
-// 			targets: nil,
-
-// 			expectedErr: ErrNoTargetsSpecified,
-// 		},
-// 		{
-// 			description: "invalid targets (nil), error",
-
-// 			targets: []string{},
-
-// 			expectedErr: ErrNoTargetsSpecified,
-// 		},
-// 	}
-
-// 	for _, test := range tests {
-// 		t.Run(test.description, func(t *testing.T) {
-// 			s, err := NewScanner(test.targets)
-// 			if err != test.expectedErr {
-// 				t.Errorf("expected error to be %v, got %v", test.expectedErr, err)
-// 			}
-
-// 			if test.expectedScanner == nil && s != nil {
-// 				t.Errorf("expected scanner to be nil, got %+v", s)
-// 			} else if test.expectedScanner != nil && s == nil {
-// 				t.Errorf("expected scanner to be %+v, got nil", test.expectedScanner)
-// 			} else if test.expectedScanner != nil && s != nil {
-// 				if !reflect.DeepEqual(test.expectedScanner.args, s.args) {
-// 					t.Errorf("expected scanner arguments to be %v, got %v", test.expectedScanner.args, s.args)
-// 				}
-// 			}
-// 		})
-// 	}
-// }
-
 func TestNmapNotInstalled(t *testing.T) {
+	oldPath := os.Getenv("PATH")
 	os.Setenv("PATH", "")
 
 	s, err := NewScanner()
@@ -74,6 +24,8 @@ func TestNmapNotInstalled(t *testing.T) {
 	if s != nil {
 		t.Error("expected NewScanner to return a nil scanner if nmap is not found in $PATH")
 	}
+
+	os.Setenv("PATH", oldPath)
 }
 
 func TestRun(t *testing.T) {
@@ -87,7 +39,8 @@ func TestRun(t *testing.T) {
 
 		options []func(*Scanner)
 
-		testTimeout bool
+		testTimeout     bool
+		compareWholeRun bool
 
 		expectedResult *Run
 		expectedErr    error
@@ -142,19 +95,53 @@ func TestRun(t *testing.T) {
 		{
 			description: "scan localhost with filters",
 			options: []func(*Scanner){
-				WithTargets("localhost"),
-				WithFilterHost(func(Host) bool {
-					return true
+				WithBinaryPath("tests/scripts/fake_nmap.sh"),
+				WithFilterHost(func(h Host) bool {
+					return len(h.Ports) == 2
 				}),
-				WithFilterPort(func(Port) bool {
-					return true
+				WithFilterPort(func(p Port) bool {
+					return p.Service.Product == "VALID"
 				}),
 				WithTimingTemplate(TimingFastest),
 			},
 
+			compareWholeRun: true,
+
 			expectedResult: &Run{
-				Args:    nmapPath + " -T5 -oX - localhost",
-				Scanner: "nmap",
+				XMLName: xml.Name{Local: "nmaprun"},
+				Args:    "nmap test",
+				Scanner: "fake_nmap",
+				Hosts: []Host{
+					{
+						Addresses: []Address{
+							{
+								Addr: "66.35.250.168",
+							},
+						},
+						Ports: []Port{
+							{
+								ID: 80,
+								State: State{
+									State: "open",
+								},
+								Service: Service{
+									Name:    "http",
+									Product: "VALID",
+								},
+							},
+							{
+								ID: 443,
+								State: State{
+									State: "open",
+								},
+								Service: Service{
+									Name:    "https",
+									Product: "VALID",
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -194,12 +181,19 @@ func TestRun(t *testing.T) {
 				return
 			}
 
-			if result.Args != test.expectedResult.Args {
-				t.Errorf("expected args %s got %s", test.expectedResult.Args, result.Args)
-			}
+			if test.compareWholeRun {
+				result.rawXML = nil
+				if !reflect.DeepEqual(test.expectedResult, result) {
+					t.Errorf("expected result to be %+v, got %+v", test.expectedResult, result)
+				}
+			} else {
+				if result.Args != test.expectedResult.Args {
+					t.Errorf("expected args %s got %s", test.expectedResult.Args, result.Args)
+				}
 
-			if result.Scanner != test.expectedResult.Scanner {
-				t.Errorf("expected scanner %s got %s", test.expectedResult.Scanner, result.Scanner)
+				if result.Scanner != test.expectedResult.Scanner {
+					t.Errorf("expected scanner %s got %s", test.expectedResult.Scanner, result.Scanner)
+				}
 			}
 		})
 	}

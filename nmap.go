@@ -120,16 +120,16 @@ func chooseHosts(result *Run, filter func(Host) bool) *Run {
 }
 
 func choosePorts(result *Run, filter func(Port) bool) *Run {
-	for _, host := range result.Hosts {
+	for idx := range result.Hosts {
 		var filteredPorts []Port
 
-		for _, port := range host.Ports {
+		for _, port := range result.Hosts[idx].Ports {
 			if filter(port) {
 				filteredPorts = append(filteredPorts, port)
 			}
 		}
 
-		host.Ports = filteredPorts
+		result.Hosts[idx].Ports = filteredPorts
 	}
 
 	return result

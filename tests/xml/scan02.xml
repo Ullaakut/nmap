@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<nmaprun scanner="fake_nmap" args="nmap test">
+    <host>
+        <address addr="66.35.250.168"/>
+        <ports>
+            <port portid="80">
+                <service name="http" product="VALID"/>
+                <state state="open"/>
+            </port>
+        </ports>
+        <ports>
+            <port portid="443">
+                <service name="https" product="VALID"/>
+                <state state="open"/>
+            </port>
+        </ports>
+    </host>
+    <host>
+        <address addr="66.35.250.169"/>
+        <ports>
+            <port portid="80">
+                <service name="http" product="VALID"/>
+                <state state="closed"/>
+            </port>
+        </ports>
+        <ports>
+            <port portid="443">
+                <service name="https" product="INVALID"/>
+                <state state="open"/>
+            </port>
+        </ports>
+    </host>
+    <host>
+        <address addr="66.35.250.170"/>
+        <ports>
+            <port portid="80">
+                <service name="http" product="INVALID"/>
+                <state state="open"/>
+            </port>
+        </ports>
+    </host>
+    <host>
+        <address addr="66.35.250.171"/>
+        <ports>
+            <port portid="80">
+                <service name="http" product="INVALID"/>
+                <state state="open"/>
+            </port>
+        </ports>
+    </host>
+</nmaprun>
