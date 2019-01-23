@@ -78,10 +78,7 @@ func (s *Scanner) Run() (*Run, error) {
 	case <-s.ctx.Done():
 		// Context was done before the scan was finished.
 		// The process is killed and a timeout error is returned.
-		err := cmd.Process.Kill()
-		if err != nil {
-			return nil, ErrScanTimeout
-		}
+		cmd.Process.Kill()
 
 		return nil, ErrScanTimeout
 	case <-done:
