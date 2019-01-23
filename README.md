@@ -24,14 +24,18 @@
 
 This library aims at providing idiomatic `nmap` bindings for go developers, in order to make it easier to write security audit tools using golang.
 
-<!-- It allows not only to parse the XML output of nmap, but also to get the output of nmap as it is running, through a channel. This can be useful for computing a scan's progress, or simply displaying live information to your users. -->
+## What is nmap
+
+Nmap (Network Mapper) is a free and open-source network scanner created by [Gordon Lyon](https://en.wikipedia.org/wiki/Gordon_Lyon). Nmap is used to discover hosts and services on a computer network by sending packets and analyzing the responses.
+
+Nmap provides a number of features for probing computer networks, including host discovery and service and operating system detection. These features are extensible by scripts that provide more advanced service detection, vulnerability detection, and other features. Nmap can adapt to network conditions including latency and congestion during a scan.
 
 ## Supported features
 
 - [x] All of `nmap`'s options as `WithXXX` methods.
 - [x] Cancellable contexts support.
 - [x] [Idiomatic go filters](examples/service_detection/main.go#L19).
-- [x] Helpful enums for most nmap commands. (time templates, os families, port states, etc.)
+- [x] Helpful enums for nmap commands. (time templates, os families, port states, etc.)
 - [x] Complete documentation of each option, mostly insipred from nmap's documentation.
 
 ## TODO
@@ -120,3 +124,8 @@ More examples:
 - [Count hosts for each operating system on a network](examples/count_hosts_by_os/main.go)
 - [Service detection](examples/service_detection/main.go)
 - [IP address spoofing and decoys](examples/spoof_and_decoys/main.go)
+
+## External resources
+
+- [Official nmap documentation](https://nmap.org/docs.html)
+- [Nmap reference guide](https://nmap.org/book/man.html)
