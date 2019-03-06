@@ -9,7 +9,7 @@
         <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" />
     </a>
     <a href="https://godoc.org/github.com/Ullaakut/nmap">
-        <img src="https://godoc.org/github.com/Ullaakut/cameradar?status.svg" />
+        <img src="https://godoc.org/github.com/Ullaakut/nmap?status.svg" />
     </a>
     <a href="https://goreportcard.com/report/github.com/ullaakut/nmap">
         <img src="https://goreportcard.com/badge/github.com/ullaakut/nmap">
