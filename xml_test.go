@@ -454,7 +454,6 @@ func TestParseRunXML(t *testing.T) {
 									Name:     "Linux 2.4.28 - 2.4.30",
 									Accuracy: 94,
 									Line:     8693,
-									//Classes: []OSClass{},
 								},
 								{
 									Name:     "Linux 2.6.5 - 2.6.18",
