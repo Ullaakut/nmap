@@ -186,7 +186,7 @@ func TestToFile(t *testing.T) {
 	err := r.ToFile(os.TempDir() + string(os.PathSeparator) + "toto.txt")
 
 	if err != nil {
-		t.Error("expected ToFile method to properly call ioutil.WriteFile", err)
+		t.Errorf("expected ToFile method to properly call ioutil.WriteFile, got %v", err)
 	}
 }
 
