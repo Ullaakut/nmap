@@ -60,5 +60,5 @@ func ExampleScanner_filters() {
 		len(scanResult.Hosts),
 		scanResult.Stats.Hosts.Total,
 	)
-	// Output: Filtered out hosts 1 / Original number of hosts: 2
+	// Output: Filtered out hosts 0 / Original number of hosts: 2
 }
