@@ -178,8 +178,8 @@ type mockWriter struct {
 	flushErr error
 }
 
-func TestParseTableXML(t *testing.T) {
-	expectedTable := Table{
+func TestFormatTableXML(t *testing.T) {
+	table := Table{
 		Key: "key123",
 		Elements: []Element{
 			{
@@ -228,81 +228,37 @@ func TestParseTableXML(t *testing.T) {
 		},
 	}
 
-	input := []byte(fmt.Sprintf(
-		`<table key="%s">
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<table key = %s"">
-						<elem key="%s">%s</elem>
-						<elem key="%s">%s</elem>
-					</table>
-					<table key = "%s">
-						<elem key="%s">%s</elem>
-						<elem key="%s">%s</elem>
-					</table>
-				</table>`,
-		expectedTable.Key,
-		expectedTable.Elements[0].Key, expectedTable.Elements[0].Value,
-		expectedTable.Elements[1].Key, expectedTable.Elements[1].Value,
-		expectedTable.Elements[2].Key, expectedTable.Elements[2].Value,
-		expectedTable.Elements[3].Key, expectedTable.Elements[3].Value,
-		expectedTable.Elements[4].Key, expectedTable.Elements[4].Value,
-		expectedTable.Tables[0].Key,
-		expectedTable.Tables[0].Elements[0].Key, expectedTable.Tables[0].Elements[0].Value,
-		expectedTable.Tables[0].Elements[1].Key, expectedTable.Tables[0].Elements[1].Value,
-		expectedTable.Tables[1].Key,
-		expectedTable.Tables[1].Elements[0].Key, expectedTable.Tables[1].Elements[0].Value,
-		expectedTable.Tables[1].Elements[1].Key, expectedTable.Tables[1].Elements[1].Value,
-	))
+	expectedXML := [][]byte{
+		[]byte(fmt.Sprintf(`<Table key="%s">`, table.Key)),
+		[]byte(fmt.Sprintf(`<table>`)),
+		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Tables[0].Elements[0].Key, table.Tables[0].Elements[0].Value)),
+		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[0].Elements[1].Value)),
+		[]byte(fmt.Sprintf(`</table>`)),
+		[]byte(fmt.Sprintf(`<table key="%s">`, table.Tables[1].Key)),
+		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[1].Elements[0].Value)),
+		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[1].Elements[1].Value)),
+		[]byte(fmt.Sprintf(`</table>`)),
+		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[0].Key, table.Elements[0].Value)),
+		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[1].Key, table.Elements[1].Value)),
+		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[2].Key, table.Elements[2].Value)),
+		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[3].Key, table.Elements[3].Value)),
+		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Elements[4].Value)),
+		[]byte(fmt.Sprintf(`</Table>`)),
+	}
 
-	var table Table
-
-	err := xml.Unmarshal(input, &table)
+	XML, err := xml.Marshal(table)
 	if err != nil {
 		panic(err)
 	}
 
-	// Outermost table.
-	if table.Key != expectedTable.Key {
-		t.Errorf("expected %v got %v", expectedTable.Key, table.Key)
-	}
-
-	if len(table.Elements) != len(expectedTable.Elements) {
-		t.Errorf("expected different number of elements in outermost table, want %v got %v", len(expectedTable.Elements), len(table.Elements))
-	}
-	for ie := range table.Elements {
-		if table.Elements[ie].Value != expectedTable.Elements[ie].Value {
-			t.Errorf("expected %v got %v", expectedTable.Elements[ie].Value, table.Elements[ie].Value)
-		}
-	}
-
-	// Nested tables
-	if len(table.Tables) != len(expectedTable.Tables) {
-		t.Errorf("expected different amount of nested tables, want %v got %v", len(expectedTable.Tables), len(table.Tables))
-	}
-
-	for it := range table.Tables {
-		if table.Tables[it].Key != expectedTable.Tables[it].Key {
-			t.Errorf("expected %v got %v", expectedTable.Tables[0].Key, table.Tables[0].Key)
-		}
-
-		if len(table.Tables[it].Elements) != len(expectedTable.Tables[it].Elements) {
-			t.Errorf("expected number of elements in nested table[%v], want %v got %v",
-				it, len(expectedTable.Tables[it].Elements), len(table.Tables[it].Elements))
-		}
-		for ie := range table.Tables[it].Elements {
-			if table.Tables[it].Elements[ie].Value != expectedTable.Tables[it].Elements[ie].Value {
-				t.Errorf("expected %v got %v", expectedTable.Tables[it].Elements[ie].Value, table.Tables[it].Elements[ie].Value)
-			}
+	for _, expectedXMLElement := range expectedXML {
+		if !bytes.Contains(XML, expectedXMLElement) {
+			t.Errorf("missing %s in %s", expectedXMLElement, XML)
 		}
 	}
 }
 
-func
-TestStringMethods(t *testing.T) {
+func TestStringMethods(t *testing.T) {
 	s := Status{
 		State: "up",
 	}
