@@ -6,12 +6,13 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	family "github.com/Ullaakut/nmap/pkg/osfamilies"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 	"time"
+
+	family "github.com/Ullaakut/nmap/pkg/osfamilies"
 )
 
 func TestParseTime(t *testing.T) {
