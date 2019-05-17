@@ -234,98 +234,25 @@ func (s Service) String() string {
 type CPE string
 
 // Script represents an Nmap Scripting Engine script.
+// The inner elements can be an arbitrary collection of Tables and Elements. Both of them can also be empty.
 type Script struct {
-	ID     string `xml:"id,attr" json:"id"`
-	Output string `xml:"output,attr" json:"output"`
-	Tables Table  `xml:"table" json:"tables"`
+	ID       string    `xml:"id,attr" json:"id"`
+	Output   string    `xml:"output,attr" json:"output"`
+	Elements []Element `xml:"elem,omitempty" json:"elements,omitempty"`
+	Tables   []Table   `xml:"table,omitempty" json:"tables,omitempty"`
 }
 
-// Table contains the output of the script in an easily parsable form.
-type Table map[string]string
-
-// MarshalXML implements the xml.Marshaler interface.
-func (t Table) MarshalXML(e *xml.Encoder, startElem xml.StartElement) error {
-	tokens := []xml.Token{startElem}
-
-	// Add all key/value pairs as entries in the XML array.
-	for key, value := range t {
-		// Start of the XML element.
-		start := xml.StartElement{
-			Name: xml.Name{
-				Local: "elem",
-			},
-			Attr: []xml.Attr{
-				{
-					Name: xml.Name{
-						Local: "key",
-					},
-					Value: key,
-				},
-			},
-		}
-
-		// End of the XML element.
-		end := xml.EndElement{
-			Name: start.Name,
-		}
-
-		// Append the start, content and end of the new element to the list of XML tokens.
-		tokens = append(tokens, start, xml.CharData(value), end)
-	}
-
-	tokens = append(tokens, xml.EndElement{
-		Name: startElem.Name,
-	})
-
-	// Encode all tokens.
-	for _, t := range tokens {
-		err := e.EncodeToken(t)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+// Table is an arbitrary collection of (sub-)Tables and Elements. All its fields can be empty.
+type Table struct {
+	Key      string    `xml:"key,attr,omitempty" json:"key,omitempty"`
+	Tables   []Table   `xml:"table,omitempty" json:"tables,omitempty"`
+	Elements []Element `xml:"elem,omitempty" json:"elements,omitempty"`
 }
 
-// UnmarshalXML implements the xml.Unmarshaler interface.
-func (t *Table) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
-	table := make(map[string]string)
-
-	var (
-		currentKey   string
-		currentValue string
-	)
-
-	for {
-		token, err := d.Token()
-		if err != nil {
-			break
-		}
-
-		switch element := token.(type) {
-		case xml.StartElement:
-			for _, attribute := range element.Attr {
-				if attribute.Name.Local == "key" {
-					currentKey = attribute.Value
-					break
-				}
-			}
-		case xml.CharData:
-			currentValue = string(element)
-		case xml.EndElement:
-			// Insert the current key/value pair.
-			table[currentKey] = currentValue
-
-			// Reset the temporary variables for the next pair.
-			currentKey = ""
-			currentValue = ""
-		}
-	}
-
-	*t = table
-
-	return nil
+// Element is the smallest building block for scripts/tables. It can optionally(!) have a key.
+type Element struct {
+	Key   string `xml:"key,attr,omitempty" json:"key,omitempty"`
+	Value string `xml:",innerxml" json:"value"`
 }
 
 // OS contains the fingerprinted operating system for a host.
@@ -333,6 +260,7 @@ type OS struct {
 	PortsUsed    []PortUsed      `xml:"portused" json:"ports_used"`
 	Matches      []OSMatch       `xml:"osmatch" json:"os_matches"`
 	Fingerprints []OSFingerprint `xml:"osfingerprint" json:"os_fingerprints"`
+	Classes      []OSClass       `xml:"osclass" json:"os_classes"`
 }
 
 // PortUsed is the port used to fingerprint an operating system.
@@ -344,10 +272,9 @@ type PortUsed struct {
 
 // OSMatch contains detailed information regarding an operating system fingerprint.
 type OSMatch struct {
-	Name     string    `xml:"name,attr" json:"name"`
-	Accuracy int       `xml:"accuracy,attr" json:"accuracy"`
-	Line     int       `xml:"line,attr" json:"line"`
-	Classes  []OSClass `xml:"osclass" json:"os_classes"`
+	Name     string `xml:"name,attr" json:"name"`
+	Accuracy int    `xml:"accuracy,attr" json:"accuracy"`
+	Line     int    `xml:"line,attr" json:"line"`
 }
 
 // OSClass contains vendor information about an operating system.
