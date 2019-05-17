@@ -6,13 +6,12 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	family "github.com/Ullaakut/nmap/pkg/osfamilies"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"testing"
 	"time"
-
-	family "github.com/Ullaakut/nmap/pkg/osfamilies"
 )
 
 func TestParseTime(t *testing.T) {
@@ -51,19 +50,83 @@ func TestOSFamily(t *testing.T) {
 }
 
 func TestParseTableXML(t *testing.T) {
-	expectedTable := map[string]string{
-		"key":         "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
-		"fingerprint": "79f809acd4e232421049d3bd208285ec",
-		"type":        "ssh-rsa",
-		"bits":        "2048",
+	expectedTable := Table{
+		Key: "key123",
+		Elements: []Element{
+			{
+				Key:   "key",
+				Value: "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
+			},
+			{
+				Key:   "fingerprint",
+				Value: "79f809acd4e232421049d3bd208285ec",
+			},
+			{
+				Key:   "type",
+				Value: "ssh-rsa",
+			},
+			{
+				Key:   "bits",
+				Value: "2048",
+			},
+			{
+				Value: "just some value",
+			},
+		},
+		Tables: []Table{
+			{
+				Elements: []Element{
+					{
+						Key:   "important element",
+						Value: "ssh-rsa",
+					},
+					{
+						Value: "just some value",
+					},
+				},
+			},
+			{
+				Key: "dialects",
+				Elements: []Element{
+					{
+						Value: "2.02",
+					},
+					{
+						Value: "2.10",
+					},
+				},
+			},
+		},
 	}
 
 	input := []byte(fmt.Sprintf(
-		`<table><elem key="key">%s</elem><elem key="fingerprint">%s</elem><elem key="type">%s</elem><elem key="bits">%s</elem></table>`,
-		expectedTable["key"],
-		expectedTable["fingerprint"],
-		expectedTable["type"],
-		expectedTable["bits"],
+		`<table key="%s">
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<table key = %s"">
+						<elem key="%s">%s</elem>
+						<elem key="%s">%s</elem>
+					</table>
+					<table key = "%s">
+						<elem key="%s">%s</elem>
+						<elem key="%s">%s</elem>
+					</table>
+				</table>`,
+		expectedTable.Key,
+		expectedTable.Elements[0].Key, expectedTable.Elements[0].Value,
+		expectedTable.Elements[1].Key, expectedTable.Elements[1].Value,
+		expectedTable.Elements[2].Key, expectedTable.Elements[2].Value,
+		expectedTable.Elements[3].Key, expectedTable.Elements[3].Value,
+		expectedTable.Elements[4].Key, expectedTable.Elements[4].Value,
+		expectedTable.Tables[0].Key,
+		expectedTable.Tables[0].Elements[0].Key, expectedTable.Tables[0].Elements[0].Value,
+		expectedTable.Tables[0].Elements[1].Key, expectedTable.Tables[0].Elements[1].Value,
+		expectedTable.Tables[1].Key,
+		expectedTable.Tables[1].Elements[0].Key, expectedTable.Tables[1].Elements[0].Value,
+		expectedTable.Tables[1].Elements[1].Key, expectedTable.Tables[1].Elements[1].Value,
 	))
 
 	var table Table
@@ -73,20 +136,39 @@ func TestParseTableXML(t *testing.T) {
 		panic(err)
 	}
 
-	if table["key"] != expectedTable["key"] {
-		t.Errorf("expected %v got %v", expectedTable["key"], table["key"])
+	// Outermost table.
+	if table.Key != expectedTable.Key {
+		t.Errorf("expected %v got %v", expectedTable.Key, table.Key)
 	}
 
-	if table["fingerprint"] != expectedTable["fingerprint"] {
-		t.Errorf("expected %v got %v", expectedTable["fingerprint"], table["fingerprint"])
+	if len(table.Elements) != len(expectedTable.Elements) {
+		t.Errorf("expected different number of elements in outermost table, want %v got %v", len(expectedTable.Elements), len(table.Elements))
+	}
+	for ie := range table.Elements {
+		if table.Elements[ie].Value != expectedTable.Elements[ie].Value {
+			t.Errorf("expected %v got %v", expectedTable.Elements[ie].Value, table.Elements[ie].Value)
+		}
 	}
 
-	if table["type"] != expectedTable["type"] {
-		t.Errorf("expected %v got %v", expectedTable["type"], table["type"])
+	// Nested tables
+	if len(table.Tables) != len(expectedTable.Tables) {
+		t.Errorf("expected different amount of nested tables, want %v got %v", len(expectedTable.Tables), len(table.Tables))
 	}
 
-	if table["bits"] != expectedTable["bits"] {
-		t.Errorf("expected %v got %v", expectedTable["bits"], table["bits"])
+	for it := range table.Tables {
+		if table.Tables[it].Key != expectedTable.Tables[it].Key {
+			t.Errorf("expected %v got %v", expectedTable.Tables[0].Key, table.Tables[0].Key)
+		}
+
+		if len(table.Tables[it].Elements) != len(expectedTable.Tables[it].Elements) {
+			t.Errorf("expected number of elements in nested table[%v], want %v got %v",
+				it, len(expectedTable.Tables[it].Elements), len(table.Tables[it].Elements))
+		}
+		for ie := range table.Tables[it].Elements {
+			if table.Tables[it].Elements[ie].Value != expectedTable.Tables[it].Elements[ie].Value {
+				t.Errorf("expected %v got %v", expectedTable.Tables[it].Elements[ie].Value, table.Tables[it].Elements[ie].Value)
+			}
+		}
 	}
 }
 
@@ -96,41 +178,131 @@ type mockWriter struct {
 	flushErr error
 }
 
-func TestFormatTableXML(t *testing.T) {
-	table := Table(map[string]string{
-		"key":         "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
-		"fingerprint": "79f809acd4e232421049d3bd208285ec",
-		"type":        "ssh-rsa",
-		"bits":        "2048",
-	})
-
-	expectedXML := [][]byte{
-		[]byte("<Table>"),
-		[]byte(fmt.Sprintf(`<elem key="key">%s</elem>`, table["key"])),
-		[]byte(fmt.Sprintf(`<elem key="fingerprint">%s</elem>`, table["fingerprint"])),
-		[]byte(fmt.Sprintf(`<elem key="type">%s</elem>`, table["type"])),
-		[]byte(fmt.Sprintf(`<elem key="bits">%s</elem>`, table["bits"])),
-		[]byte("</Table>"),
+func TestParseTableXML(t *testing.T) {
+	expectedTable := Table{
+		Key: "key123",
+		Elements: []Element{
+			{
+				Key:   "key",
+				Value: "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
+			},
+			{
+				Key:   "fingerprint",
+				Value: "79f809acd4e232421049d3bd208285ec",
+			},
+			{
+				Key:   "type",
+				Value: "ssh-rsa",
+			},
+			{
+				Key:   "bits",
+				Value: "2048",
+			},
+			{
+				Value: "just some value",
+			},
+		},
+		Tables: []Table{
+			{
+				Elements: []Element{
+					{
+						Key:   "important element",
+						Value: "ssh-rsa",
+					},
+					{
+						Value: "just some value",
+					},
+				},
+			},
+			{
+				Key: "dialects",
+				Elements: []Element{
+					{
+						Value: "2.02",
+					},
+					{
+						Value: "2.10",
+					},
+				},
+			},
+		},
 	}
 
-	XML, err := xml.Marshal(table)
+	input := []byte(fmt.Sprintf(
+		`<table key="%s">
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<elem key="%s">%s</elem>
+					<table key = %s"">
+						<elem key="%s">%s</elem>
+						<elem key="%s">%s</elem>
+					</table>
+					<table key = "%s">
+						<elem key="%s">%s</elem>
+						<elem key="%s">%s</elem>
+					</table>
+				</table>`,
+		expectedTable.Key,
+		expectedTable.Elements[0].Key, expectedTable.Elements[0].Value,
+		expectedTable.Elements[1].Key, expectedTable.Elements[1].Value,
+		expectedTable.Elements[2].Key, expectedTable.Elements[2].Value,
+		expectedTable.Elements[3].Key, expectedTable.Elements[3].Value,
+		expectedTable.Elements[4].Key, expectedTable.Elements[4].Value,
+		expectedTable.Tables[0].Key,
+		expectedTable.Tables[0].Elements[0].Key, expectedTable.Tables[0].Elements[0].Value,
+		expectedTable.Tables[0].Elements[1].Key, expectedTable.Tables[0].Elements[1].Value,
+		expectedTable.Tables[1].Key,
+		expectedTable.Tables[1].Elements[0].Key, expectedTable.Tables[1].Elements[0].Value,
+		expectedTable.Tables[1].Elements[1].Key, expectedTable.Tables[1].Elements[1].Value,
+	))
+
+	var table Table
+
+	err := xml.Unmarshal(input, &table)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, expectedXMLElement := range expectedXML {
-		if !bytes.Contains(XML, expectedXMLElement) {
-			t.Errorf("missing %s in %s", expectedXMLElement, XML)
+	// Outermost table.
+	if table.Key != expectedTable.Key {
+		t.Errorf("expected %v got %v", expectedTable.Key, table.Key)
+	}
+
+	if len(table.Elements) != len(expectedTable.Elements) {
+		t.Errorf("expected different number of elements in outermost table, want %v got %v", len(expectedTable.Elements), len(table.Elements))
+	}
+	for ie := range table.Elements {
+		if table.Elements[ie].Value != expectedTable.Elements[ie].Value {
+			t.Errorf("expected %v got %v", expectedTable.Elements[ie].Value, table.Elements[ie].Value)
 		}
 	}
 
-	err = table.MarshalXML(&xml.Encoder{}, xml.StartElement{})
-	if err == nil {
-		t.Error("expected error when marshalling with an empty encoder")
+	// Nested tables
+	if len(table.Tables) != len(expectedTable.Tables) {
+		t.Errorf("expected different amount of nested tables, want %v got %v", len(expectedTable.Tables), len(table.Tables))
+	}
+
+	for it := range table.Tables {
+		if table.Tables[it].Key != expectedTable.Tables[it].Key {
+			t.Errorf("expected %v got %v", expectedTable.Tables[0].Key, table.Tables[0].Key)
+		}
+
+		if len(table.Tables[it].Elements) != len(expectedTable.Tables[it].Elements) {
+			t.Errorf("expected number of elements in nested table[%v], want %v got %v",
+				it, len(expectedTable.Tables[it].Elements), len(table.Tables[it].Elements))
+		}
+		for ie := range table.Tables[it].Elements {
+			if table.Tables[it].Elements[ie].Value != expectedTable.Tables[it].Elements[ie].Value {
+				t.Errorf("expected %v got %v", expectedTable.Tables[it].Elements[ie].Value, table.Tables[it].Elements[ie].Value)
+			}
+		}
 	}
 }
 
-func TestStringMethods(t *testing.T) {
+func
+TestStringMethods(t *testing.T) {
 	s := Status{
 		State: "up",
 	}
