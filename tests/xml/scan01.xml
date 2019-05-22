@@ -59,55 +59,44 @@
         <os>
             <portused state="open" proto="tcp" portid="80" />
             <portused state="closed" proto="tcp" portid="443" />
-            <osmatch name="MicroTik RouterOS 2.9.46" accuracy="94" line="14788">
-                <osclass type="software router" vendor="MikroTik" osfamily="RouterOS" osgen="2.X" accuracy="94" />
-            </osmatch>
-            <osmatch name="Linksys WRT54GS WAP (Linux kernel)" accuracy="94" line="8292">
-                <osclass type="WAP" vendor="Linksys" osfamily="Linux" osgen="2.4.X" accuracy="94" />
-            </osmatch>
-            <osmatch name="Linux 2.4.18 - 2.4.32 (likely embedded)" accuracy="94" line="8499">
-                <osclass type="VoIP phone" vendor="WebVOIZE" osfamily="embedded" accuracy="94" />
-                <osclass type="WAP" vendor="Inventel" osfamily="embedded" accuracy="91" />
-                <osclass type="broadband router" vendor="USRobotics" osfamily="embedded" accuracy="91" />
-                <osclass type="WAP" vendor="Netgear" osfamily="embedded" accuracy="91" />
-                <osclass type="switch" vendor="QLogic" osfamily="embedded" accuracy="91" />
-                <osclass type="broadband router" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
-                <osclass type="printer" vendor="Xerox" osfamily="embedded" accuracy="90" />
-                <osclass type="media device" vendor="Roku" osfamily="embedded" accuracy="89" />
-            </osmatch>
-            <osmatch name="Linux 2.4.21 - 2.4.33" accuracy="94" line="8624">
-                <osclass type="general purpose" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="94" />
-                <osclass type="WAP" vendor="D-Link" osfamily="Linux" osgen="2.4.X" accuracy="91" />
-                <osclass type="WAP" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
-                <osclass type="broadband router" vendor="3Com" osfamily="Linux" osgen="2.4.X" accuracy="89" />
-            </osmatch>
-            <osmatch name="Linux 2.4.27" accuracy="94" line="8675">
-                <osclass type="PDA" vendor="Sharp" osfamily="Linux" osgen="2.4.X" accuracy="91" />
-                <osclass type="media device" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
-            </osmatch>
-            <osmatch name="Linux 2.4.28 - 2.4.30" accuracy="94" line="8693">
-
-            </osmatch>
-            <osmatch name="Linux 2.6.5 - 2.6.18" accuracy="94" line="11411">
-                <osclass type="general purpose" vendor="Linux" osfamily="Linux" osgen="2.6.X" accuracy="94" />
-            </osmatch>
-            <osmatch name="Linux 2.6.8" accuracy="94" line="11485">
-                <osclass type="media device" vendor="Dream Multimedia" osfamily="Linux" osgen="2.6.X" accuracy="89" />
-                <osclass type="storage-misc" vendor="Iomega" osfamily="Linux" osgen="2.6.X" accuracy="89" />
-            </osmatch>
-            <osmatch name="WebVOIZE 120 IP phone" accuracy="94" line="18921">
-                <osclass type="WAP" vendor="FON" osfamily="Linux" osgen="2.6.X" accuracy="91" />
-                <osclass type="VoIP gateway" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
-                <osclass type="WAP" vendor="FON" osfamily="Linux" osgen="2.4.X" accuracy="90" />
-                <osclass type="WAP" vendor="Belkin" osfamily="embedded" accuracy="90" />
-                <osclass type="WAP" vendor="Asus" osfamily="embedded" accuracy="90" />
-                <osclass type="WAP" vendor="Netgear" osfamily="Linux" osgen="2.4.X" accuracy="90" />
-                <osclass type="VoIP gateway" vendor="Occam" osfamily="embedded" accuracy="89" />
-                <osclass type="WAP" vendor="Siemens" osfamily="Linux" accuracy="89" />
-            </osmatch>
-            <osmatch name="Linux 2.4.2 (Red Hat 7.1)" accuracy="91" line="8533">
-                <osclass type="security-misc" vendor="Aladdin" osfamily="Linux" osgen="2.4.X" accuracy="89" />
-            </osmatch>
+            <osclass type="software router" vendor="MikroTik" osfamily="RouterOS" osgen="2.X" accuracy="94" />
+            <osclass type="WAP" vendor="Linksys" osfamily="Linux" osgen="2.4.X" accuracy="94" />
+            <osclass type="general purpose" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="94" />
+            <osclass type="general purpose" vendor="Linux" osfamily="Linux" osgen="2.6.X" accuracy="94" />
+            <osclass type="VoIP phone" vendor="WebVOIZE" osfamily="embedded" accuracy="94" />
+            <osclass type="WAP" vendor="D-Link" osfamily="Linux" osgen="2.4.X" accuracy="91" />
+            <osclass type="WAP" vendor="Inventel" osfamily="embedded" accuracy="91" />
+            <osclass type="broadband router" vendor="USRobotics" osfamily="embedded" accuracy="91" />
+            <osclass type="broadband router" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
+            <osclass type="WAP" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
+            <osclass type="media device" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
+            <osclass type="VoIP gateway" vendor="Linux" osfamily="Linux" osgen="2.4.X" accuracy="91" />
+            <osclass type="WAP" vendor="Netgear" osfamily="embedded" accuracy="91" />
+            <osclass type="switch" vendor="QLogic" osfamily="embedded" accuracy="91" />
+            <osclass type="PDA" vendor="Sharp" osfamily="Linux" osgen="2.4.X" accuracy="91" />
+            <osclass type="WAP" vendor="FON" osfamily="Linux" osgen="2.6.X" accuracy="91" />
+            <osclass type="WAP" vendor="FON" osfamily="Linux" osgen="2.4.X" accuracy="90" />
+            <osclass type="WAP" vendor="Belkin" osfamily="embedded" accuracy="90" />
+            <osclass type="WAP" vendor="Asus" osfamily="embedded" accuracy="90" />
+            <osclass type="WAP" vendor="Netgear" osfamily="Linux" osgen="2.4.X" accuracy="90" />
+            <osclass type="printer" vendor="Xerox" osfamily="embedded" accuracy="90" />
+            <osclass type="security-misc" vendor="Aladdin" osfamily="Linux" osgen="2.4.X" accuracy="89" />
+            <osclass type="VoIP gateway" vendor="Occam" osfamily="embedded" accuracy="89" />
+            <osclass type="media device" vendor="Roku" osfamily="embedded" accuracy="89" />
+            <osclass type="WAP" vendor="Siemens" osfamily="Linux" accuracy="89" />
+            <osclass type="broadband router" vendor="3Com" osfamily="Linux" osgen="2.4.X" accuracy="89" />
+            <osclass type="media device" vendor="Dream Multimedia" osfamily="Linux" osgen="2.6.X" accuracy="89" />
+            <osclass type="storage-misc" vendor="Iomega" osfamily="Linux" osgen="2.6.X" accuracy="89" />
+            <osmatch name="MicroTik RouterOS 2.9.46" accuracy="94" line="14788"/>
+            <osmatch name="Linksys WRT54GS WAP (Linux kernel)" accuracy="94" line="8292"/>
+            <osmatch name="Linux 2.4.18 - 2.4.32 (likely embedded)" accuracy="94" line="8499"/>
+            <osmatch name="Linux 2.4.21 - 2.4.33" accuracy="94" line="8624"/>
+            <osmatch name="Linux 2.4.27" accuracy="94" line="8675"/>
+            <osmatch name="Linux 2.4.28 - 2.4.30" accuracy="94" line="8693"/>
+            <osmatch name="Linux 2.6.5 - 2.6.18" accuracy="94" line="11411"/>
+            <osmatch name="Linux 2.6.8" accuracy="94" line="11485"/>
+            <osmatch name="WebVOIZE 120 IP phone" accuracy="94" line="18921"/>
+            <osmatch name="Linux 2.4.2 (Red Hat 7.1)" accuracy="91" line="8533"/>
             <osfingerprint fingerprint="SCAN(V=4.53%D=1/27%OT=80%CT=443%CU=%PV=N%G=N%TM=479D25ED%P=i686-pc-linux-gnu)&#xa;SEQ(SP=F2%GCD=1%ISR=E9%TI=Z%TS=1C)&#xa;OPS(O1=M5B4ST11NW0%O2=M5B4ST11NW0%O3=M5B4NNT11NW0%O4=M5B4ST11NW0%O5=M5B4ST11NW0%O6=M5B4ST11)&#xa;WIN(W1=16A0%W2=16A0%W3=16A0%W4=16A0%W5=16A0%W6=16A0)&#xa;ECN(R=Y%DF=Y%TG=40%W=16D0%O=M5B4NNSNW0%CC=N%Q=)&#xa;T1(R=Y%DF=Y%TG=40%S=O%A=S+%F=AS%RD=0%Q=)&#xa;T2(R=N)&#xa;T3(R=Y%DF=Y%TG=40%W=16A0%S=O%A=S+%F=AS%O=M5B4ST11NW0%RD=0%Q=)&#xa;T4(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)&#xa;T5(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)&#xa;T6(R=Y%DF=Y%TG=40%W=0%S=A%A=Z%F=R%O=%RD=0%Q=)&#xa;T7(R=Y%DF=Y%TG=40%W=0%S=Z%A=S+%F=AR%O=%RD=0%Q=)&#xa;U1(R=N)&#xa;IE(R=N)&#xa;" />
         </os>
         <uptime seconds="206" lastboot="Sun Jan 27 21:43:11 2008" />

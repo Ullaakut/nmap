@@ -7,7 +7,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"reflect"
 	"testing"
 	"time"
@@ -51,83 +50,19 @@ func TestOSFamily(t *testing.T) {
 }
 
 func TestParseTableXML(t *testing.T) {
-	expectedTable := Table{
-		Key: "key123",
-		Elements: []Element{
-			{
-				Key:   "key",
-				Value: "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
-			},
-			{
-				Key:   "fingerprint",
-				Value: "79f809acd4e232421049d3bd208285ec",
-			},
-			{
-				Key:   "type",
-				Value: "ssh-rsa",
-			},
-			{
-				Key:   "bits",
-				Value: "2048",
-			},
-			{
-				Value: "just some value",
-			},
-		},
-		Tables: []Table{
-			{
-				Elements: []Element{
-					{
-						Key:   "important element",
-						Value: "ssh-rsa",
-					},
-					{
-						Value: "just some value",
-					},
-				},
-			},
-			{
-				Key: "dialects",
-				Elements: []Element{
-					{
-						Value: "2.02",
-					},
-					{
-						Value: "2.10",
-					},
-				},
-			},
-		},
+	expectedTable := map[string]string{
+		"key":         "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
+		"fingerprint": "79f809acd4e232421049d3bd208285ec",
+		"type":        "ssh-rsa",
+		"bits":        "2048",
 	}
 
 	input := []byte(fmt.Sprintf(
-		`<table key="%s">
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<elem key="%s">%s</elem>
-					<table key = %s"">
-						<elem key="%s">%s</elem>
-						<elem key="%s">%s</elem>
-					</table>
-					<table key = "%s">
-						<elem key="%s">%s</elem>
-						<elem key="%s">%s</elem>
-					</table>
-				</table>`,
-		expectedTable.Key,
-		expectedTable.Elements[0].Key, expectedTable.Elements[0].Value,
-		expectedTable.Elements[1].Key, expectedTable.Elements[1].Value,
-		expectedTable.Elements[2].Key, expectedTable.Elements[2].Value,
-		expectedTable.Elements[3].Key, expectedTable.Elements[3].Value,
-		expectedTable.Elements[4].Key, expectedTable.Elements[4].Value,
-		expectedTable.Tables[0].Key,
-		expectedTable.Tables[0].Elements[0].Key, expectedTable.Tables[0].Elements[0].Value,
-		expectedTable.Tables[0].Elements[1].Key, expectedTable.Tables[0].Elements[1].Value,
-		expectedTable.Tables[1].Key,
-		expectedTable.Tables[1].Elements[0].Key, expectedTable.Tables[1].Elements[0].Value,
-		expectedTable.Tables[1].Elements[1].Key, expectedTable.Tables[1].Elements[1].Value,
+		`<table><elem key="key">%s</elem><elem key="fingerprint">%s</elem><elem key="type">%s</elem><elem key="bits">%s</elem></table>`,
+		expectedTable["key"],
+		expectedTable["fingerprint"],
+		expectedTable["type"],
+		expectedTable["bits"],
 	))
 
 	var table Table
@@ -137,39 +72,20 @@ func TestParseTableXML(t *testing.T) {
 		panic(err)
 	}
 
-	// Outermost table.
-	if table.Key != expectedTable.Key {
-		t.Errorf("expected %v got %v", expectedTable.Key, table.Key)
+	if table["key"] != expectedTable["key"] {
+		t.Errorf("expected %v got %v", expectedTable["key"], table["key"])
 	}
 
-	if len(table.Elements) != len(expectedTable.Elements) {
-		t.Errorf("expected different number of elements in outermost table, want %v got %v", len(expectedTable.Elements), len(table.Elements))
-	}
-	for ie := range table.Elements {
-		if table.Elements[ie].Value != expectedTable.Elements[ie].Value {
-			t.Errorf("expected %v got %v", expectedTable.Elements[ie].Value, table.Elements[ie].Value)
-		}
+	if table["fingerprint"] != expectedTable["fingerprint"] {
+		t.Errorf("expected %v got %v", expectedTable["fingerprint"], table["fingerprint"])
 	}
 
-	// Nested tables
-	if len(table.Tables) != len(expectedTable.Tables) {
-		t.Errorf("expected different amount of nested tables, want %v got %v", len(expectedTable.Tables), len(table.Tables))
+	if table["type"] != expectedTable["type"] {
+		t.Errorf("expected %v got %v", expectedTable["type"], table["type"])
 	}
 
-	for it := range table.Tables {
-		if table.Tables[it].Key != expectedTable.Tables[it].Key {
-			t.Errorf("expected %v got %v", expectedTable.Tables[0].Key, table.Tables[0].Key)
-		}
-
-		if len(table.Tables[it].Elements) != len(expectedTable.Tables[it].Elements) {
-			t.Errorf("expected number of elements in nested table[%v], want %v got %v",
-				it, len(expectedTable.Tables[it].Elements), len(table.Tables[it].Elements))
-		}
-		for ie := range table.Tables[it].Elements {
-			if table.Tables[it].Elements[ie].Value != expectedTable.Tables[it].Elements[ie].Value {
-				t.Errorf("expected %v got %v", expectedTable.Tables[it].Elements[ie].Value, table.Tables[it].Elements[ie].Value)
-			}
-		}
+	if table["bits"] != expectedTable["bits"] {
+		t.Errorf("expected %v got %v", expectedTable["bits"], table["bits"])
 	}
 }
 
@@ -180,71 +96,20 @@ type mockWriter struct {
 }
 
 func TestFormatTableXML(t *testing.T) {
-	table := Table{
-		Key: "key123",
-		Elements: []Element{
-			{
-				Key:   "key",
-				Value: "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
-			},
-			{
-				Key:   "fingerprint",
-				Value: "79f809acd4e232421049d3bd208285ec",
-			},
-			{
-				Key:   "type",
-				Value: "ssh-rsa",
-			},
-			{
-				Key:   "bits",
-				Value: "2048",
-			},
-			{
-				Value: "just some value",
-			},
-		},
-		Tables: []Table{
-			{
-				Elements: []Element{
-					{
-						Key:   "important element",
-						Value: "ssh-rsa",
-					},
-					{
-						Value: "just some value",
-					},
-				},
-			},
-			{
-				Key: "dialects",
-				Elements: []Element{
-					{
-						Value: "2.02",
-					},
-					{
-						Value: "2.10",
-					},
-				},
-			},
-		},
-	}
+	table := Table(map[string]string{
+		"key":         "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
+		"fingerprint": "79f809acd4e232421049d3bd208285ec",
+		"type":        "ssh-rsa",
+		"bits":        "2048",
+	})
 
 	expectedXML := [][]byte{
-		[]byte(fmt.Sprintf(`<Table key="%s">`, table.Key)),
-		[]byte(fmt.Sprintf(`<table>`)),
-		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Tables[0].Elements[0].Key, table.Tables[0].Elements[0].Value)),
-		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[0].Elements[1].Value)),
-		[]byte(fmt.Sprintf(`</table>`)),
-		[]byte(fmt.Sprintf(`<table key="%s">`, table.Tables[1].Key)),
-		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[1].Elements[0].Value)),
-		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[1].Elements[1].Value)),
-		[]byte(fmt.Sprintf(`</table>`)),
-		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[0].Key, table.Elements[0].Value)),
-		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[1].Key, table.Elements[1].Value)),
-		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[2].Key, table.Elements[2].Value)),
-		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[3].Key, table.Elements[3].Value)),
-		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Elements[4].Value)),
-		[]byte(fmt.Sprintf(`</Table>`)),
+		[]byte("<Table>"),
+		[]byte(fmt.Sprintf(`<elem key="key">%s</elem>`, table["key"])),
+		[]byte(fmt.Sprintf(`<elem key="fingerprint">%s</elem>`, table["fingerprint"])),
+		[]byte(fmt.Sprintf(`<elem key="type">%s</elem>`, table["type"])),
+		[]byte(fmt.Sprintf(`<elem key="bits">%s</elem>`, table["bits"])),
+		[]byte("</Table>"),
 	}
 
 	XML, err := xml.Marshal(table)
@@ -256,6 +121,11 @@ func TestFormatTableXML(t *testing.T) {
 		if !bytes.Contains(XML, expectedXMLElement) {
 			t.Errorf("missing %s in %s", expectedXMLElement, XML)
 		}
+	}
+
+	err = table.MarshalXML(&xml.Encoder{}, xml.StartElement{})
+	if err == nil {
+		t.Error("expected error when marshalling with an empty encoder")
 	}
 }
 
@@ -312,10 +182,9 @@ func TestStringMethods(t *testing.T) {
 func TestToFile(t *testing.T) {
 	r := &Run{}
 
-	err := r.ToFile(os.TempDir() + string(os.PathSeparator) + "toto.txt")
-
+	err := r.ToFile("/tmp/toto.txt")
 	if err != nil {
-		t.Errorf("expected ToFile method to properly call ioutil.WriteFile, got %v", err)
+		t.Error("expected ToFile method to properly call ioutil.WriteFile")
 	}
 }
 
@@ -443,141 +312,26 @@ func TestParseRunXML(t *testing.T) {
 									Name:     "MicroTik RouterOS 2.9.46",
 									Accuracy: 94,
 									Line:     14788,
-									Classes: []OSClass{
-										{
-											Vendor:       "MikroTik",
-											OSGeneration: "2.X",
-											Type:         "software router",
-											Accuracy:     94,
-											Family:       "RouterOS",
-										},
-									},
 								},
 								{
 									Name:     "Linksys WRT54GS WAP (Linux kernel)",
 									Accuracy: 94,
 									Line:     8292,
-									Classes: []OSClass{
-										{
-											Vendor:       "Linksys",
-											OSGeneration: "2.4.X",
-											Type:         "WAP",
-											Accuracy:     94,
-											Family:       "Linux",
-										},
-									},
 								},
 								{
 									Name:     "Linux 2.4.18 - 2.4.32 (likely embedded)",
 									Accuracy: 94,
 									Line:     8499,
-									Classes: []OSClass{
-										{
-											Vendor:   "WebVOIZE",
-											Type:     "VoIP phone",
-											Accuracy: 94,
-											Family:   "embedded",
-										},
-										{
-											Vendor:   "Inventel",
-											Type:     "WAP",
-											Accuracy: 91,
-											Family:   "embedded",
-										},
-										{
-											Vendor:   "USRobotics",
-											Type:     "broadband router",
-											Accuracy: 91,
-											Family:   "embedded",
-										},
-										{
-											Vendor:   "Netgear",
-											Type:     "WAP",
-											Accuracy: 91,
-											Family:   "embedded",
-										},
-										{
-											Vendor:   "QLogic",
-											Type:     "switch",
-											Accuracy: 91,
-											Family:   "embedded",
-										},
-										{
-											Vendor:       "Linux",
-											OSGeneration: "2.4.X",
-											Type:         "broadband router",
-											Accuracy:     91,
-											Family:       "Linux",
-										},
-										{
-											Vendor:   "Xerox",
-											Type:     "printer",
-											Accuracy: 90,
-											Family:   "embedded",
-										},
-										{
-											Vendor:   "Roku",
-											Type:     "media device",
-											Accuracy: 89,
-											Family:   "embedded",
-										},
-									},
 								},
 								{
 									Name:     "Linux 2.4.21 - 2.4.33",
 									Accuracy: 94,
 									Line:     8624,
-									Classes: []OSClass{
-										{
-											Vendor:       "Linux",
-											OSGeneration: "2.4.X",
-											Type:         "general purpose",
-											Accuracy:     94,
-											Family:       "Linux",
-										},
-										{
-											Vendor:       "D-Link",
-											OSGeneration: "2.4.X",
-											Type:         "WAP",
-											Accuracy:     91,
-											Family:       "Linux",
-										},
-										{
-											Vendor:       "Linux",
-											OSGeneration: "2.4.X",
-											Type:         "WAP",
-											Accuracy:     91,
-											Family:       "Linux",
-										},
-										{
-											Vendor:       "3Com",
-											OSGeneration: "2.4.X",
-											Type:         "broadband router",
-											Accuracy:     89,
-											Family:       "Linux",
-										},
-									},
 								},
 								{
 									Name:     "Linux 2.4.27",
 									Accuracy: 94,
 									Line:     8675,
-									Classes: []OSClass{
-										{
-											Vendor:       "Sharp",
-											OSGeneration: "2.4.X",
-											Type:         "PDA",
-											Accuracy:     91,
-											Family:       "Linux",
-										},
-										{
-											Vendor:       "Linux",
-											OSGeneration: "2.4.X",
-											Type:         "media device",
-											Accuracy:     91,
-											Family:       "Linux",
-										},
-									},
 								},
 								{
 									Name:     "Linux 2.4.28 - 2.4.30",
@@ -588,114 +342,213 @@ func TestParseRunXML(t *testing.T) {
 									Name:     "Linux 2.6.5 - 2.6.18",
 									Accuracy: 94,
 									Line:     11411,
-									Classes: []OSClass{
-										{
-											Vendor:       "Linux",
-											OSGeneration: "2.6.X",
-											Type:         "general purpose",
-											Accuracy:     94,
-											Family:       "Linux",
-										},
-									},
 								},
 								{
 									Name:     "Linux 2.6.8",
 									Accuracy: 94,
 									Line:     11485,
-									Classes: []OSClass{
-										{
-											Vendor:       "Dream Multimedia",
-											OSGeneration: "2.6.X",
-											Type:         "media device",
-											Accuracy:     89,
-											Family:       "Linux",
-										},
-										{
-											Vendor:       "Iomega",
-											OSGeneration: "2.6.X",
-											Type:         "storage-misc",
-											Accuracy:     89,
-											Family:       "Linux",
-										},
-									},
 								},
 								{
 									Name:     "WebVOIZE 120 IP phone",
 									Accuracy: 94,
 									Line:     18921,
-									Classes: []OSClass{
-										{
-											Vendor:       "FON",
-											OSGeneration: "2.6.X",
-											Type:         "WAP",
-											Accuracy:     91,
-											Family:       "Linux",
-										},
-										{
-											Vendor:       "Linux",
-											OSGeneration: "2.4.X",
-											Type:         "VoIP gateway",
-											Accuracy:     91,
-											Family:       "Linux",
-										},
-										{
-											Vendor:       "FON",
-											OSGeneration: "2.4.X",
-											Type:         "WAP",
-											Accuracy:     90,
-											Family:       "Linux",
-										},
-										{
-											Vendor:   "Belkin",
-											Type:     "WAP",
-											Accuracy: 90,
-											Family:   "embedded",
-										},
-										{
-											Vendor:   "Asus",
-											Type:     "WAP",
-											Accuracy: 90,
-											Family:   "embedded",
-										},
-										{
-											Vendor:       "Netgear",
-											OSGeneration: "2.4.X",
-											Type:         "WAP",
-											Accuracy:     90,
-											Family:       "Linux",
-										},
-										{
-											Vendor:   "Occam",
-											Type:     "VoIP gateway",
-											Accuracy: 89,
-											Family:   "embedded",
-										},
-										{
-											Vendor:   "Siemens",
-											Type:     "WAP",
-											Accuracy: 89,
-											Family:   "Linux",
-										},
-									},
 								},
 								{
 									Name:     "Linux 2.4.2 (Red Hat 7.1)",
 									Accuracy: 91,
 									Line:     8533,
-									Classes: []OSClass{
-										{
-											Vendor:       "Aladdin",
-											OSGeneration: "2.4.X",
-											Type:         "security-misc",
-											Accuracy:     89,
-											Family:       "Linux",
-										},
-									},
 								},
 							},
 							Fingerprints: []OSFingerprint{
 								{
 									Fingerprint: fingerprint,
+								},
+							},
+							Classes: []OSClass{
+								{
+									Vendor:       "MikroTik",
+									OSGeneration: "2.X",
+									Type:         "software router",
+									Accuracy:     94,
+									Family:       "RouterOS",
+								},
+								{
+									Vendor:       "Linksys",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     94,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "general purpose",
+									Accuracy:     94,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.6.X",
+									Type:         "general purpose",
+									Accuracy:     94,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "WebVOIZE",
+									Type:     "VoIP phone",
+									Accuracy: 94,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "D-Link",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Inventel",
+									Type:     "WAP",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "USRobotics",
+									Type:     "broadband router",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "broadband router",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "media device",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Linux",
+									OSGeneration: "2.4.X",
+									Type:         "VoIP gateway",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Netgear",
+									Type:     "WAP",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "QLogic",
+									Type:     "switch",
+									Accuracy: 91,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Sharp",
+									OSGeneration: "2.4.X",
+									Type:         "PDA",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "FON",
+									OSGeneration: "2.6.X",
+									Type:         "WAP",
+									Accuracy:     91,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "FON",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     90,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Belkin",
+									Type:     "WAP",
+									Accuracy: 90,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "Asus",
+									Type:     "WAP",
+									Accuracy: 90,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Netgear",
+									OSGeneration: "2.4.X",
+									Type:         "WAP",
+									Accuracy:     90,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Xerox",
+									Type:     "printer",
+									Accuracy: 90,
+									Family:   "embedded",
+								},
+								{
+									Vendor:       "Aladdin",
+									OSGeneration: "2.4.X",
+									Type:         "security-misc",
+									Accuracy:     89,
+									Family:       "Linux",
+								},
+								{
+									Vendor:   "Occam",
+									Type:     "VoIP gateway",
+									Accuracy: 89,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "Roku",
+									Type:     "media device",
+									Accuracy: 89,
+									Family:   "embedded",
+								},
+								{
+									Vendor:   "Siemens",
+									Type:     "WAP",
+									Accuracy: 89,
+									Family:   "Linux",
+								},
+								{
+									Vendor:       "3Com",
+									OSGeneration: "2.4.X",
+									Type:         "broadband router",
+									Accuracy:     89,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Dream Multimedia",
+									OSGeneration: "2.6.X",
+									Type:         "media device",
+									Accuracy:     89,
+									Family:       "Linux",
+								},
+								{
+									Vendor:       "Iomega",
+									OSGeneration: "2.6.X",
+									Type:         "storage-misc",
+									Accuracy:     89,
+									Family:       "Linux",
 								},
 							},
 						},
@@ -1173,28 +1026,6 @@ func compareResults(t *testing.T, expected, got *Run) {
 
 			if !reflect.DeepEqual(expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence) {
 				t.Errorf("unexpected host IPIDSequence, expected %+v got %+v", expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence)
-			}
-
-			if len(expected.Hosts[idx].OS.Matches) != len(got.Hosts[idx].OS.Matches) {
-				t.Errorf("unexpected number of host matches, expected to have %d classes, got %d instead",
-					len(expected.Hosts[idx].OS.Matches), len(got.Hosts[idx].OS.Matches))
-			} else {
-				for i := range expected.Hosts[idx].OS.Matches {
-					if len(expected.Hosts[idx].OS.Matches[i].Classes) != len(got.Hosts[idx].OS.Matches[i].Classes) {
-						t.Errorf("unexpected number of host classes, expected to have %d classes, got %d instead",
-							len(expected.Hosts[idx].OS.Matches[i].Classes), len(got.Hosts[idx].OS.Matches[i].Classes))
-					} else {
-						for j := range expected.Hosts[idx].OS.Matches[i].Classes {
-							if !reflect.DeepEqual(expected.Hosts[idx].OS.Matches[i].Classes[j], got.Hosts[idx].OS.Matches[i].Classes[j]) {
-								t.Errorf("unexpected host os class, expected %+v got %+v", expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i].Classes[j])
-							}
-						}
-
-						if !reflect.DeepEqual(expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i]) {
-							t.Errorf("unexpected host os match, expected %+v got %+v", expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i])
-						}
-					}
-				}
 			}
 
 			if !reflect.DeepEqual(expected.Hosts[idx].OS, got.Hosts[idx].OS) {
