@@ -39,7 +39,7 @@ func ExampleScanner_filters() {
 		WithFilterHost(func(h Host) bool {
 			// Filter out hosts with no open ports.
 			for idx := range h.Ports {
-				if h.Ports[idx].Status() == "open" {
+				if h.Ports[idx].Status() == "closed" {
 					return true
 				}
 			}
