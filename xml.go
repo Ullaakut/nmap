@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	family "github.com/Ullaakut/nmap/pkg/osfamilies"
+	family "github.com/ullaakut/nmap/pkg/osfamilies"
 )
 
 // Run represents an nmap scanning run.
