@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	family "github.com/Ullaakut/nmap/pkg/osfamilies"
+	family "github.com/ullaakut/nmap/pkg/osfamilies"
 )
 
 func TestParseTime(t *testing.T) {
