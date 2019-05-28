@@ -594,6 +594,13 @@ func WithPortExclusions(ports ...string) func(*Scanner) {
 	}
 }
 
+// WithPingScan - Just determine if hosts are online
+func WithPingScan() func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-sP")
+	}
+}
+
 // WithFastMode makes the scan faster by scanning fewer ports than the default scan.
 func WithFastMode() func(*Scanner) {
 	return func(s *Scanner) {
