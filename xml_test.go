@@ -444,26 +444,141 @@ func TestParseRunXML(t *testing.T) {
 									Name:     "MicroTik RouterOS 2.9.46",
 									Accuracy: 94,
 									Line:     14788,
+									Classes: []OSClass{
+										{
+											Vendor:       "MikroTik",
+											OSGeneration: "2.X",
+											Type:         "software router",
+											Accuracy:     94,
+											Family:       "RouterOS",
+										},
+									},
 								},
 								{
 									Name:     "Linksys WRT54GS WAP (Linux kernel)",
 									Accuracy: 94,
 									Line:     8292,
+									Classes: []OSClass{
+										{
+											Vendor:       "Linksys",
+											OSGeneration: "2.4.X",
+											Type:         "WAP",
+											Accuracy:     94,
+											Family:       "Linux",
+										},
+									},
 								},
 								{
 									Name:     "Linux 2.4.18 - 2.4.32 (likely embedded)",
 									Accuracy: 94,
 									Line:     8499,
+									Classes: []OSClass{
+										{
+											Vendor:   "WebVOIZE",
+											Type:     "VoIP phone",
+											Accuracy: 94,
+											Family:   "embedded",
+										},
+										{
+											Vendor:   "Inventel",
+											Type:     "WAP",
+											Accuracy: 91,
+											Family:   "embedded",
+										},
+										{
+											Vendor:   "USRobotics",
+											Type:     "broadband router",
+											Accuracy: 91,
+											Family:   "embedded",
+										},
+										{
+											Vendor:   "Netgear",
+											Type:     "WAP",
+											Accuracy: 91,
+											Family:   "embedded",
+										},
+										{
+											Vendor:   "QLogic",
+											Type:     "switch",
+											Accuracy: 91,
+											Family:   "embedded",
+										},
+										{
+											Vendor:       "Linux",
+											OSGeneration: "2.4.X",
+											Type:         "broadband router",
+											Accuracy:     91,
+											Family:       "Linux",
+										},
+										{
+											Vendor:   "Xerox",
+											Type:     "printer",
+											Accuracy: 90,
+											Family:   "embedded",
+										},
+										{
+											Vendor:   "Roku",
+											Type:     "media device",
+											Accuracy: 89,
+											Family:   "embedded",
+										},
+									},
 								},
 								{
 									Name:     "Linux 2.4.21 - 2.4.33",
 									Accuracy: 94,
 									Line:     8624,
+									Classes: []OSClass{
+										{
+											Vendor:       "Linux",
+											OSGeneration: "2.4.X",
+											Type:         "general purpose",
+											Accuracy:     94,
+											Family:       "Linux",
+										},
+										{
+											Vendor:       "D-Link",
+											OSGeneration: "2.4.X",
+											Type:         "WAP",
+											Accuracy:     91,
+											Family:       "Linux",
+										},
+										{
+											Vendor:       "Linux",
+											OSGeneration: "2.4.X",
+											Type:         "WAP",
+											Accuracy:     91,
+											Family:       "Linux",
+										},
+										{
+											Vendor:       "3Com",
+											OSGeneration: "2.4.X",
+											Type:         "broadband router",
+											Accuracy:     89,
+											Family:       "Linux",
+										},
+									},
 								},
 								{
 									Name:     "Linux 2.4.27",
 									Accuracy: 94,
 									Line:     8675,
+									Classes: []OSClass{
+										{
+											Vendor:       "Sharp",
+											OSGeneration: "2.4.X",
+											Type:         "PDA",
+											Accuracy:     91,
+											Family:       "Linux",
+										},
+										{
+											Vendor:       "Linux",
+											OSGeneration: "2.4.X",
+											Type:         "media device",
+											Accuracy:     91,
+											Family:       "Linux",
+										},
+									},
 								},
 								{
 									Name:     "Linux 2.4.28 - 2.4.30",
@@ -474,213 +589,114 @@ func TestParseRunXML(t *testing.T) {
 									Name:     "Linux 2.6.5 - 2.6.18",
 									Accuracy: 94,
 									Line:     11411,
+									Classes: []OSClass{
+										{
+											Vendor:       "Linux",
+											OSGeneration: "2.6.X",
+											Type:         "general purpose",
+											Accuracy:     94,
+											Family:       "Linux",
+										},
+									},
 								},
 								{
 									Name:     "Linux 2.6.8",
 									Accuracy: 94,
 									Line:     11485,
+									Classes: []OSClass{
+										{
+											Vendor:       "Dream Multimedia",
+											OSGeneration: "2.6.X",
+											Type:         "media device",
+											Accuracy:     89,
+											Family:       "Linux",
+										},
+										{
+											Vendor:       "Iomega",
+											OSGeneration: "2.6.X",
+											Type:         "storage-misc",
+											Accuracy:     89,
+											Family:       "Linux",
+										},
+									},
 								},
 								{
 									Name:     "WebVOIZE 120 IP phone",
 									Accuracy: 94,
 									Line:     18921,
+									Classes: []OSClass{
+										{
+											Vendor:       "FON",
+											OSGeneration: "2.6.X",
+											Type:         "WAP",
+											Accuracy:     91,
+											Family:       "Linux",
+										},
+										{
+											Vendor:       "Linux",
+											OSGeneration: "2.4.X",
+											Type:         "VoIP gateway",
+											Accuracy:     91,
+											Family:       "Linux",
+										},
+										{
+											Vendor:       "FON",
+											OSGeneration: "2.4.X",
+											Type:         "WAP",
+											Accuracy:     90,
+											Family:       "Linux",
+										},
+										{
+											Vendor:   "Belkin",
+											Type:     "WAP",
+											Accuracy: 90,
+											Family:   "embedded",
+										},
+										{
+											Vendor:   "Asus",
+											Type:     "WAP",
+											Accuracy: 90,
+											Family:   "embedded",
+										},
+										{
+											Vendor:       "Netgear",
+											OSGeneration: "2.4.X",
+											Type:         "WAP",
+											Accuracy:     90,
+											Family:       "Linux",
+										},
+										{
+											Vendor:   "Occam",
+											Type:     "VoIP gateway",
+											Accuracy: 89,
+											Family:   "embedded",
+										},
+										{
+											Vendor:   "Siemens",
+											Type:     "WAP",
+											Accuracy: 89,
+											Family:   "Linux",
+										},
+									},
 								},
 								{
 									Name:     "Linux 2.4.2 (Red Hat 7.1)",
 									Accuracy: 91,
 									Line:     8533,
+									Classes: []OSClass{
+										{
+											Vendor:       "Aladdin",
+											OSGeneration: "2.4.X",
+											Type:         "security-misc",
+											Accuracy:     89,
+											Family:       "Linux",
+										},
+									},
 								},
 							},
 							Fingerprints: []OSFingerprint{
 								{
 									Fingerprint: fingerprint,
-								},
-							},
-							Classes: []OSClass{
-								{
-									Vendor:       "MikroTik",
-									OSGeneration: "2.X",
-									Type:         "software router",
-									Accuracy:     94,
-									Family:       "RouterOS",
-								},
-								{
-									Vendor:       "Linksys",
-									OSGeneration: "2.4.X",
-									Type:         "WAP",
-									Accuracy:     94,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "Linux",
-									OSGeneration: "2.4.X",
-									Type:         "general purpose",
-									Accuracy:     94,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "Linux",
-									OSGeneration: "2.6.X",
-									Type:         "general purpose",
-									Accuracy:     94,
-									Family:       "Linux",
-								},
-								{
-									Vendor:   "WebVOIZE",
-									Type:     "VoIP phone",
-									Accuracy: 94,
-									Family:   "embedded",
-								},
-								{
-									Vendor:       "D-Link",
-									OSGeneration: "2.4.X",
-									Type:         "WAP",
-									Accuracy:     91,
-									Family:       "Linux",
-								},
-								{
-									Vendor:   "Inventel",
-									Type:     "WAP",
-									Accuracy: 91,
-									Family:   "embedded",
-								},
-								{
-									Vendor:   "USRobotics",
-									Type:     "broadband router",
-									Accuracy: 91,
-									Family:   "embedded",
-								},
-								{
-									Vendor:       "Linux",
-									OSGeneration: "2.4.X",
-									Type:         "broadband router",
-									Accuracy:     91,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "Linux",
-									OSGeneration: "2.4.X",
-									Type:         "WAP",
-									Accuracy:     91,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "Linux",
-									OSGeneration: "2.4.X",
-									Type:         "media device",
-									Accuracy:     91,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "Linux",
-									OSGeneration: "2.4.X",
-									Type:         "VoIP gateway",
-									Accuracy:     91,
-									Family:       "Linux",
-								},
-								{
-									Vendor:   "Netgear",
-									Type:     "WAP",
-									Accuracy: 91,
-									Family:   "embedded",
-								},
-								{
-									Vendor:   "QLogic",
-									Type:     "switch",
-									Accuracy: 91,
-									Family:   "embedded",
-								},
-								{
-									Vendor:       "Sharp",
-									OSGeneration: "2.4.X",
-									Type:         "PDA",
-									Accuracy:     91,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "FON",
-									OSGeneration: "2.6.X",
-									Type:         "WAP",
-									Accuracy:     91,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "FON",
-									OSGeneration: "2.4.X",
-									Type:         "WAP",
-									Accuracy:     90,
-									Family:       "Linux",
-								},
-								{
-									Vendor:   "Belkin",
-									Type:     "WAP",
-									Accuracy: 90,
-									Family:   "embedded",
-								},
-								{
-									Vendor:   "Asus",
-									Type:     "WAP",
-									Accuracy: 90,
-									Family:   "embedded",
-								},
-								{
-									Vendor:       "Netgear",
-									OSGeneration: "2.4.X",
-									Type:         "WAP",
-									Accuracy:     90,
-									Family:       "Linux",
-								},
-								{
-									Vendor:   "Xerox",
-									Type:     "printer",
-									Accuracy: 90,
-									Family:   "embedded",
-								},
-								{
-									Vendor:       "Aladdin",
-									OSGeneration: "2.4.X",
-									Type:         "security-misc",
-									Accuracy:     89,
-									Family:       "Linux",
-								},
-								{
-									Vendor:   "Occam",
-									Type:     "VoIP gateway",
-									Accuracy: 89,
-									Family:   "embedded",
-								},
-								{
-									Vendor:   "Roku",
-									Type:     "media device",
-									Accuracy: 89,
-									Family:   "embedded",
-								},
-								{
-									Vendor:   "Siemens",
-									Type:     "WAP",
-									Accuracy: 89,
-									Family:   "Linux",
-								},
-								{
-									Vendor:       "3Com",
-									OSGeneration: "2.4.X",
-									Type:         "broadband router",
-									Accuracy:     89,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "Dream Multimedia",
-									OSGeneration: "2.6.X",
-									Type:         "media device",
-									Accuracy:     89,
-									Family:       "Linux",
-								},
-								{
-									Vendor:       "Iomega",
-									OSGeneration: "2.6.X",
-									Type:         "storage-misc",
-									Accuracy:     89,
-									Family:       "Linux",
 								},
 							},
 						},
@@ -1158,6 +1174,28 @@ func compareResults(t *testing.T, expected, got *Run) {
 
 			if !reflect.DeepEqual(expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence) {
 				t.Errorf("unexpected host IPIDSequence, expected %+v got %+v", expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence)
+			}
+
+			if len(expected.Hosts[idx].OS.Matches) != len(got.Hosts[idx].OS.Matches) {
+				t.Errorf("unexpected number of host matches, expected to have %d classes, got %d instead",
+					len(expected.Hosts[idx].OS.Matches), len(got.Hosts[idx].OS.Matches))
+			} else {
+				for i := range expected.Hosts[idx].OS.Matches {
+					if len(expected.Hosts[idx].OS.Matches[i].Classes) != len(got.Hosts[idx].OS.Matches[i].Classes) {
+						t.Errorf("unexpected number of host classes, expected to have %d classes, got %d instead",
+							len(expected.Hosts[idx].OS.Matches[i].Classes), len(got.Hosts[idx].OS.Matches[i].Classes))
+					} else {
+						for j := range expected.Hosts[idx].OS.Matches[i].Classes {
+							if !reflect.DeepEqual(expected.Hosts[idx].OS.Matches[i].Classes[j], got.Hosts[idx].OS.Matches[i].Classes[j]) {
+								t.Errorf("unexpected host os class, expected %+v got %+v", expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i].Classes[j])
+							}
+						}
+
+						if !reflect.DeepEqual(expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i]) {
+							t.Errorf("unexpected host os match, expected %+v got %+v", expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i])
+						}
+					}
+				}
 			}
 
 			if !reflect.DeepEqual(expected.Hosts[idx].OS, got.Hosts[idx].OS) {

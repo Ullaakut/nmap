@@ -260,7 +260,6 @@ type OS struct {
 	PortsUsed    []PortUsed      `xml:"portused" json:"ports_used"`
 	Matches      []OSMatch       `xml:"osmatch" json:"os_matches"`
 	Fingerprints []OSFingerprint `xml:"osfingerprint" json:"os_fingerprints"`
-	Classes      []OSClass       `xml:"osclass" json:"os_classes"`
 }
 
 // PortUsed is the port used to fingerprint an operating system.
@@ -272,9 +271,10 @@ type PortUsed struct {
 
 // OSMatch contains detailed information regarding an operating system fingerprint.
 type OSMatch struct {
-	Name     string `xml:"name,attr" json:"name"`
-	Accuracy int    `xml:"accuracy,attr" json:"accuracy"`
-	Line     int    `xml:"line,attr" json:"line"`
+	Name     string    `xml:"name,attr" json:"name"`
+	Accuracy int       `xml:"accuracy,attr" json:"accuracy"`
+	Line     int       `xml:"line,attr" json:"line"`
+	Classes  []OSClass `xml:"osclass" json:"os_classes"`
 }
 
 // OSClass contains vendor information about an operating system.
