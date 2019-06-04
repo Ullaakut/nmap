@@ -705,18 +705,22 @@ func WithScripts(scripts ...string) func(*Scanner) {
 	}
 }
 
-// WithScriptArguments provides arguments for scripts.
+// WithScriptArguments provides arguments for scripts. If a value is the empty string, the key will be used as a flag.
 func WithScriptArguments(arguments map[string]string) func(*Scanner) {
 	var argList string
 
 	// Properly format the argument list from the map.
 	// Complex example:
-	// user=foo,pass=",{}=bar",whois={whodb=nofollow+ripe},xmpp-info.server_name=localhost
+	// user=foo,pass=",{}=bar",whois={whodb=nofollow+ripe},xmpp-info.server_name=localhost,vulns.showall
 	for key, value := range arguments {
-		argList = strings.Join([]string{
-			argList,
-			fmt.Sprintf("%s=%s", key, value),
-		}, ",")
+		str := ""
+		if value == "" {
+			str = key
+		} else {
+			str = fmt.Sprintf("%s=%s", key, value)
+		}
+
+		argList = strings.Join([]string{argList, str}, ",")
 	}
 
 	argList = strings.TrimLeft(argList, ",")

@@ -1020,6 +1020,7 @@ func TestScriptScan(t *testing.T) {
 					"pass":                  "\",{}=bar\"",
 					"whois":                 "{whodb=nofollow+ripe}",
 					"xmpp-info.server_name": "localhost",
+					"vulns.showall": "",
 				}),
 			},
 
@@ -1031,6 +1032,7 @@ func TestScriptScan(t *testing.T) {
 				"pass=\",{}=bar\"",
 				"whois={whodb=nofollow+ripe}",
 				"xmpp-info.server_name=localhost",
+				"vulns.showall",
 			},
 		},
 		{
