@@ -69,7 +69,7 @@ func (s *Scanner) Run() (*Run, error) {
 	}
 
 	// Make a goroutine to notify the select when the scan is done.
-	done := make(chan error)
+	done := make(chan error, 1)
 	go func() {
 		done <- cmd.Wait()
 	}()
