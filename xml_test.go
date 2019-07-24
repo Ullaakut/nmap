@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	family "github.com/ullaakut/nmap/pkg/osfamilies"
+	family "github.com/Ullaakut/nmap/pkg/osfamilies"
 )
 
 func TestParseTime(t *testing.T) {
@@ -49,7 +49,6 @@ func TestOSFamily(t *testing.T) {
 		t.Errorf("expected OSClass.OSFamily() to be equal to %v, got %v", family.Linux, osc.OSFamily())
 	}
 }
-
 
 func TestParseTableXML(t *testing.T) {
 	expectedTable := Table{
