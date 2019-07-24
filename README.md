@@ -11,8 +11,8 @@
     <a href="https://godoc.org/github.com/Ullaakut/nmap">
         <img src="https://godoc.org/github.com/Ullaakut/nmap?status.svg" />
     </a>
-    <a href="https://goreportcard.com/report/github.com/ullaakut/nmap">
-        <img src="https://goreportcard.com/badge/github.com/ullaakut/nmap">
+    <a href="https://goreportcard.com/report/github.com/Ullaakut/nmap">
+        <img src="https://goreportcard.com/badge/github.com/Ullaakut/nmap">
     </a>
     <a href="https://travis-ci.org/Ullaakut/nmap">
         <img src="https://travis-ci.org/Ullaakut/nmap.svg?branch=master">
