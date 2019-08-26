@@ -84,6 +84,7 @@ func (s *Scanner) Run() (*Run, error) {
 		// Scan finished before timeout.
 		var nmapErrors []NmapErrors
 		if stderr.Len() > 0 {
+			// List all unique errors returned by nmap.
 			for _, v := range RemoveDuplicatesFromSlice(strings.Split(strings.Trim(stderr.String(), "\n"), "\n")) {
 				nmapErrors = append(nmapErrors, NmapErrors{Error: v})
 			}
