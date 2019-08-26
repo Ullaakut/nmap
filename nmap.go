@@ -4,7 +4,6 @@ package nmap
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -83,11 +82,14 @@ func (s *Scanner) Run() (*Run, error) {
 		return nil, ErrScanTimeout
 	case <-done:
 		// Scan finished before timeout.
+		var nmapErrors []NmapErrors
 		if stderr.Len() > 0 {
-			return nil, errors.New(strings.Trim(stderr.String(), ".\n"))
+			for _, v := range RemoveDuplicatesFromSlice(strings.Split(strings.Trim(stderr.String(), "\n"), "\n")) {
+				nmapErrors = append(nmapErrors, NmapErrors{Error: v})
+			}
 		}
 
-		result, err := Parse(stdout.Bytes())
+		result, err := Parse(stdout.Bytes(), nmapErrors)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse nmap output: %v", err)
 		}
