@@ -45,8 +45,8 @@ func TestRun(t *testing.T) {
 		testTimeout     bool
 		compareWholeRun bool
 
-		expectedResult  *Run
-		expectedErr     error
+		expectedResult *Run
+		expectedErr    error
 		expectedNmapErr string
 	}{
 		{
@@ -58,7 +58,7 @@ func TestRun(t *testing.T) {
 			},
 
 			expectedResult: nil,
-			expectedErr:    &os.PathError{Op: "fork/exec", Path: "/invalid", Err: errors.New("fork/exec /invalid: no such file or directory")},
+			expectedErr:    errors.New("fork/exec /invalid: no such file or directory"),
 		},
 		{
 			description: "output can't be parsed",
@@ -103,8 +103,11 @@ func TestRun(t *testing.T) {
 				WithTimingTemplate(TimingFastest),
 			},
 
-			expectedErr:     nil,
-			expectedNmapErr: "WARNING: No targets were specified, so 0 hosts scanned",
+			expectedNmapErr: "WARNING: No targets were specified, so 0 hosts scanned.",
+			expectedResult: &Run{
+				Scanner: "nmap",
+				Args: "/usr/local/bin/nmap -T5 -oX -",
+			},
 		},
 		{
 			description: "scan localhost with filters",
@@ -179,20 +182,37 @@ func TestRun(t *testing.T) {
 			}
 
 			result, err := s.Run()
-			if result != nil {
-				result.rawXML = nil
-			}
 
-			assert.Equal(t, test.expectedErr, err)
+			if err != test.expectedErr {
+				require.NotNil(t, err)
+
+				if err.Error() != test.expectedErr.Error() {
+					t.Errorf("expected error %q got %q", test.expectedErr, err)
+				}
+			}
 
 			if test.expectedNmapErr != "" {
 				require.NotNil(t, result)
+
 				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
 			}
 
+			if result == nil && test.expectedResult == nil {
+				return
+			} else if result == nil && test.expectedResult != nil {
+				t.Error("expected non-nil result, got nil")
+				return
+			} else if result != nil && test.expectedResult == nil {
+				t.Error("expected nil result, got non-nil")
+				return
+			}
+
 			if test.compareWholeRun {
-				assert.Equal(t, test.expectedResult, result)
-			} else if test.expectedResult != nil {
+				result.rawXML = nil
+				if !reflect.DeepEqual(test.expectedResult, result) {
+					t.Errorf("expected result to be %+v, got %+v", test.expectedResult, result)
+				}
+			} else {
 				if result.Args != test.expectedResult.Args {
 					t.Errorf("expected args %s got %s", test.expectedResult.Args, result.Args)
 				}
@@ -1017,7 +1037,7 @@ func TestScriptScan(t *testing.T) {
 					"pass":                  "\",{}=bar\"",
 					"whois":                 "{whodb=nofollow+ripe}",
 					"xmpp-info.server_name": "localhost",
-					"vulns.showall":         "",
+					"vulns.showall": "",
 				}),
 			},
 
