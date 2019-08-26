@@ -32,7 +32,7 @@ type Run struct {
 	TaskProgress     []TaskProgress `xml:"taskprogress" json:"task_progress"`
 	TaskEnd          []Task         `xml:"taskend" json:"task_end"`
 
-	NmapErrors []NmapErrors
+	NmapErrors []NmapError
 	rawXML     []byte
 }
 
