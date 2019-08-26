@@ -423,10 +423,9 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 
 // Parse takes a byte array of nmap xml data and unmarshals it into a
 // Run struct.
-func Parse(content []byte, nmapErrors []NmapError) (*Run, error) {
+func Parse(content []byte) (*Run, error) {
 	r := &Run{
-		rawXML:     content,
-		NmapErrors: nmapErrors,
+		rawXML: content,
 	}
 
 	err := xml.Unmarshal(content, r)
