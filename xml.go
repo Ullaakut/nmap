@@ -32,11 +32,11 @@ type Run struct {
 	TaskProgress     []TaskProgress `xml:"taskprogress" json:"task_progress"`
 	TaskEnd          []Task         `xml:"taskend" json:"task_end"`
 
-	NmapErrors []NmapErrors
+	NmapErrors []NmapError
 	rawXML     []byte
 }
 
-type NmapErrors struct {
+type NmapError struct {
 	Error string
 }
 
@@ -423,7 +423,7 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 
 // Parse takes a byte array of nmap xml data and unmarshals it into a
 // Run struct.
-func Parse(content []byte, nmapErrors []NmapErrors) (*Run, error) {
+func Parse(content []byte, nmapErrors []NmapError) (*Run, error) {
 	r := &Run{
 		rawXML:     content,
 		NmapErrors: nmapErrors,
