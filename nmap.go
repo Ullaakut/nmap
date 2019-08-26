@@ -4,11 +4,12 @@ package nmap
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
 	"time"
+
+	. "github.com/Ullaakut/nmap/internal/slices"
 )
 
 // ScanRunner represents something that can run a scan.
@@ -83,14 +84,19 @@ func (s *Scanner) Run() (*Run, error) {
 		return nil, ErrScanTimeout
 	case <-done:
 		// Scan finished before timeout.
+		var nmapErrors []string
 		if stderr.Len() > 0 {
-			return nil, errors.New(strings.Trim(stderr.String(), ".\n"))
+			// List all unique errors returned by nmap.
+			nmapErrors = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
+			nmapErrors = RemoveDuplicatesFromStringSlice(nmapErrors)
 		}
 
 		result, err := Parse(stdout.Bytes())
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse nmap output: %v", err)
 		}
+
+		result.NmapErrors = nmapErrors
 
 		// Call filters if they are set.
 		if s.portFilter != nil {

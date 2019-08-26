@@ -10,6 +10,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNmapNotInstalled(t *testing.T) {
@@ -44,6 +47,7 @@ func TestRun(t *testing.T) {
 
 		expectedResult *Run
 		expectedErr    error
+		expectedNmapErr string
 	}{
 		{
 			description: "invalid binary path",
@@ -99,7 +103,11 @@ func TestRun(t *testing.T) {
 				WithTimingTemplate(TimingFastest),
 			},
 
-			expectedErr: errors.New("WARNING: No targets were specified, so 0 hosts scanned"),
+			expectedNmapErr: "WARNING: No targets were specified, so 0 hosts scanned.",
+			expectedResult: &Run{
+				Scanner: "nmap",
+				Args: "/usr/local/bin/nmap -T5 -oX -",
+			},
 		},
 		{
 			description: "scan localhost with filters",
@@ -174,10 +182,19 @@ func TestRun(t *testing.T) {
 			}
 
 			result, err := s.Run()
+
 			if err != test.expectedErr {
+				require.NotNil(t, err)
+
 				if err.Error() != test.expectedErr.Error() {
 					t.Errorf("expected error %q got %q", test.expectedErr, err)
 				}
+			}
+
+			if test.expectedNmapErr != "" {
+				require.NotNil(t, result)
+
+				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
 			}
 
 			if result == nil && test.expectedResult == nil {

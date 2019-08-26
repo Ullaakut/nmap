@@ -32,7 +32,8 @@ type Run struct {
 	TaskProgress     []TaskProgress `xml:"taskprogress" json:"task_progress"`
 	TaskEnd          []Task         `xml:"taskend" json:"task_end"`
 
-	rawXML []byte
+	NmapErrors []string
+	rawXML     []byte
 }
 
 // ToFile writes a Run as XML into the specified file path.
@@ -420,7 +421,7 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 // Run struct.
 func Parse(content []byte) (*Run, error) {
 	r := &Run{
-		rawXML: content,
+		rawXML:     content,
 	}
 
 	err := xml.Unmarshal(content, r)
