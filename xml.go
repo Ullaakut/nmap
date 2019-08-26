@@ -425,7 +425,7 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 // Run struct.
 func Parse(content []byte) (*Run, error) {
 	r := &Run{
-		rawXML: content,
+		rawXML:     content,
 	}
 
 	err := xml.Unmarshal(content, r)

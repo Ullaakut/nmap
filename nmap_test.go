@@ -10,6 +10,9 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNmapNotInstalled(t *testing.T) {
@@ -42,8 +45,9 @@ func TestRun(t *testing.T) {
 		testTimeout     bool
 		compareWholeRun bool
 
-		expectedResult *Run
-		expectedErr    error
+		expectedResult  *Run
+		expectedErr     error
+		expectedNmapErr string
 	}{
 		{
 			description: "invalid binary path",
@@ -54,7 +58,7 @@ func TestRun(t *testing.T) {
 			},
 
 			expectedResult: nil,
-			expectedErr:    errors.New("fork/exec /invalid: no such file or directory"),
+			expectedErr:    &os.PathError{Op: "fork/exec", Path: "/invalid", Err: errors.New("fork/exec /invalid: no such file or directory")},
 		},
 		{
 			description: "output can't be parsed",
@@ -99,7 +103,8 @@ func TestRun(t *testing.T) {
 				WithTimingTemplate(TimingFastest),
 			},
 
-			expectedErr: errors.New("WARNING: No targets were specified, so 0 hosts scanned"),
+			expectedErr:     nil,
+			expectedNmapErr: "WARNING: No targets were specified, so 0 hosts scanned",
 		},
 		{
 			description: "scan localhost with filters",
@@ -174,28 +179,20 @@ func TestRun(t *testing.T) {
 			}
 
 			result, err := s.Run()
-			if err != test.expectedErr {
-				if err.Error() != test.expectedErr.Error() {
-					t.Errorf("expected error %q got %q", test.expectedErr, err)
-				}
+			if result != nil {
+				result.rawXML = nil
 			}
 
-			if result == nil && test.expectedResult == nil {
-				return
-			} else if result == nil && test.expectedResult != nil {
-				t.Error("expected non-nil result, got nil")
-				return
-			} else if result != nil && test.expectedResult == nil {
-				t.Error("expected nil result, got non-nil")
-				return
+			assert.Equal(t, test.expectedErr, err)
+
+			if test.expectedNmapErr != "" {
+				require.NotNil(t, result)
+				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
 			}
 
 			if test.compareWholeRun {
-				result.rawXML = nil
-				if !reflect.DeepEqual(test.expectedResult, result) {
-					t.Errorf("expected result to be %+v, got %+v", test.expectedResult, result)
-				}
-			} else {
+				assert.Equal(t, test.expectedResult, result)
+			} else if test.expectedResult != nil {
 				if result.Args != test.expectedResult.Args {
 					t.Errorf("expected args %s got %s", test.expectedResult.Args, result.Args)
 				}
@@ -1020,7 +1017,7 @@ func TestScriptScan(t *testing.T) {
 					"pass":                  "\",{}=bar\"",
 					"whois":                 "{whodb=nofollow+ripe}",
 					"xmpp-info.server_name": "localhost",
-					"vulns.showall": "",
+					"vulns.showall":         "",
 				}),
 			},
 

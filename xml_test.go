@@ -1,7 +1,6 @@
 package nmap
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
@@ -171,12 +170,6 @@ func TestParseTableXML(t *testing.T) {
 			}
 		}
 	}
-}
-
-type mockWriter struct {
-	wr       *bufio.Writer
-	writeErr error
-	flushErr error
 }
 
 func TestFormatTableXML(t *testing.T) {
@@ -1069,7 +1062,9 @@ func TestParseRunXML(t *testing.T) {
 			result, err := Parse(rawXML)
 
 			// Remove rawXML before comparing
-			result.rawXML = []byte{}
+			if result != nil {
+				result.rawXML = []byte{}
+			}
 
 			compareResults(t, test.expectedResult, result)
 

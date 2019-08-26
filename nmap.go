@@ -93,12 +93,11 @@ func (s *Scanner) Run() (*Run, error) {
 		}
 
 		result, err := Parse(stdout.Bytes())
-
-		result.NmapErrors = nmapErrors
-
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse nmap output: %v", err)
 		}
+
+		result.NmapErrors = nmapErrors
 
 		// Call filters if they are set.
 		if s.portFilter != nil {
