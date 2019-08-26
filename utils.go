@@ -4,8 +4,7 @@ package nmap
 func RemoveDuplicatesFromSlice(s []string) []string {
 	m := make(map[string]bool)
 	for _, item := range s {
-		if _, ok := m[item]; ok {
-		} else {
+		if _, ok := m[item]; !ok {
 			m[item] = true
 		}
 	}
