@@ -36,7 +36,7 @@ type Run struct {
 	rawXML     []byte
 }
 
-type NmapErrors struct {
+type NmapError struct {
 	Error string
 }
 
