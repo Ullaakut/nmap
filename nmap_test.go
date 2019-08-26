@@ -106,7 +106,7 @@ func TestRun(t *testing.T) {
 			expectedNmapErr: "WARNING: No targets were specified, so 0 hosts scanned.",
 			expectedResult: &Run{
 				Scanner: "nmap",
-				Args: "/usr/local/bin/nmap -T5 -oX -",
+				Args: nmapPath + " -T5 -oX -",
 			},
 		},
 		{
