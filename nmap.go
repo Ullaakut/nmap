@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	. "github.com/Ullaakut/nmap/internal/slices"
 )
 
 // ScanRunner represents something that can run a scan.
@@ -82,11 +84,11 @@ func (s *Scanner) Run() (*Run, error) {
 		return nil, ErrScanTimeout
 	case <-done:
 		// Scan finished before timeout.
-		var nmapErrors []NmapErrors
+		var nmapErrors []NmapError
 		if stderr.Len() > 0 {
 			// List all unique errors returned by nmap.
-			for _, v := range RemoveDuplicatesFromSlice(strings.Split(strings.Trim(stderr.String(), "\n"), "\n")) {
-				nmapErrors = append(nmapErrors, NmapErrors{Error: v})
+			for _, v := range RemoveDuplicatesFromStringSlice(strings.Split(strings.Trim(stderr.String(), "\n"), "\n")) {
+				nmapErrors = append(nmapErrors, NmapError{Error: v})
 			}
 		}
 
