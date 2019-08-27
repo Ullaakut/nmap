@@ -169,7 +169,7 @@ func WithCustomArguments(args ...string) func(*Scanner) {
 }
 
 // WithFilterPort allows to set a custom function to filter out ports that
-// don't fullfil a given condition. When the given function returns true,
+// don't fulfill a given condition. When the given function returns true,
 // the port is kept, otherwise it is removed from the result. Can be used
 // along with WithFilterHost.
 func WithFilterPort(portFilter func(Port) bool) func(*Scanner) {
@@ -179,7 +179,7 @@ func WithFilterPort(portFilter func(Port) bool) func(*Scanner) {
 }
 
 // WithFilterHost allows to set a custom function to filter out hosts that
-// don't fullfil a given condition. When the given function returns true,
+// don't fulfill a given condition. When the given function returns true,
 // the host is kept, otherwise it is removed from the result. Can be used
 // along with WithFilterPort.
 func WithFilterHost(hostFilter func(Host) bool) func(*Scanner) {

@@ -139,7 +139,7 @@ func (h Hostname) String() string {
 	return h.Name
 }
 
-// Smurf contains repsonses from a smurf attack.
+// Smurf contains responses from a smurf attack.
 type Smurf struct {
 	Responses string `xml:"responses,attr" json:"responses"`
 }
