@@ -118,7 +118,7 @@ func (s *Scanner) Run() (*Run, error) {
 
 // RunAsync runs nmap asynchronously and returns error.
 func (s *Scanner) RunAsync() error {
-	// Enable XML output
+	// Enable XML output.
 	s.args = append(s.args, "-oX")
 
 	// Get XML output in stdout instead of writing it in a file.
