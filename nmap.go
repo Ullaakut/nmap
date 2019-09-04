@@ -127,7 +127,7 @@ func (s *Scanner) RunAsync() error {
 
 	stderr, err := s.Cmd.StderrPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get error output from asynchronous nmap run: %v", err)
 	}
 
 	stdout, err := s.Cmd.StdoutPipe()
