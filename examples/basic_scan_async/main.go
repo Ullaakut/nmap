@@ -17,7 +17,6 @@ func main() {
 		nmap.WithTargets("google.com", "facebook.com", "youtube.co1m"),
 		nmap.WithPorts("80,443,843"),
 	)
-
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
