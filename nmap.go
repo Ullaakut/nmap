@@ -121,7 +121,7 @@ func (s *Scanner) RunAsync() error {
 	// Enable XML output
 	s.args = append(s.args, "-oX")
 
-	// Get XML output in stdout instead of writing it in a file
+	// Get XML output in stdout instead of writing it in a file.
 	s.args = append(s.args, "-")
 	s.Cmd = exec.Command(s.binaryPath, s.args...)
 
