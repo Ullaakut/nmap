@@ -20,7 +20,7 @@ type ScanRunner interface {
 
 // Scanner represents an Nmap scanner.
 type Scanner struct {
-	Cmd *exec.Cmd
+	cmd *exec.Cmd
 
 	args       []string
 	binaryPath string
@@ -29,7 +29,7 @@ type Scanner struct {
 	portFilter func(Port) bool
 	hostFilter func(Host) bool
 
-	Stderr, Stdout bufio.Scanner
+	stderr, stdout bufio.Scanner
 }
 
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
@@ -123,28 +123,28 @@ func (s *Scanner) RunAsync() error {
 
 	// Get XML output in stdout instead of writing it in a file.
 	s.args = append(s.args, "-")
-	s.Cmd = exec.Command(s.binaryPath, s.args...)
+	s.cmd = exec.Command(s.binaryPath, s.args...)
 
-	stderr, err := s.Cmd.StderrPipe()
+	stderr, err := s.cmd.StderrPipe()
 	if err != nil {
 		return fmt.Errorf("unable to get error output from asynchronous nmap run: %v", err)
 	}
 
-	stdout, err := s.Cmd.StdoutPipe()
+	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf("unable to get standard output from asynchronous nmap run: %v", err)
 	}
 
-	s.Stdout = *bufio.NewScanner(stdout)
-	s.Stderr = *bufio.NewScanner(stderr)
+	s.stdout = *bufio.NewScanner(stdout)
+	s.stderr = *bufio.NewScanner(stderr)
 
-	if err := s.Cmd.Start(); err != nil {
+	if err := s.cmd.Start(); err != nil {
 		return fmt.Errorf("unable to execute asynchronous nmap run: %v", err)
 	}
 
 	go func() {
 		<-s.ctx.Done()
-		_ = s.Cmd.Process.Kill()
+		_ = s.cmd.Process.Kill()
 	}()
 
 	return nil
@@ -162,6 +162,21 @@ func chooseHosts(result *Run, filter func(Host) bool) *Run {
 	result.Hosts = filteredHosts
 
 	return result
+}
+
+// Wait waits for the cmd to finish and returns error.
+func (s *Scanner) Wait() error {
+	return s.cmd.Wait()
+}
+
+// GetStdout returns stdout variable for scanner.
+func (s *Scanner) GetStdout() bufio.Scanner {
+	return s.stdout
+}
+
+//  GetStdout returns stderr variable for scanner.
+func (s *Scanner) GetStderr() bufio.Scanner {
+	return s.stderr
 }
 
 func choosePorts(result *Run, filter func(Port) bool) *Run {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -29,43 +28,53 @@ func main() {
 		panic(err)
 	}
 
+	// Connect to stdout of scanner.
+	stdout := s.GetStdout()
+
+	// Connect to stderr of scanner.
+	stderr := s.GetStderr()
+
 	// Goroutine to watch for stdout and print to screen. Additionally it stores
 	// the bytes intoa variable for processiing later.
 	go func() {
-		for s.Stdout.Scan() {
-			fmt.Println(s.Stdout.Text())
-			resultBytes = append(resultBytes, s.Stdout.Bytes()...)
+		for stdout.Scan() {
+			fmt.Println(stdout.Text())
+			resultBytes = append(resultBytes, stdout.Bytes()...)
 		}
 	}()
 
 	// Goroutine to watch for stderr and print to screen. Additionally it stores
 	// the bytes intoa variable for processiing later.
 	go func() {
-		for s.Stderr.Scan() {
-			errorBytes = append(errorBytes, s.Stderr.Bytes()...)
+		for stderr.Scan() {
+			errorBytes = append(errorBytes, stderr.Bytes()...)
 		}
 	}()
 
 	// Blocks main until the scan has completed.
-	if err := s.Cmd.Wait(); err != nil {
+	if err := s.Wait(); err != nil {
 		panic(err)
 	}
 
 	// Parsing the results into corresponding structs.
-	results, err := nmap.Parse(resultBytes)
+	result, err := nmap.Parse(resultBytes)
 
 	// Parsing the results into the NmapError slice of our nmap Struct.
-	results.NmapErrors = strings.Split(string(errorBytes), "\n")
+	result.NmapErrors = strings.Split(string(errorBytes), "\n")
 	if err != nil {
 		panic(err)
 	}
 
-	// Marshal our results into JSON for printing.
-	jsonResults, err := json.MarshalIndent(results, "", "  ")
-	if err != nil {
-		panic(err)
-	}
+	// Use the results to print an example output
+	for _, host := range result.Hosts {
+		if len(host.Ports) == 0 || len(host.Addresses) == 0 {
+			continue
+		}
 
-	// Results should be printed out as formatted JSON.
-	fmt.Printf("%s\n", jsonResults)
+		fmt.Printf("Host %q:\n", host.Addresses[0])
+
+		for _, port := range host.Ports {
+			fmt.Printf("\tPort %d/%s %s %s\n", port.ID, port.Protocol, port.State, port.Service.Name)
+		}
+	}
 }
