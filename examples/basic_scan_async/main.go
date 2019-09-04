@@ -11,7 +11,10 @@ import (
 
 func main() {
 
-	var resultBytes []byte
+	var (
+		resultBytes []byte
+		errorBytes []byte
+	)
 	var errorBytes []byte
 	s, err := nmap.NewScanner(
 		nmap.WithTargets("google.com", "facebook.com", "youtube.co1m"),
