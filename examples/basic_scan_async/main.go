@@ -51,19 +51,21 @@ func main() {
 		panic(err)
 	}
 
-	// Parsing the results into corresponding structs
+	// Parsing the results into corresponding structs.
 	results, err := nmap.Parse(resultBytes)
 
-	// Parsing the results into the NmapError slice of our nmap Struct
+	// Parsing the results into the NmapError slice of our nmap Struct.
 	results.NmapErrors = strings.Split(string(errorBytes), "\n")
 	if err != nil {
 		panic(err)
 	}
 
+	// Marshal our results into JSON for printing.
 	jsonResults, err := json.MarshalIndent(results, "", "  ")
 	if err != nil {
 		panic(err)
 	}
 
+	// Results should be printed out as formatted JSON.
 	fmt.Printf("%s\n", jsonResults)
 }
