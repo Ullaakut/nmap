@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/Ullaakut/nmap/internal/slices"
+	. "github.com/ullaakut/nmap/internal/slices"
 )
 
 // ScanRunner represents something that can run a scan.
@@ -132,7 +132,7 @@ func (s *Scanner) RunAsync() error {
 
 	stdout, err := s.Cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get standard output from asynchronous nmap run: %v", err)
 	}
 
 	s.Stdout = *bufio.NewScanner(stdout)
@@ -143,10 +143,8 @@ func (s *Scanner) RunAsync() error {
 	}
 
 	go func() {
-		select {
-		case <-s.ctx.Done():
-			s.Cmd.Process.Kill()
-		}
+		<-s.ctx.Done()
+		_ = s.Cmd.Process.Kill()
 	}()
 
 	return nil
