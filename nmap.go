@@ -2,6 +2,7 @@
 package nmap
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -19,12 +20,16 @@ type ScanRunner interface {
 
 // Scanner represents an Nmap scanner.
 type Scanner struct {
+	Cmd *exec.Cmd
+
 	args       []string
 	binaryPath string
 	ctx        context.Context
 
 	portFilter func(Port) bool
 	hostFilter func(Host) bool
+
+	Stderr, Stdout bufio.Scanner
 }
 
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
@@ -109,6 +114,42 @@ func (s *Scanner) Run() (*Run, error) {
 
 		return result, nil
 	}
+}
+
+// RunAsync runs nmap asynchronously and returns error.
+func (s *Scanner) RunAsync() error {
+	// Enable XML output
+	s.args = append(s.args, "-oX")
+
+	// Get XML output in stdout instead of writing it in a file
+	s.args = append(s.args, "-")
+	s.Cmd = exec.Command(s.binaryPath, s.args...)
+
+	stderr, err := s.Cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	stdout, err := s.Cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	s.Stdout = *bufio.NewScanner(stdout)
+	s.Stderr = *bufio.NewScanner(stderr)
+
+	if err := s.Cmd.Start(); err != nil {
+		return err
+	}
+
+	go func() {
+		select {
+		case <-s.ctx.Done():
+			s.Cmd.Process.Kill()
+		}
+	}()
+
+	return nil
 }
 
 func chooseHosts(result *Run, filter func(Host) bool) *Run {
