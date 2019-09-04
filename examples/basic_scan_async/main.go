@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	var (
 		resultBytes []byte
 		errorBytes []byte
