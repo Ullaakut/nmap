@@ -139,7 +139,7 @@ func (s *Scanner) RunAsync() error {
 	s.Stderr = *bufio.NewScanner(stderr)
 
 	if err := s.Cmd.Start(); err != nil {
-		return err
+		return fmt.Errorf("unable to execute asynchronous nmap run: %v", err)
 	}
 
 	go func() {
