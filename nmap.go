@@ -865,6 +865,14 @@ func WithTimingTemplate(timing Timing) func(*Scanner) {
 	}
 }
 
+// WithStatsEvery periodically prints a timing status message after each interval of time.
+func WithStatsEvery(interval string) func(*Scanner) {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--stats-every")
+		s.args = append(s.args, interval)
+	}
+}
+
 // WithMinHostgroup sets the minimal parallel host scan group size.
 func WithMinHostgroup(size int) func(*Scanner) {
 	return func(s *Scanner) {
