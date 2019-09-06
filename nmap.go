@@ -2,6 +2,7 @@
 package nmap
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
@@ -19,12 +20,16 @@ type ScanRunner interface {
 
 // Scanner represents an Nmap scanner.
 type Scanner struct {
+	cmd *exec.Cmd
+
 	args       []string
 	binaryPath string
 	ctx        context.Context
 
 	portFilter func(Port) bool
 	hostFilter func(Host) bool
+
+	stderr, stdout bufio.Scanner
 }
 
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
@@ -111,6 +116,40 @@ func (s *Scanner) Run() (*Run, error) {
 	}
 }
 
+// RunAsync runs nmap asynchronously and returns error.
+func (s *Scanner) RunAsync() error {
+	// Enable XML output.
+	s.args = append(s.args, "-oX")
+
+	// Get XML output in stdout instead of writing it in a file.
+	s.args = append(s.args, "-")
+	s.cmd = exec.Command(s.binaryPath, s.args...)
+
+	stderr, err := s.cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("unable to get error output from asynchronous nmap run: %v", err)
+	}
+
+	stdout, err := s.cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("unable to get standard output from asynchronous nmap run: %v", err)
+	}
+
+	s.stdout = *bufio.NewScanner(stdout)
+	s.stderr = *bufio.NewScanner(stderr)
+
+	if err := s.cmd.Start(); err != nil {
+		return fmt.Errorf("unable to execute asynchronous nmap run: %v", err)
+	}
+
+	go func() {
+		<-s.ctx.Done()
+		_ = s.cmd.Process.Kill()
+	}()
+
+	return nil
+}
+
 func chooseHosts(result *Run, filter func(Host) bool) *Run {
 	var filteredHosts []Host
 
@@ -123,6 +162,21 @@ func chooseHosts(result *Run, filter func(Host) bool) *Run {
 	result.Hosts = filteredHosts
 
 	return result
+}
+
+// Wait waits for the cmd to finish and returns error.
+func (s *Scanner) Wait() error {
+	return s.cmd.Wait()
+}
+
+// GetStdout returns stdout variable for scanner.
+func (s *Scanner) GetStdout() bufio.Scanner {
+	return s.stdout
+}
+
+//  GetStdout returns stderr variable for scanner.
+func (s *Scanner) GetStderr() bufio.Scanner {
+	return s.stderr
 }
 
 func choosePorts(result *Run, filter func(Port) bool) *Run {
