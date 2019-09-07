@@ -45,8 +45,8 @@ func TestRun(t *testing.T) {
 		testTimeout     bool
 		compareWholeRun bool
 
-		expectedResult *Run
-		expectedErr    error
+		expectedResult  *Run
+		expectedErr     error
 		expectedNmapErr string
 	}{
 		{
@@ -106,7 +106,7 @@ func TestRun(t *testing.T) {
 			expectedNmapErr: "WARNING: No targets were specified, so 0 hosts scanned.",
 			expectedResult: &Run{
 				Scanner: "nmap",
-				Args: nmapPath + " -T5 -oX -",
+				Args:    nmapPath + " -T5 -oX -",
 			},
 		},
 		{
@@ -1037,7 +1037,7 @@ func TestScriptScan(t *testing.T) {
 					"pass":                  "\",{}=bar\"",
 					"whois":                 "{whodb=nofollow+ripe}",
 					"xmpp-info.server_name": "localhost",
-					"vulns.showall": "",
+					"vulns.showall":         "",
 				}),
 			},
 
@@ -1184,6 +1184,18 @@ func TestTimingAndPerformance(t *testing.T) {
 
 			expectedArgs: []string{
 				"-T4",
+			},
+		},
+		{
+			description: "set stats every",
+
+			options: []func(*Scanner){
+				WithStatsEvery("5s"),
+			},
+
+			expectedArgs: []string{
+				"--stats-every",
+				"5s",
 			},
 		},
 		{
