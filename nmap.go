@@ -150,20 +150,6 @@ func (s *Scanner) RunAsync() error {
 	return nil
 }
 
-func chooseHosts(result *Run, filter func(Host) bool) *Run {
-	var filteredHosts []Host
-
-	for _, host := range result.Hosts {
-		if filter(host) {
-			filteredHosts = append(filteredHosts, host)
-		}
-	}
-
-	result.Hosts = filteredHosts
-
-	return result
-}
-
 // Wait waits for the cmd to finish and returns error.
 func (s *Scanner) Wait() error {
 	return s.cmd.Wait()
@@ -177,6 +163,20 @@ func (s *Scanner) GetStdout() bufio.Scanner {
 //  GetStdout returns stderr variable for scanner.
 func (s *Scanner) GetStderr() bufio.Scanner {
 	return s.stderr
+}
+
+func chooseHosts(result *Run, filter func(Host) bool) *Run {
+	var filteredHosts []Host
+
+	for _, host := range result.Hosts {
+		if filter(host) {
+			filteredHosts = append(filteredHosts, host)
+		}
+	}
+
+	result.Hosts = filteredHosts
+
+	return result
 }
 
 func choosePorts(result *Run, filter func(Port) bool) *Run {
