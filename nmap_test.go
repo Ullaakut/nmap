@@ -1598,6 +1598,28 @@ func TestOutput(t *testing.T) {
 		expectedArgs []string
 	}{
 		{
+			description: "set verbosity",
+
+			options: []func(*Scanner){
+				WithVerbosity(5),
+			},
+
+			expectedArgs: []string{
+				"-vvvvv",
+			},
+		},
+		{
+			description: "set debugging",
+
+			options: []func(*Scanner){
+				WithDebugging(3),
+			},
+
+			expectedArgs: []string{
+				"-ddd",
+			},
+		},
+		{
 			description: "display reason",
 
 			options: []func(*Scanner){
