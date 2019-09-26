@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/Ullaakut/nmap/internal/slices"
+	. "github.com/ullaakut/nmap/internal/slices"
 )
 
 // ScanRunner represents something that can run a scan.
