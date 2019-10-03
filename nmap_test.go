@@ -17,7 +17,7 @@ import (
 
 func TestNmapNotInstalled(t *testing.T) {
 	oldPath := os.Getenv("PATH")
-	os.Setenv("PATH", "")
+	_ = os.Setenv("PATH", "")
 
 	s, err := NewScanner()
 	if err == nil {
@@ -28,7 +28,7 @@ func TestNmapNotInstalled(t *testing.T) {
 		t.Error("expected NewScanner to return a nil scanner if nmap is not found in $PATH")
 	}
 
-	os.Setenv("PATH", oldPath)
+	_ = os.Setenv("PATH", oldPath)
 }
 
 func TestRun(t *testing.T) {
@@ -219,6 +219,133 @@ func TestRun(t *testing.T) {
 
 				if result.Scanner != test.expectedResult.Scanner {
 					t.Errorf("expected scanner %s got %s", test.expectedResult.Scanner, result.Scanner)
+				}
+			}
+		})
+	}
+}
+
+func TestRunAsync(t *testing.T) {
+	tests := []struct {
+		description string
+
+		options []func(*Scanner)
+
+		testTimeout     bool
+		compareWholeRun bool
+
+		expectedResult      *Run
+		expectedRunAsyncErr error
+		expectedWaitErr     bool
+		expectedParseErr    error
+		expectedNmapErr     string
+	}{
+		{
+			description: "invalid binary path",
+
+			options: []func(*Scanner){
+				WithTargets("0.0.0.0"),
+				WithBinaryPath("/invalid"),
+			},
+
+			expectedResult:      nil,
+			expectedRunAsyncErr: errors.New("unable to execute asynchronous nmap run: fork/exec /invalid: no such file or directory"),
+		},
+		{
+			description: "output can't be parsed",
+
+			options: []func(*Scanner){
+				WithTargets("0.0.0.0"),
+				WithBinaryPath("echo"),
+			},
+
+			expectedResult:   nil,
+			expectedParseErr: errors.New("EOF"),
+		},
+		{
+			description: "context timeout",
+
+			options: []func(*Scanner){
+				WithTargets("0.0.0.0/16"),
+			},
+
+			testTimeout: true,
+
+			expectedResult:  nil,
+			expectedWaitErr: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			if test.testTimeout {
+				ctx, cancel := context.WithTimeout(context.Background(), 99*time.Hour)
+				test.options = append(test.options, WithContext(ctx))
+
+				go (func() {
+					// Cancel context to force timeout
+					defer cancel()
+					time.Sleep(1 * time.Millisecond)
+				})()
+			}
+
+			s, err := NewScanner(test.options...)
+			if err != nil {
+				panic(err) // this is never supposed to err, as we are testing run and not new.
+			}
+
+			err = s.RunAsync()
+			assert.Equal(t, test.expectedRunAsyncErr, err)
+			if err != nil {
+				return
+			}
+
+			stdout := s.GetStdout()
+			var content []byte
+			go func() {
+				for stdout.Scan() {
+					content = stdout.Bytes()
+				}
+			}()
+
+			err = s.Wait()
+			if test.expectedWaitErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			if err != nil {
+				return
+			}
+
+			result, err := Parse(content)
+			assert.Equal(t, test.expectedParseErr, err)
+
+			if test.expectedNmapErr != "" {
+				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
+			}
+
+			if result == nil && test.expectedResult == nil {
+				return
+			} else if result == nil && test.expectedResult != nil {
+				t.Error("expected non-nil result, got nil")
+				return
+			} else if test.expectedResult == nil {
+				return
+			}
+
+			if test.compareWholeRun {
+				result.rawXML = nil
+				if !reflect.DeepEqual(test.expectedResult, result) {
+					t.Errorf("expected result to be %+v, got %+v", test.expectedResult, result)
+				}
+			} else {
+				if result.Args != test.expectedResult.Args {
+					t.Errorf("expected args %q got %q", test.expectedResult.Args, result.Args)
+				}
+
+				if result.Scanner != test.expectedResult.Scanner {
+					t.Errorf("expected scanner %q got %q", test.expectedResult.Scanner, result.Scanner)
 				}
 			}
 		})
