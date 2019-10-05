@@ -1605,7 +1605,7 @@ func TestOutput(t *testing.T) {
 			},
 
 			expectedArgs: []string{
-				"-vvvvv",
+				"-v5",
 			},
 		},
 		{
@@ -1616,7 +1616,7 @@ func TestOutput(t *testing.T) {
 			},
 
 			expectedArgs: []string{
-				"-ddd",
+				"-d3",
 			},
 		},
 		{
