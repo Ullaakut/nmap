@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-// A scanner can be instanciated with options to set the arguments
+// A scanner can be instantiated with options to set the arguments
 // that are given to nmap.
 func ExampleScanner_simple() {
 	s, err := NewScanner(
