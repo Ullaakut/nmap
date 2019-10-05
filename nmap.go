@@ -1156,7 +1156,7 @@ func WithVerbosity(level int) func(*Scanner) {
 		if level < 0 || level > 10 {
 			panic("value given to nmap.WithVerbosity() should be between 0 and 10")
 		}
-		s.args = append(s.args, "-v")
+		s.args = append(s.args, fmt.Sprintf("-v%d", level))
 		s.args = append(s.args, fmt.Sprintf("%d", level))
 	}
 }
