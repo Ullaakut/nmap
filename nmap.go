@@ -84,7 +84,7 @@ func (s *Scanner) Run() (*Run, error) {
 	case <-s.ctx.Done():
 		// Context was done before the scan was finished.
 		// The process is killed and a timeout error is returned.
-		cmd.Process.Kill()
+		_ := cmd.Process.Kill()
 
 		return nil, ErrScanTimeout
 	case <-done:
@@ -1151,15 +1151,24 @@ func WithBadSum() func(*Scanner) {
 
 // WithVerbosity sets and increases the verbosity level of nmap.
 func WithVerbosity(level int) func(*Scanner) {
+
 	return func(s *Scanner) {
-		s.args = append(s.args, fmt.Sprintf("-%s", strings.Repeat("v", level)))
+		if level < 0 || level > 10 {
+			panic("value given to nmap.WithVerbosity() should be between 0 and 10")
+		}
+		s.args = append(s.args, "-v")
+		s.args = append(s.args, fmt.Sprintf("%d", level))
 	}
 }
 
 // WithDebugging sets and increases the debugging level of nmap.
 func WithDebugging(level int) func(*Scanner) {
 	return func(s *Scanner) {
-		s.args = append(s.args, fmt.Sprintf("-%s", strings.Repeat("d", level)))
+		if level < 0 || level > 10 {
+			panic("value given to nmap.WithDebugging() should be between 0 and 10")
+		}
+		s.args = append(s.args, "-d")
+		s.args = append(s.args, fmt.Sprintf("%d", level))
 	}
 }
 
