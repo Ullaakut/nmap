@@ -1166,7 +1166,7 @@ func WithDebugging(level int) func(*Scanner) {
 		if level < 0 || level > 10 {
 			panic("value given to nmap.WithDebugging() should be between 0 and 10")
 		}
-		s.args = append(s.args, "-d")
+		s.args = append(s.args, fmt.Sprintf("-d%d", level))
 		s.args = append(s.args, fmt.Sprintf("%d", level))
 	}
 }
