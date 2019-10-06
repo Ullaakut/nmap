@@ -1149,6 +1149,27 @@ func WithBadSum() func(*Scanner) {
 
 /*** Output ***/
 
+// WithVerbosity sets and increases the verbosity level of nmap.
+func WithVerbosity(level int) func(*Scanner) {
+
+	return func(s *Scanner) {
+		if level < 0 || level > 10 {
+			panic("value given to nmap.WithVerbosity() should be between 0 and 10")
+		}
+		s.args = append(s.args, fmt.Sprintf("-v%d", level))
+	}
+}
+
+// WithDebugging sets and increases the debugging level of nmap.
+func WithDebugging(level int) func(*Scanner) {
+	return func(s *Scanner) {
+		if level < 0 || level > 10 {
+			panic("value given to nmap.WithDebugging() should be between 0 and 10")
+		}
+		s.args = append(s.args, fmt.Sprintf("-d%d", level))
+	}
+}
+
 // WithReason makes nmap specify why a port is in a particular state.
 func WithReason() func(*Scanner) {
 	return func(s *Scanner) {
