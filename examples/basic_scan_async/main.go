@@ -17,7 +17,8 @@ func main() {
 	// with a 5 minute timeout.
 	s, err := nmap.NewScanner(
 		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
-		nmap.WithPorts("80,443,843"),
+		nmap.WithPorts("80,443,843,1-100"),
+		nmap.WithStatsEvery("1s"),
 	)
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)
@@ -30,10 +31,11 @@ func main() {
 	}
 
 	// Goroutine to watch for stdout and print to screen. Additionally it stores
-	// the bytes intoa variable for processiing later.
+	// the bytes into a variable for processing later.
 	go func() {
 		for result := range nmapResults {
-			fmt.Print(string(result))
+			s.Progress(result)
+			//fmt.Print(string(result))
 			resultBytes = append(resultBytes, result...)
 		}
 	}()

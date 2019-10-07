@@ -4,6 +4,8 @@ package nmap
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
@@ -190,6 +192,33 @@ func (s *Scanner) RunAsync() (<-chan []byte, <-chan []byte, error) {
 // Wait waits for the cmd to finish and returns error.
 func (s *Scanner) Wait() error {
 	return s.cmd.Wait()
+}
+
+func (s *Scanner) Progress(data []byte) error {
+	var taskProgress TaskProgress
+
+	reader := bytes.NewReader(data)
+
+	decoder := xml.NewDecoder(reader)
+
+	var inElement string
+	for {
+		token, _ := decoder.Token()
+		if token == nil {
+			break
+		}
+		switch se := token.(type) {
+		case xml.StartElement:
+			inElement = se.Name.Local
+			if inElement == "taskprogress" {
+				_ = decoder.DecodeElement(&taskProgress, &se)
+				tProgress, _ := json.Marshal(taskProgress)
+				fmt.Println(string(tProgress))
+			}
+		default:
+		}
+	}
+	return nil
 }
 
 func chooseHosts(result *Run, filter func(Host) bool) *Run {
