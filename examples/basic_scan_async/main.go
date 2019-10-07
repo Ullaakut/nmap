@@ -24,30 +24,25 @@ func main() {
 	}
 
 	// Executes asynchronously, allowing results to be streamed in real time.
-	if err := s.RunAsync(); err != nil {
+	nmapResults, nmapErrors, err := s.RunAsync()
+	if err != nil {
 		panic(err)
 	}
-
-	// Connect to stdout of scanner.
-	stdout := s.GetStdout()
-
-	// Connect to stderr of scanner.
-	stderr := s.GetStderr()
 
 	// Goroutine to watch for stdout and print to screen. Additionally it stores
 	// the bytes intoa variable for processiing later.
 	go func() {
-		for stdout.Scan() {
-			fmt.Println(stdout.Text())
-			resultBytes = append(resultBytes, stdout.Bytes()...)
+		for result := range nmapResults {
+			fmt.Print(string(result))
+			resultBytes = append(resultBytes, result...)
 		}
 	}()
 
 	// Goroutine to watch for stderr and print to screen. Additionally it stores
 	// the bytes intoa variable for processiing later.
 	go func() {
-		for stderr.Scan() {
-			errorBytes = append(errorBytes, stderr.Bytes()...)
+		for err := range nmapErrors {
+			errorBytes = append(errorBytes, err...)
 		}
 	}()
 

@@ -2,10 +2,11 @@
 package nmap
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"fmt"
+	"io"
+	"log"
 	"os/exec"
 	"strings"
 	"time"
@@ -28,8 +29,6 @@ type Scanner struct {
 
 	portFilter func(Port) bool
 	hostFilter func(Host) bool
-
-	stderr, stdout bufio.Scanner
 }
 
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
@@ -117,7 +116,10 @@ func (s *Scanner) Run() (*Run, error) {
 }
 
 // RunAsync runs nmap asynchronously and returns error.
-func (s *Scanner) RunAsync() error {
+func (s *Scanner) RunAsync() (<-chan []byte, <-chan []byte, error) {
+	stdoutChannel := make(chan []byte)
+	stderrChannel := make(chan []byte)
+
 	// Enable XML output.
 	s.args = append(s.args, "-oX")
 
@@ -125,44 +127,69 @@ func (s *Scanner) RunAsync() error {
 	s.args = append(s.args, "-")
 	s.cmd = exec.Command(s.binaryPath, s.args...)
 
+	// Get CMD Stderr Pipe
 	stderr, err := s.cmd.StderrPipe()
 	if err != nil {
-		return fmt.Errorf("unable to get error output from asynchronous nmap run: %v", err)
+		return nil, nil, fmt.Errorf("unable to get error output from asynchronous nmap run: %v", err)
 	}
 
+	// Get CMD Stdout Pipe
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("unable to get standard output from asynchronous nmap run: %v", err)
+		return nil, nil, fmt.Errorf("unable to get standard output from asynchronous nmap run: %v", err)
 	}
-
-	s.stdout = *bufio.NewScanner(stdout)
-	s.stderr = *bufio.NewScanner(stderr)
 
 	if err := s.cmd.Start(); err != nil {
-		return fmt.Errorf("unable to execute asynchronous nmap run: %v", err)
+		return nil, nil, fmt.Errorf("unable to execute asynchronous nmap run: %v", err)
 	}
+
+	// Stream stdout to the stdoutChannel
+	go func() {
+		defer close(stdoutChannel)
+		for {
+			buf := make([]byte, 1024)
+			n, err := stdout.Read(buf)
+			if err != nil {
+				if err != io.EOF {
+					log.Fatal(err)
+				}
+				if n == 0 {
+					break
+				}
+			}
+			stdoutChannel <- buf[:n]
+		}
+	}()
+
+	// Stream stderr to the stderrChannel
+	go func() {
+		defer close(stderrChannel)
+		for {
+			buf := make([]byte, 2048)
+			bytesRead, err := stderr.Read(buf)
+			if err != nil {
+				if err != io.EOF {
+					log.Fatal(err)
+				}
+				if bytesRead == 0 {
+					break
+				}
+			}
+			stderrChannel <- buf[:bytesRead]
+		}
+	}()
 
 	go func() {
 		<-s.ctx.Done()
 		_ = s.cmd.Process.Kill()
 	}()
 
-	return nil
+	return stdoutChannel, stderrChannel, nil
 }
 
 // Wait waits for the cmd to finish and returns error.
 func (s *Scanner) Wait() error {
 	return s.cmd.Wait()
-}
-
-// GetStdout returns stdout variable for scanner.
-func (s *Scanner) GetStdout() bufio.Scanner {
-	return s.stdout
-}
-
-//  GetStdout returns stderr variable for scanner.
-func (s *Scanner) GetStderr() bufio.Scanner {
-	return s.stderr
 }
 
 func chooseHosts(result *Run, filter func(Host) bool) *Run {
