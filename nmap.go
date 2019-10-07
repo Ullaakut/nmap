@@ -148,16 +148,16 @@ func (s *Scanner) RunAsync() (<-chan []byte, <-chan []byte, error) {
 		defer close(stdoutChannel)
 		for {
 			buf := make([]byte, 1024)
-			n, err := stdout.Read(buf)
+			bytesRead, err := stdout.Read(buf)
 			if err != nil {
 				if err != io.EOF {
 					log.Fatal(err)
 				}
-				if n == 0 {
+				if bytesRead == 0 {
 					break
 				}
 			}
-			stdoutChannel <- buf[:n]
+			stdoutChannel <- buf[:bytesRead]
 		}
 	}()
 
