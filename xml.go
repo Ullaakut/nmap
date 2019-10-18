@@ -1,7 +1,9 @@
 package nmap
 
 import (
+	"bytes"
 	"encoding/xml"
+	"io"
 	"io/ioutil"
 	"strconv"
 	"time"
@@ -39,6 +41,11 @@ type Run struct {
 // ToFile writes a Run as XML into the specified file path.
 func (r Run) ToFile(filePath string) error {
 	return ioutil.WriteFile(filePath, r.rawXML, 0666)
+}
+
+// ToReader writes the raw XML into an streamable buffer.
+func (r Run) ToReader() io.Reader {
+	return bytes.NewReader(r.rawXML)
 }
 
 // ScanInfo represents the scan information.
@@ -421,7 +428,7 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 // Run struct.
 func Parse(content []byte) (*Run, error) {
 	r := &Run{
-		rawXML:     content,
+		rawXML: content,
 	}
 
 	err := xml.Unmarshal(content, r)
