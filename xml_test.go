@@ -312,6 +312,29 @@ func TestToFile(t *testing.T) {
 	}
 }
 
+func TestToReader(t *testing.T) {
+	inputFile := "tests/xml/scan01.xml"
+	rawXML, err := ioutil.ReadFile(inputFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := Parse(rawXML)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	reader := result.ToReader()
+	byteOutput, err := ioutil.ReadAll(reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(byteOutput, result.rawXML) {
+		t.Error("expected ToReader method to return lexicographically identical results")
+	}
+}
+
 func TestTimestampJSONMarshaling(t *testing.T) {
 	dateTime := time.Date(2000, 0, 0, 0, 0, 0, 0, time.UTC)
 	dateBytes := []byte("943920000")
