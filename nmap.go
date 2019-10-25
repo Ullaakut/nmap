@@ -135,7 +135,7 @@ func (s *Scanner) RunAsync() (<-chan []byte, <-chan []byte, error) {
 		return nil, nil, fmt.Errorf("unable to get error output from asynchronous nmap run: %v", err)
 	}
 
-	// Get CMD Stdout Pipe
+	// Get command standard output.
 	stdout, err := s.cmd.StdoutPipe()
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to get standard output from asynchronous nmap run: %v", err)
