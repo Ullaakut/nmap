@@ -129,7 +129,7 @@ func (s *Scanner) RunAsync() (<-chan []byte, <-chan []byte, error) {
 	s.args = append(s.args, "-")
 	s.cmd = exec.Command(s.binaryPath, s.args...)
 
-	// Get CMD Stderr Pipe
+	// Get command error output.
 	stderr, err := s.cmd.StderrPipe()
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to get error output from asynchronous nmap run: %v", err)
