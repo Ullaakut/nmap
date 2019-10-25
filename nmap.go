@@ -145,7 +145,7 @@ func (s *Scanner) RunAsync() (<-chan []byte, <-chan []byte, error) {
 		return nil, nil, fmt.Errorf("unable to execute asynchronous nmap run: %v", err)
 	}
 
-	// Stream stdout to the stdoutChannel
+	// Stream standard output to the stdoutChannel.
 	go func() {
 		defer close(stdoutChannel)
 		for {
