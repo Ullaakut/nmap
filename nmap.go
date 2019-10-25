@@ -163,7 +163,7 @@ func (s *Scanner) RunAsync() (<-chan []byte, <-chan []byte, error) {
 		}
 	}()
 
-	// Stream stderr to the stderrChannel
+	// Stream error output to the stderrChannel.
 	go func() {
 		defer close(stderrChannel)
 		for {
