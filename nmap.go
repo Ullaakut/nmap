@@ -54,7 +54,7 @@ func NewScanner(options ...func(*Scanner)) (*Scanner, error) {
 }
 
 // Run runs nmap synchronously and returns the result of the scan.
-func (s *Scanner) Run() (*Run, []string, error) {
+func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 	var stdout, stderr bytes.Buffer
 
 	// Enable XML output
@@ -69,9 +69,9 @@ func (s *Scanner) Run() (*Run, []string, error) {
 	cmd.Stderr = &stderr
 
 	// Run nmap process
-	err := cmd.Start()
+	err = cmd.Start()
 	if err != nil {
-		return nil, []string{}, err
+		return nil, warnings, err
 	}
 
 	// Make a goroutine to notify the select when the scan is done.
@@ -88,12 +88,11 @@ func (s *Scanner) Run() (*Run, []string, error) {
 		// The process is killed and a timeout error is returned.
 		_ = cmd.Process.Kill()
 
-		return nil, []string{}, ErrScanTimeout
+		return nil, warnings, ErrScanTimeout
 	case <-done:
 
 		// Process nmap stderr output containing none-critical errors and warnings
 		// Everyone needs to check whether one or some of these warnings is a hard issue in their use case
-		var warnings []string
 		if stderr.Len() > 0 {
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		}
