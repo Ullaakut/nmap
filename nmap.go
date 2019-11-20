@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"strings"
 	"time"
-
-	. "github.com/Ullaakut/nmap/internal/slices"
 )
 
 // ScanRunner represents something that can run a scan.
@@ -56,7 +54,7 @@ func NewScanner(options ...func(*Scanner)) (*Scanner, error) {
 }
 
 // Run runs nmap synchronously and returns the result of the scan.
-func (s *Scanner) Run() (*Run, error) {
+func (s *Scanner) Run() (*Run, []string, error) {
 	var stdout, stderr bytes.Buffer
 
 	// Enable XML output
@@ -65,13 +63,15 @@ func (s *Scanner) Run() (*Run, error) {
 	// Get XML output in stdout instead of writing it in a file
 	s.args = append(s.args, "-")
 
+	// Prepare nmap process
 	cmd := exec.Command(s.binaryPath, s.args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
+	// Run nmap process
 	err := cmd.Start()
 	if err != nil {
-		return nil, err
+		return nil, []string{}, err
 	}
 
 	// Make a goroutine to notify the select when the scan is done.
@@ -80,39 +80,54 @@ func (s *Scanner) Run() (*Run, error) {
 		done <- cmd.Wait()
 	}()
 
+	// Wait for nmap process or timeout
 	select {
 	case <-s.ctx.Done():
+
 		// Context was done before the scan was finished.
 		// The process is killed and a timeout error is returned.
 		_ = cmd.Process.Kill()
 
-		return nil, ErrScanTimeout
+		return nil, []string{}, ErrScanTimeout
 	case <-done:
-		// Scan finished before timeout.
-		var nmapErrors []string
+
+		// Process nmap stderr output containing none-critical errors and warnings
+		// Everyone needs to check whether one or some of these warnings is a hard issue in their use case
+		var warnings []string
 		if stderr.Len() > 0 {
-			// List all unique errors returned by nmap.
-			nmapErrors = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-			nmapErrors = RemoveDuplicatesFromStringSlice(nmapErrors)
+			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
+			warnings = RemoveDuplicatesFromStringSlice(warnings)
 		}
 
+		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
+		// Potentially available warnings are returned too, but probably not the reason for a broken XML.
 		result, err := Parse(stdout.Bytes())
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse nmap output: %v", err)
+			warnings = append(warnings, err.Error()) // Append parsing error to warnings for those who are interested.
+			return nil, warnings, ErrParseOutput
 		}
 
-		result.NmapErrors = nmapErrors
+		// Critical scan errors are reflected in the XML. Check for them and reflect them returning an error.
+		if len(result.Stats.Finished.ErrorMsg) > 0 {
+			if strings.Contains(result.Stats.Finished.ErrorMsg, "Error resolving name") { // "Error resolving name" is critical if contained in the XML as ErrorMsg (indicating error with exclude list).
+				return result, warnings, ErrExcludeList
+			} else {
+				// Fall back for currently not implemented (unexpected) nmap error messages
+				// TODO Create error types for most common error messages
+				return result, warnings, fmt.Errorf(result.Stats.Finished.ErrorMsg)
+			}
+		}
 
 		// Call filters if they are set.
 		if s.portFilter != nil {
 			result = choosePorts(result, s.portFilter)
 		}
-
 		if s.hostFilter != nil {
 			result = chooseHosts(result, s.hostFilter)
 		}
 
-		return result, nil
+		// Return result, optional warnings but no error
+		return result, warnings, nil
 	}
 }
 

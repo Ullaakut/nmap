@@ -181,7 +181,7 @@ func TestRun(t *testing.T) {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
-			result, err := s.Run()
+			result, _, err := s.Run()
 
 			if err != test.expectedErr {
 				require.NotNil(t, err)
@@ -189,12 +189,6 @@ func TestRun(t *testing.T) {
 				if err.Error() != test.expectedErr.Error() {
 					t.Errorf("expected error %q got %q", test.expectedErr, err)
 				}
-			}
-
-			if test.expectedNmapErr != "" {
-				require.NotNil(t, result)
-
-				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
 			}
 
 			if result == nil && test.expectedResult == nil {
@@ -320,10 +314,6 @@ func TestRunAsync(t *testing.T) {
 
 			result, err := Parse(content)
 			assert.Equal(t, test.expectedParseErr, err)
-
-			if test.expectedNmapErr != "" {
-				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
-			}
 
 			if result == nil && test.expectedResult == nil {
 				return
