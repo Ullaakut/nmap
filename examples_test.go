@@ -18,7 +18,7 @@ func ExampleScanner_simple() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	scanResult, err := s.Run()
+	scanResult, _, err := s.Run()
 	if err != nil {
 		log.Fatalf("nmap encountered an error: %v", err)
 	}
