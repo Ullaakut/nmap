@@ -96,7 +96,6 @@ func (s *Scanner) Run() (*Run, []string, error) {
 		var warnings []string
 		if stderr.Len() > 0 {
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-			warnings = RemoveDuplicatesFromStringSlice(warnings)
 		}
 
 		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
