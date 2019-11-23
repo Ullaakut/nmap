@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNmapNotInstalled(t *testing.T) {
@@ -45,9 +44,9 @@ func TestRun(t *testing.T) {
 		testTimeout     bool
 		compareWholeRun bool
 
-		expectedResult  *Run
-		expectedErr     error
-		expectedNmapErr string
+		expectedResult   *Run
+		expectedErr      bool
+		expectedWarnings []string
 	}{
 		{
 			description: "invalid binary path",
@@ -57,8 +56,8 @@ func TestRun(t *testing.T) {
 				WithBinaryPath("/invalid"),
 			},
 
+			expectedErr:    true,
 			expectedResult: nil,
-			expectedErr:    errors.New("fork/exec /invalid: no such file or directory"),
 		},
 		{
 			description: "output can't be parsed",
@@ -68,8 +67,8 @@ func TestRun(t *testing.T) {
 				WithBinaryPath("echo"),
 			},
 
-			expectedResult: nil,
-			expectedErr:    errors.New("unable to parse nmap output: EOF"),
+			expectedErr:      true,
+			expectedWarnings: []string{"EOF"},
 		},
 		{
 			description: "context timeout",
@@ -80,8 +79,7 @@ func TestRun(t *testing.T) {
 
 			testTimeout: true,
 
-			expectedResult: nil,
-			expectedErr:    ErrScanTimeout,
+			expectedErr: true,
 		},
 		{
 			description: "scan localhost",
@@ -103,16 +101,43 @@ func TestRun(t *testing.T) {
 				WithTimingTemplate(TimingFastest),
 			},
 
-			expectedNmapErr: "WARNING: No targets were specified, so 0 hosts scanned.",
+			expectedWarnings: []string{"WARNING: No targets were specified, so 0 hosts scanned."},
 			expectedResult: &Run{
 				Scanner: "nmap",
 				Args:    nmapPath + " -T5 -oX -",
 			},
 		},
 		{
+			description: "scan error resolving name",
+			options: []func(*Scanner){
+				WithBinaryPath("tests/scripts/fake_nmap.sh"),
+				WithCustomArguments("tests/xml/scan_error_resolving_name.xml"),
+			},
+
+			expectedErr: true,
+			expectedResult: &Run{
+				Scanner: "fake_nmap",
+				Args:    "nmap test",
+			},
+		},
+		{
+			description: "scan unsupported error",
+			options: []func(*Scanner){
+				WithBinaryPath("tests/scripts/fake_nmap.sh"),
+				WithCustomArguments("tests/xml/scan_error_other.xml"),
+			},
+
+			expectedErr: true,
+			expectedResult: &Run{
+				Scanner: "fake_nmap",
+				Args:    "nmap test",
+			},
+		},
+		{
 			description: "scan localhost with filters",
 			options: []func(*Scanner){
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
+				WithCustomArguments("tests/xml/scan_invalid_services.xml"),
 				WithFilterHost(func(h Host) bool {
 					return len(h.Ports) == 2
 				}),
@@ -181,21 +206,13 @@ func TestRun(t *testing.T) {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
-			result, err := s.Run()
+			result, warns, err := s.Run()
 
-			if err != test.expectedErr {
-				require.NotNil(t, err)
-
-				if err.Error() != test.expectedErr.Error() {
-					t.Errorf("expected error %q got %q", test.expectedErr, err)
-				}
+			if !assert.Equal(t, test.expectedErr, err != nil) {
+				return
 			}
 
-			if test.expectedNmapErr != "" {
-				require.NotNil(t, result)
-
-				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
-			}
+			assert.Equal(t, test.expectedWarnings, warns)
 
 			if result == nil && test.expectedResult == nil {
 				return
@@ -236,9 +253,8 @@ func TestRunAsync(t *testing.T) {
 
 		expectedResult      *Run
 		expectedRunAsyncErr error
-		expectedWaitErr     bool
 		expectedParseErr    error
-		expectedNmapErr     string
+		expectedWaitErr     bool
 	}{
 		{
 			description: "invalid binary path",
@@ -320,10 +336,6 @@ func TestRunAsync(t *testing.T) {
 
 			result, err := Parse(content)
 			assert.Equal(t, test.expectedParseErr, err)
-
-			if test.expectedNmapErr != "" {
-				assert.Contains(t, result.NmapErrors, test.expectedNmapErr)
-			}
 
 			if result == nil && test.expectedResult == nil {
 				return

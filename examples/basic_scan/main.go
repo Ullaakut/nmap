@@ -24,7 +24,7 @@ func main() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, err := scanner.Run()
+	result, _, err := scanner.Run()
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}
