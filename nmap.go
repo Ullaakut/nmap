@@ -105,13 +105,13 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 			return nil, warnings, ErrParseOutput
 		}
 
-		// Critical scan errors are reflected in the XML. Check for them and reflect them returning an error.
-		if len(result.Stats.Finished.ErrorMsg) > 0 {
-			if strings.Contains(result.Stats.Finished.ErrorMsg, "Error resolving name") { // "Error resolving name" is critical if contained in the XML as ErrorMsg (indicating error with exclude list).
-				return result, warnings, ErrExcludeList
-			} else {
-				// Fall back for currently not implemented (unexpected) nmap error messages
-				// TODO Create error types for most common error messages
+		// Critical scan errors are reflected in the XML.
+		if result != nil && len(result.Stats.Finished.ErrorMsg) > 0 {
+			switch {
+			case strings.Contains(result.Stats.Finished.ErrorMsg, "Error resolving name"):
+				return result, warnings, ErrResolveName
+			// TODO: Add cases for other known errors we might want to guard.
+			default:
 				return result, warnings, fmt.Errorf(result.Stats.Finished.ErrorMsg)
 			}
 		}
@@ -130,6 +130,7 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 }
 
 // RunAsync runs nmap asynchronously and returns error.
+// TODO: RunAsync should return warnings as well.
 func (s *Scanner) RunAsync() error {
 	// Enable XML output.
 	s.args = append(s.args, "-oX")

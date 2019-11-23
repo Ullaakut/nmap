@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<nmaprun scanner="fake_nmap" args="nmap test">
+    <runstats>
+        <finished time="1201481569" timestr="Sun Jan 27 21:52:49 2008" errormsg="Error resolving name localhost"/>
+    </runstats>
+</nmaprun>

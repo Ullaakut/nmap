@@ -313,7 +313,7 @@ func TestToFile(t *testing.T) {
 }
 
 func TestToReader(t *testing.T) {
-	inputFile := "tests/xml/scan01.xml"
+	inputFile := "tests/xml/scan_base.xml"
 	rawXML, err := ioutil.ReadFile(inputFile)
 	if err != nil {
 		t.Fatal(err)
@@ -406,7 +406,7 @@ func TestParseRunXML(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			inputFile: "tests/xml/scan01.xml",
+			inputFile: "tests/xml/scan_base.xml",
 
 			expectedResult: &Run{
 				Args:             "nmap -A -v -oX sample-03.xml freshmeat.net sourceforge.net nmap.org kernel.org openbsd.org netbsd.org google.com gmail.com",

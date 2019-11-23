@@ -13,9 +13,9 @@ var (
 	// ErrScanTimeout means that the provided context was done before the scanner finished its scan.
 	ErrScanTimeout = errors.New("nmap scan timed out")
 
-	// ErrScanTimeout means that the provided context was done before the scanner finished its scan.
-	ErrParseOutput = errors.New("nmap output broken, see warnings for details")
+	// ErrParseOutput means that nmap's output was not parsed successfully.
+	ErrParseOutput = errors.New("unable to parse nmap output, see warnings for details")
 
-	// ErrExcludeList means that Nmap could not resolve host from exclude list and terminated.
-	ErrExcludeList = errors.New("nmap could not resolve exclude list")
+	// ErrResolveName means that Nmap could not resolve a name.
+	ErrResolveName = errors.New("nmap could not resolve a name")
 )
