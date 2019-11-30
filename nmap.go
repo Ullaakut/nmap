@@ -13,7 +13,7 @@ import (
 
 // ScanRunner represents something that can run a scan.
 type ScanRunner interface {
-	Run() (*Run, error)
+	Run() (result *Run, warnings []string, err error)
 }
 
 // Scanner represents an Nmap scanner.
