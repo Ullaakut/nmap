@@ -13,6 +13,9 @@ var (
 	// ErrScanTimeout means that the provided context was done before the scanner finished its scan.
 	ErrScanTimeout = errors.New("nmap scan timed out")
 
+	// ErrMallocFailed means that nmap crashed due to insufficient memory, which may happen on large target networks.
+	ErrMallocFailed = errors.New("malloc failed, probably out of space")
+
 	// ErrParseOutput means that nmap's output was not parsed successfully.
 	ErrParseOutput = errors.New("unable to parse nmap output, see warnings for details")
 
