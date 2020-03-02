@@ -97,6 +97,16 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		}
 
+		// Check for warnings that will inevitable lead to parsing errors, hence, have priority
+		for _, warning := range warnings {
+			switch {
+			case strings.Contains(warning, "Malloc Failed!"):
+				return nil, warnings, ErrMallocFailed
+			// TODO: Add cases for other known errors we might want to guard.
+			default:
+			}
+		}
+
 		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
 		// Potentially available warnings are returned too, but probably not the reason for a broken XML.
 		result, err := Parse(stdout.Bytes())
