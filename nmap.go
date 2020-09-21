@@ -189,7 +189,7 @@ func (s *Scanner) GetStderr() bufio.Scanner {
 	return s.stderr
 }
 
-// AddOptions sets more scan option after the scan is created.
+// AddOptions set another scan option after the scan is created.
 func (s *Scanner) AddOptions(options ...func(*Scanner)) {
 	for _, option := range options {
 		option(s)
