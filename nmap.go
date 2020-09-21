@@ -184,9 +184,16 @@ func (s *Scanner) GetStdout() bufio.Scanner {
 	return s.stdout
 }
 
-//  GetStdout returns stderr variable for scanner.
+// GetStderr returns stderr variable for scanner.
 func (s *Scanner) GetStderr() bufio.Scanner {
 	return s.stderr
+}
+
+// AddOptions set another scan option after the scan is created.
+func (s *Scanner) AddOptions(options ...func(*Scanner)) {
+	for _, option := range options {
+		option(scanner)
+	}
 }
 
 func chooseHosts(result *Run, filter func(Host) bool) *Run {
