@@ -935,11 +935,12 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 
 			options: []func(*Scanner){
 				WithPorts("554", "8554"),
+				WithPorts("80-81"),
 			},
 
 			expectedArgs: []string{
 				"-p",
-				"554,8554",
+				"554,8554,80-81",
 			},
 		},
 		{

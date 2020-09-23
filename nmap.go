@@ -680,8 +680,8 @@ func WithPorts(ports ...string) func(*Scanner) {
 		}
 
 		//add ports
-		if place > 0 {
-			portList = portList + "," + s.args[place+1]
+		if place >= 0 {
+			portList = s.args[place+1] + "," + portList
 			s.args[place+1] = portList
 		} else {
 			s.args = append(s.args, "-p")
