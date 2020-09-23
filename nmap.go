@@ -670,8 +670,23 @@ func WithPorts(ports ...string) func(*Scanner) {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
-		s.args = append(s.args, "-p")
-		s.args = append(s.args, portList)
+		// Find if any port is set.
+		var place int = -1
+		for p, value := range s.args {
+			if value == "-p" {
+				place = p
+				break
+			}
+		}
+
+		// Add ports.
+		if place >= 0 {
+			portList = s.args[place+1] + "," + portList
+			s.args[place+1] = portList
+		} else {
+			s.args = append(s.args, "-p")
+			s.args = append(s.args, portList)
+		}
 	}
 }
 
