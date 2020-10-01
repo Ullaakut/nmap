@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/Ullaakut/nmap"
+	"github.com/Ullaakut/nmap/v2"
 )
 
 func main() {
