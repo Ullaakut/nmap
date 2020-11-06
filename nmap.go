@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/xml"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -174,6 +175,10 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 	// Make goroutine to check the progress every second
 	// Listening for channel doneProgress
 	go func() {
+		type progress struct {
+			TaskProgress     []TaskProgress `xml:"taskprogress" json:"task_progress"`
+		}
+		p := &progress{}
 		for {
 			select {
 			case <- doneProgress:
@@ -181,9 +186,10 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 				return
 			default:
 				time.Sleep(time.Second)
-				result, _ := Parse(stdout.Bytes())
-				if len(result.TaskProgress) > 0 {
-					liveProgress <- result.TaskProgress[len(result.TaskProgress)-1].Percent
+				_ = xml.Unmarshal(stdout.Bytes(), p)
+				//result, _ := Parse(stdout.Bytes())
+				if len(p.TaskProgress) > 0 {
+					liveProgress <- p.TaskProgress[len(p.TaskProgress)-1].Percent
 				}
 			}
 		}
