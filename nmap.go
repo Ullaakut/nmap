@@ -171,7 +171,7 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 		done <- cmd.Wait()
 	}()
 
-	// Make goroutine to stream the progress
+	// Make goroutine to check the progress every second
 	// Listening for channel doneProgress
 	go func() {
 		for {

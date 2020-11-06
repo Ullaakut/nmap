@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Ullaakut/nmap/v2"
 	"log"
-	"time"
 )
 
 func main() {
@@ -31,8 +30,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}
-
-	time.Sleep(2 * time.Second)
 
 	fmt.Printf("Nmap done: %d hosts up scanned in %.2f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
 }
