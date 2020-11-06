@@ -182,7 +182,7 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 			default:
 				time.Sleep(time.Second)
 				result, _ := Parse(stdout.Bytes())
-				if len(result.TaskProgress) > 0{
+				if len(result.TaskProgress) > 0 {
 					liveProgress <- result.TaskProgress[len(result.TaskProgress)-1].Percent
 				}
 			}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"errors"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
@@ -237,6 +238,70 @@ func TestRun(t *testing.T) {
 				if result.Scanner != test.expectedResult.Scanner {
 					t.Errorf("expected scanner %s got %s", test.expectedResult.Scanner, result.Scanner)
 				}
+			}
+		})
+	}
+}
+
+func TestRunWithProgress(t *testing.T) {
+	// Open and parse sample result for testing
+	dat, err := ioutil.ReadFile("tests/xml/scan_base.xml")
+	if err != nil {
+		panic(err)
+	}
+
+	r, _ := Parse(dat)
+
+	tests := []struct {
+		description string
+
+		options []func(*Scanner)
+
+		compareWholeRun bool
+
+		expectedResult   *Run
+		expectedProgress []float32
+		expectedErr      error
+		expectedWarnings []string
+	}{
+		{
+			description: "fake scan with slow output for progress streaming",
+			options: []func(*Scanner){
+				WithBinaryPath("tests/scripts/fake_nmap_delay.sh"),
+				WithCustomArguments("tests/xml/scan_base.xml"),
+			},
+
+			compareWholeRun: true,
+			expectedResult: r,
+			expectedProgress: []float32{56.66, 81.95, 87.84, 94.43, 97.76, 97.76},
+			expectedErr: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := NewScanner(test.options...)
+			if err != nil {
+				panic(err) // this is never supposed to err, as we are testing run and not new.
+			}
+
+			progress := make(chan float32, 5)
+			result, _, err := s.RunWithProgress(progress)
+			assert.Equal(t, test.expectedErr, err)
+			if err != nil {
+				return
+			}
+
+			// Test if channel data compares to given progress array
+			var progressOutput []float32
+			for n := range progress {
+				progressOutput = append(progressOutput, n)
+			}
+			assert.Equal(t, test.expectedProgress, progressOutput)
+
+			// Test if read output equals parsed xml file
+			if test.compareWholeRun {
+				assert.Equal(t, test.expectedResult.Hosts, result.Hosts)
 			}
 		})
 	}

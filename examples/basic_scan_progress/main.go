@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/Ullaakut/nmap/v2"
 	"log"
+
+	"github.com/Ullaakut/nmap/v2"
 )
 
 func main() {
