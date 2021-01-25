@@ -58,17 +58,17 @@ func NewScanner(options ...func(*Scanner)) (*Scanner, error) {
 func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 	var (
 		stdout, stderr bytes.Buffer
-		f              bool
+		resume         bool
 	)
 
 	for _, arg := range s.args {
 		if arg == "--resume" {
-			f = true
+			resume = true
 			break
 		}
 	}
 
-	if !f {
+	if !resume {
 		// Enable XML output
 		s.args = append(s.args, "-oX")
 
