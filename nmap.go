@@ -56,13 +56,25 @@ func NewScanner(options ...func(*Scanner)) (*Scanner, error) {
 
 // Run runs nmap synchronously and returns the result of the scan.
 func (s *Scanner) Run() (result *Run, warnings []string, err error) {
-	var stdout, stderr bytes.Buffer
+	var (
+		stdout, stderr bytes.Buffer
+		resume         bool
+	)
 
-	// Enable XML output
-	s.args = append(s.args, "-oX")
+	for _, arg := range s.args {
+		if arg == "--resume" {
+			resume = true
+			break
+		}
+	}
 
-	// Get XML output in stdout instead of writing it in a file
-	s.args = append(s.args, "-")
+	if !resume {
+		// Enable XML output
+		s.args = append(s.args, "-oX")
+
+		// Get XML output in stdout instead of writing it in a file
+		s.args = append(s.args, "-")
+	}
 
 	// Prepare nmap process
 	cmd := exec.Command(s.binaryPath, s.args...)
@@ -176,12 +188,12 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 	// Listening for channel doneProgress
 	go func() {
 		type progress struct {
-			TaskProgress     []TaskProgress `xml:"taskprogress" json:"task_progress"`
+			TaskProgress []TaskProgress `xml:"taskprogress" json:"task_progress"`
 		}
 		p := &progress{}
 		for {
 			select {
-			case <- doneProgress:
+			case <-doneProgress:
 				close(liveProgress)
 				return
 			default:
