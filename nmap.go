@@ -7,6 +7,9 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
+	"io"
 	"os/exec"
 	"strings"
 	"time"
@@ -15,6 +18,12 @@ import (
 // ScanRunner represents something that can run a scan.
 type ScanRunner interface {
 	Run() (result *Run, warnings []string, err error)
+}
+
+// Streamer will be used to constantly stream the stdout
+type Streamer interface {
+	Write(d []byte) (int, error)
+	Bytes() []byte
 }
 
 // Scanner represents an Nmap scanner.
@@ -210,6 +219,8 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 	// Wait for nmap process or timeout
 	select {
 	case <-s.ctx.Done():
+		// Trigger progress function exit
+		close(doneProgress)
 
 		// Context was done before the scan was finished.
 		// The process is killed and a timeout error is returned.
@@ -217,7 +228,6 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 
 		return nil, warnings, ErrScanTimeout
 	case <-done:
-
 		// Trigger progress function exit
 		close(doneProgress)
 
@@ -267,6 +277,72 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 		// Return result, optional warnings but no error
 		return result, warnings, nil
 	}
+}
+
+// RunWithStreamer runs nmap synchronously. The xml output will be written directly to a file.
+// It uses a streamer interface to constantly stream the stdout.
+func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []string, err error) {
+	// Enable XML output
+	s.args = append(s.args, "-oX")
+
+	// Get XML output in stdout instead of writing it in a file
+	s.args = append(s.args, file)
+
+	// Enable progress output every second
+	s.args = append(s.args, "--stats-every", "5s")
+
+	// Prepare nmap process
+	cmd := exec.CommandContext(s.ctx, s.binaryPath, s.args...)
+
+	// write stderr to buffer
+	stderrBuf := bytes.Buffer{}
+	cmd.Stderr = &stderrBuf
+
+	// connect to the StdoutPipe
+	stdoutIn, err := cmd.StdoutPipe()
+	if err != nil {
+		return warnings, errors.WithMessage(err, "connect to StdoutPipe failed")
+	}
+	stdout := stream
+
+	// Run nmap process
+	if err := cmd.Start(); err != nil {
+		return warnings, errors.WithMessage(err, "start command failed")
+	}
+
+	// copy stdout to pipe
+	g, _ := errgroup.WithContext(s.ctx)
+	g.Go(func() error {
+		_, err = io.Copy(stdout, stdoutIn)
+		return err
+	})
+
+	if err := cmd.Wait(); err != nil {
+		warnings = append(warnings, errors.WithMessage(err, "nmap command failed").Error())
+	}
+	if err := g.Wait(); err != nil {
+		warnings = append(warnings, errors.WithMessage(err, "read from stdout failed").Error())
+	}
+	// Process nmap stderr output containing none-critical errors and warnings
+	// Everyone needs to check whether one or some of these warnings is a hard issue in their use case
+	if stderrBuf.Len() > 0 {
+		for _,v := range strings.Split(strings.Trim(stderrBuf.String(), "\n"), "\n"){
+			warnings = append(warnings, v)
+		}
+	}
+
+	// Check for warnings that will inevitable lead to parsing errors, hence, have priority
+	for _, warning := range warnings {
+		switch {
+		case strings.Contains(warning, "Malloc Failed!"):
+			return warnings, ErrMallocFailed
+		// TODO: Add cases for other known errors we might want to guard.
+		default:
+		}
+	}
+
+	// Return result, optional warnings but no error
+	return warnings, nil
 }
 
 // RunAsync runs nmap asynchronously and returns error.
