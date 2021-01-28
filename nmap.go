@@ -294,11 +294,11 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 	// Prepare nmap process
 	cmd := exec.CommandContext(s.ctx, s.binaryPath, s.args...)
 
-	// write stderr to buffer
+	// Write stderr to buffer
 	stderrBuf := bytes.Buffer{}
 	cmd.Stderr = &stderrBuf
 
-	// connect to the StdoutPipe
+	// Connect to the StdoutPipe
 	stdoutIn, err := cmd.StdoutPipe()
 	if err != nil {
 		return warnings, errors.WithMessage(err, "connect to StdoutPipe failed")
@@ -310,7 +310,7 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 		return warnings, errors.WithMessage(err, "start command failed")
 	}
 
-	// copy stdout to pipe
+	// Copy stdout to pipe
 	g, _ := errgroup.WithContext(s.ctx)
 	g.Go(func() error {
 		_, err = io.Copy(stdout, stdoutIn)
@@ -326,7 +326,7 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 	// Process nmap stderr output containing none-critical errors and warnings
 	// Everyone needs to check whether one or some of these warnings is a hard issue in their use case
 	if stderrBuf.Len() > 0 {
-		for _,v := range strings.Split(strings.Trim(stderrBuf.String(), "\n"), "\n"){
+		for _, v := range strings.Split(strings.Trim(stderrBuf.String(), "\n"), "\n") {
 			warnings = append(warnings, v)
 		}
 	}

@@ -271,10 +271,10 @@ func TestRunWithProgress(t *testing.T) {
 				WithCustomArguments("tests/xml/scan_base.xml"),
 			},
 
-			compareWholeRun: true,
-			expectedResult: r,
+			compareWholeRun:  true,
+			expectedResult:   r,
 			expectedProgress: []float32{56.66, 81.95, 87.84, 94.43, 97.76, 97.76},
-			expectedErr: nil,
+			expectedErr:      nil,
 		},
 	}
 

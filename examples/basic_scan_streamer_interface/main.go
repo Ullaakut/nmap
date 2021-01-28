@@ -9,6 +9,8 @@ import (
 	"github.com/Ullaakut/nmap/v2"
 )
 
+// CustomType is your custom type in code.
+// You just have to make it a Streamer.
 type CustomType struct {
 	nmap.Streamer
 	File string
@@ -36,7 +38,7 @@ func (c *CustomType) Bytes() []byte {
 
 func main() {
 	cType := &CustomType{
-		File:     "/tmp/output.xml",
+		File: "/tmp/output.xml",
 	}
 	scanner, err := nmap.NewScanner(
 		nmap.WithTargets("localhost"),
