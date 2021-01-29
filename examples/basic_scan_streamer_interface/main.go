@@ -16,18 +16,17 @@ type CustomType struct {
 	File string
 }
 
-// Write is a function that handles the normal nmap stdout
+// Write is a function that handles the normal nmap stdout.
 func (c *CustomType) Write(d []byte) (int, error) {
-	var err error
 	lines := string(d)
 
 	if strings.Contains(lines, "Stats: ") {
 		fmt.Print(lines)
 	}
-	return len(d), err
+	return len(d), nil
 }
 
-// Bytes returns scan result bytes
+// Bytes returns scan result bytes.
 func (c *CustomType) Bytes() []byte {
 	data, err := ioutil.ReadFile(c.File)
 	if err != nil {
