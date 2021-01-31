@@ -307,6 +307,59 @@ func TestRunWithProgress(t *testing.T) {
 	}
 }
 
+func TestRunWithStreamer(t *testing.T) {
+	tests := []struct {
+		description string
+
+		options []func(*Scanner)
+
+		compareWholeRun bool
+
+		expectedArgs   	 []string
+		expectedErr      error
+		expectedWarnings []string
+	}{
+		{
+			description: "fake scan with streaming",
+			options: []func(*Scanner){
+				WithBinaryPath("tests/scripts/fake_nmap.sh"),
+				WithCustomArguments("tests/xml/scan_base.xml"),
+			},
+
+			compareWholeRun:  true,
+			expectedArgs:     []string{
+				"tests/scripts/fake_nmap.sh",
+				"tests/xml/scan_base.xml",
+				"-oX",
+				"/tmp/nmap-stream-test",
+				"--stats-every",
+				"5s",
+			},
+			expectedErr:      nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := NewScanner(test.options...)
+			if err != nil {
+				panic(err) // this is never supposed to err, as we are testing run and not new.
+			}
+
+			warnings, err := s.RunWithStreamer(nil, "/tmp/nmap-stream-test")
+
+			assert.Equal(t, test.expectedArgs, s.cmd.Args)
+
+			assert.Equal(t, test.expectedErr, err)
+			if err != nil {
+				return
+			}
+
+			assert.Equal(t, test.expectedWarnings, warnings)
+		})
+	}
+}
+
 func TestRunAsync(t *testing.T) {
 	tests := []struct {
 		description string

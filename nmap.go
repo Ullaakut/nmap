@@ -317,11 +317,12 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 		return err
 	})
 
-	if err := cmd.Wait(); err != nil {
-		warnings = append(warnings, errors.WithMessage(err, "nmap command failed").Error())
-	}
+	cmdErr := cmd.Wait()
 	if err := g.Wait(); err != nil {
 		warnings = append(warnings, errors.WithMessage(err, "read from stdout failed").Error())
+	}
+	if cmdErr != nil {
+		return warnings, errors.WithMessage(err, "nmap command failed")
 	}
 	// Process nmap stderr output containing none-critical errors and warnings.
 	// Everyone needs to check whether one or some of these warnings is a hard issue in their use case.
