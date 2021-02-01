@@ -119,14 +119,9 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		}
 
-		// Check for warnings that will inevitable lead to parsing errors, hence, have priority
-		for _, warning := range warnings {
-			switch {
-			case strings.Contains(warning, "Malloc Failed!"):
-				return nil, warnings, ErrMallocFailed
-			// TODO: Add cases for other known errors we might want to guard.
-			default:
-			}
+		// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
+		if err := analyzeWarnings(warnings); err != nil {
+			return nil, warnings, err
 		}
 
 		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
@@ -238,13 +233,8 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 		}
 
 		// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
-		for _, warning := range warnings {
-			switch {
-			case strings.Contains(warning, "Malloc Failed!"):
-				return nil, warnings, ErrMallocFailed
-			// TODO: Add cases for other known errors we might want to guard.
-			default:
-			}
+		if err := analyzeWarnings(warnings); err != nil {
+			return nil, warnings, err
 		}
 
 		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
@@ -333,13 +323,8 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 	}
 
 	// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
-	for _, warning := range warnings {
-		switch {
-		case strings.Contains(warning, "Malloc Failed!"):
-			return warnings, ErrMallocFailed
-		// TODO: Add cases for other known errors we might want to guard.
-		default:
-		}
+	if err := analyzeWarnings(warnings); err != nil {
+		return warnings, err
 	}
 
 	// Return result, optional warnings but no error.
@@ -431,6 +416,19 @@ func choosePorts(result *Run, filter func(Port) bool) *Run {
 	}
 
 	return result
+}
+
+func analyzeWarnings(warnings []string) error {
+	// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
+	for _, warning := range warnings {
+		switch {
+		case strings.Contains(warning, "Malloc Failed!"):
+			return ErrMallocFailed
+		// TODO: Add cases for other known errors we might want to guard.
+		default:
+		}
+	}
+	return nil
 }
 
 // WithContext adds a context to a scanner, to make it cancellable and able to timeout.
