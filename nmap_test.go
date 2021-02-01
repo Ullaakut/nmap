@@ -15,17 +15,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type TestStreamer struct {
+type testStreamer struct {
 	Streamer
 }
 
 // Write is a function that handles the normal nmap stdout.
-func (c *TestStreamer) Write(d []byte) (int, error) {
+func (c *testStreamer) Write(d []byte) (int, error) {
 	return len(d), nil
 }
 
 // Bytes returns scan result bytes.
-func (c *TestStreamer) Bytes() []byte {
+func (c *testStreamer) Bytes() []byte {
 	return []byte{}
 }
 
@@ -322,7 +322,7 @@ func TestRunWithProgress(t *testing.T) {
 }
 
 func TestRunWithStreamer(t *testing.T) {
-	streamer := &TestStreamer{}
+	streamer := &testStreamer{}
 
 	tests := []struct {
 		description string
@@ -2127,7 +2127,7 @@ func TestAnalyzeWarnings(t *testing.T) {
 	}{
 		{
 			description: "Find no error warning",
-			warnings: []string{"NoWaring", "NoWarning"},
+			warnings: []string{"NoWarning", "NoWarning"},
 			expectedErr: nil,
 		},
 		{

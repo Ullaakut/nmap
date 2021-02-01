@@ -7,12 +7,13 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"github.com/pkg/errors"
-	"golang.org/x/sync/errgroup"
 	"io"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 // ScanRunner represents something that can run a scan.
@@ -119,7 +120,7 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		}
 
-		// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
+		// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
 		if err := analyzeWarnings(warnings); err != nil {
 			return nil, warnings, err
 		}
@@ -232,7 +233,7 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		}
 
-		// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
+		// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
 		if err := analyzeWarnings(warnings); err != nil {
 			return nil, warnings, err
 		}
@@ -322,7 +323,7 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 		}
 	}
 
-	// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
+	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
 	if err := analyzeWarnings(warnings); err != nil {
 		return warnings, err
 	}
@@ -419,7 +420,7 @@ func choosePorts(result *Run, filter func(Port) bool) *Run {
 }
 
 func analyzeWarnings(warnings []string) error {
-	// Check for warnings that will inevitable lead to parsing errors, hence, have priority.
+	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
 	for _, warning := range warnings {
 		switch {
 		case strings.Contains(warning, "Malloc Failed!"):
