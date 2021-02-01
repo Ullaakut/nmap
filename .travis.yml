@@ -2,8 +2,12 @@ dist: trusty
 sudo: required
 language: go
 
+go:
+- 1.15.x
+
 before_install:
 - sudo apt-get install -y nmap
+- go mod tidy
 - go get github.com/mattn/goveralls
 
 script:
