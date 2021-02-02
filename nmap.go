@@ -7,14 +7,24 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 )
 
 // ScanRunner represents something that can run a scan.
 type ScanRunner interface {
 	Run() (result *Run, warnings []string, err error)
+}
+
+// Streamer constantly streams the stdout.
+type Streamer interface {
+	Write(d []byte) (int, error)
+	Bytes() []byte
 }
 
 // Scanner represents an Nmap scanner.
@@ -110,14 +120,9 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		}
 
-		// Check for warnings that will inevitable lead to parsing errors, hence, have priority
-		for _, warning := range warnings {
-			switch {
-			case strings.Contains(warning, "Malloc Failed!"):
-				return nil, warnings, ErrMallocFailed
-			// TODO: Add cases for other known errors we might want to guard.
-			default:
-			}
+		// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
+		if err := analyzeWarnings(warnings); err != nil {
+			return nil, warnings, err
 		}
 
 		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
@@ -157,21 +162,21 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, warnings []string, err error) {
 	var stdout, stderr bytes.Buffer
 
-	// Enable XML output
+	// Enable XML output.
 	s.args = append(s.args, "-oX")
 
-	// Get XML output in stdout instead of writing it in a file
+	// Get XML output in stdout instead of writing it in a file.
 	s.args = append(s.args, "-")
 
-	// Enable progress output every second
+	// Enable progress output every second.
 	s.args = append(s.args, "--stats-every", "1s")
 
-	// Prepare nmap process
+	// Prepare nmap process.
 	cmd := exec.Command(s.binaryPath, s.args...)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
-	// Run nmap process
+	// Run nmap process.
 	err = cmd.Start()
 	if err != nil {
 		return nil, warnings, err
@@ -184,8 +189,8 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 		done <- cmd.Wait()
 	}()
 
-	// Make goroutine to check the progress every second
-	// Listening for channel doneProgress
+	// Make goroutine to check the progress every second.
+	// Listening for channel doneProgress.
 	go func() {
 		type progress struct {
 			TaskProgress []TaskProgress `xml:"taskprogress" json:"task_progress"`
@@ -207,9 +212,11 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 		}
 	}()
 
-	// Wait for nmap process or timeout
+	// Wait for nmap process or timeout.
 	select {
 	case <-s.ctx.Done():
+		// Trigger progress function exit.
+		close(doneProgress)
 
 		// Context was done before the scan was finished.
 		// The process is killed and a timeout error is returned.
@@ -217,24 +224,18 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 
 		return nil, warnings, ErrScanTimeout
 	case <-done:
-
-		// Trigger progress function exit
+		// Trigger progress function exit.
 		close(doneProgress)
 
-		// Process nmap stderr output containing none-critical errors and warnings
-		// Everyone needs to check whether one or some of these warnings is a hard issue in their use case
+		// Process nmap stderr output containing none-critical errors and warnings.
+		// Everyone needs to check whether one or some of these warnings is a hard issue in their use case.
 		if stderr.Len() > 0 {
 			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
 		}
 
-		// Check for warnings that will inevitable lead to parsing errors, hence, have priority
-		for _, warning := range warnings {
-			switch {
-			case strings.Contains(warning, "Malloc Failed!"):
-				return nil, warnings, ErrMallocFailed
-			// TODO: Add cases for other known errors we might want to guard.
-			default:
-			}
+		// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
+		if err := analyzeWarnings(warnings); err != nil {
+			return nil, warnings, err
 		}
 
 		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
@@ -264,9 +265,71 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 			result = chooseHosts(result, s.hostFilter)
 		}
 
-		// Return result, optional warnings but no error
+		// Return result, optional warnings but no error.
 		return result, warnings, nil
 	}
+}
+
+// RunWithStreamer runs nmap synchronously. The XML output is written directly to a file.
+// It uses a streamer interface to constantly stream the stdout.
+func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []string, err error) {
+	// Enable XML output.
+	s.args = append(s.args, "-oX")
+
+	// Get XML output in stdout instead of writing it in a file.
+	s.args = append(s.args, file)
+
+	// Enable progress output every second.
+	s.args = append(s.args, "--stats-every", "5s")
+
+	// Prepare nmap process.
+	cmd := exec.CommandContext(s.ctx, s.binaryPath, s.args...)
+
+	// Write stderr to buffer.
+	stderrBuf := bytes.Buffer{}
+	cmd.Stderr = &stderrBuf
+
+	// Connect to the StdoutPipe.
+	stdoutIn, err := cmd.StdoutPipe()
+	if err != nil {
+		return warnings, errors.WithMessage(err, "connect to StdoutPipe failed")
+	}
+	stdout := stream
+
+	// Run nmap process.
+	if err := cmd.Start(); err != nil {
+		return warnings, errors.WithMessage(err, "start command failed")
+	}
+
+	// Copy stdout to pipe.
+	g, _ := errgroup.WithContext(s.ctx)
+	g.Go(func() error {
+		_, err = io.Copy(stdout, stdoutIn)
+		return err
+	})
+
+	cmdErr := cmd.Wait()
+	if err := g.Wait(); err != nil {
+		warnings = append(warnings, errors.WithMessage(err, "read from stdout failed").Error())
+	}
+	if cmdErr != nil {
+		return warnings, errors.WithMessage(err, "nmap command failed")
+	}
+	// Process nmap stderr output containing none-critical errors and warnings.
+	// Everyone needs to check whether one or some of these warnings is a hard issue in their use case.
+	if stderrBuf.Len() > 0 {
+		for _, v := range strings.Split(strings.Trim(stderrBuf.String(), "\n"), "\n") {
+			warnings = append(warnings, v)
+		}
+	}
+
+	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
+	if err := analyzeWarnings(warnings); err != nil {
+		return warnings, err
+	}
+
+	// Return result, optional warnings but no error.
+	return warnings, nil
 }
 
 // RunAsync runs nmap asynchronously and returns error.
@@ -354,6 +417,19 @@ func choosePorts(result *Run, filter func(Port) bool) *Run {
 	}
 
 	return result
+}
+
+func analyzeWarnings(warnings []string) error {
+	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
+	for _, warning := range warnings {
+		switch {
+		case strings.Contains(warning, "Malloc Failed!"):
+			return ErrMallocFailed
+		// TODO: Add cases for other known errors we might want to guard.
+		default:
+		}
+	}
+	return nil
 }
 
 // WithContext adds a context to a scanner, to make it cancellable and able to timeout.

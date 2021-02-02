@@ -15,6 +15,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testStreamer struct {
+	Streamer
+}
+
+// Write is a function that handles the normal nmap stdout.
+func (c *testStreamer) Write(d []byte) (int, error) {
+	return len(d), nil
+}
+
+// Bytes returns scan result bytes.
+func (c *testStreamer) Bytes() []byte {
+	return []byte{}
+}
+
 func TestNmapNotInstalled(t *testing.T) {
 	oldPath := os.Getenv("PATH")
 	_ = os.Setenv("PATH", "")
@@ -271,10 +285,10 @@ func TestRunWithProgress(t *testing.T) {
 				WithCustomArguments("tests/xml/scan_base.xml"),
 			},
 
-			compareWholeRun: true,
-			expectedResult: r,
+			compareWholeRun:  true,
+			expectedResult:   r,
 			expectedProgress: []float32{56.66, 81.95, 87.84, 94.43, 97.76, 97.76},
-			expectedErr: nil,
+			expectedErr:      nil,
 		},
 	}
 
@@ -303,6 +317,43 @@ func TestRunWithProgress(t *testing.T) {
 			if test.compareWholeRun {
 				assert.Equal(t, test.expectedResult.Hosts, result.Hosts)
 			}
+		})
+	}
+}
+
+func TestRunWithStreamer(t *testing.T) {
+	streamer := &testStreamer{}
+
+	tests := []struct {
+		description string
+
+		options []func(*Scanner)
+
+		expectedErr      error
+		expectedWarnings []string
+	}{
+		{
+			description: "fake scan with streaming",
+			options: []func(*Scanner){
+				WithBinaryPath("tests/scripts/fake_nmap.sh"),
+				WithCustomArguments("tests/xml/scan_base.xml"),
+			},
+			expectedErr:      nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s, err := NewScanner(test.options...)
+			if err != nil {
+				panic(err) // this is never supposed to err, as we are testing run and not new.
+			}
+
+			warnings, err := s.RunWithStreamer(streamer, "/tmp/nmap-stream-test")
+
+			assert.Equal(t, test.expectedErr, err)
+
+			assert.Equal(t, test.expectedWarnings, warnings)
 		})
 	}
 }
@@ -2062,6 +2113,35 @@ func TestMiscellaneous(t *testing.T) {
 			if !reflect.DeepEqual(s.args, test.expectedArgs) {
 				t.Errorf("unexpected arguments, expected %s got %s", test.expectedArgs, s.args)
 			}
+		})
+	}
+}
+
+func TestAnalyzeWarnings(t *testing.T) {
+	tests := []struct {
+		description string
+
+		warnings []string
+
+		expectedErr error
+	}{
+		{
+			description: "Find no error warning",
+			warnings: []string{"NoWarning", "NoWarning"},
+			expectedErr: nil,
+		},
+		{
+			description: "Find malloc error",
+			warnings: []string{"   Malloc Failed! with "},
+			expectedErr: ErrMallocFailed,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			err := analyzeWarnings(test.warnings)
+
+			assert.Equal(t, test.expectedErr, err)
 		})
 	}
 }
