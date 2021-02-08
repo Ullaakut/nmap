@@ -41,8 +41,12 @@ type Scanner struct {
 	stderr, stdout bufio.Scanner
 }
 
+// Option is a function that is used for grouping of Scanner options.
+// Option adds or removes nmap command line arguments.
+type Option func(*Scanner)
+
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
-func NewScanner(options ...func(*Scanner)) (*Scanner, error) {
+func NewScanner(options ...Option) (*Scanner, error) {
 	scanner := &Scanner{}
 
 	for _, option := range options {
@@ -383,7 +387,7 @@ func (s *Scanner) GetStderr() bufio.Scanner {
 }
 
 // AddOptions sets more scan options after the scan is created.
-func (s *Scanner) AddOptions(options ...func(*Scanner)) {
+func (s *Scanner) AddOptions(options ...Option) {
 	for _, option := range options {
 		option(s)
 	}
@@ -433,14 +437,14 @@ func analyzeWarnings(warnings []string) error {
 }
 
 // WithContext adds a context to a scanner, to make it cancellable and able to timeout.
-func WithContext(ctx context.Context) func(*Scanner) {
+func WithContext(ctx context.Context) Option {
 	return func(s *Scanner) {
 		s.ctx = ctx
 	}
 }
 
 // WithBinaryPath sets the nmap binary path for a scanner.
-func WithBinaryPath(binaryPath string) func(*Scanner) {
+func WithBinaryPath(binaryPath string) Option {
 	return func(s *Scanner) {
 		s.binaryPath = binaryPath
 	}
@@ -453,7 +457,7 @@ func WithBinaryPath(binaryPath string) func(*Scanner) {
 // You can use this as a quick way to paste an nmap command into your go code,
 // but remember that the whole purpose of this repository is to be idiomatic,
 // provide type checking, enums for the values that can be passed, etc.
-func WithCustomArguments(args ...string) func(*Scanner) {
+func WithCustomArguments(args ...string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, args...)
 	}
@@ -463,7 +467,7 @@ func WithCustomArguments(args ...string) func(*Scanner) {
 // don't fulfill a given condition. When the given function returns true,
 // the port is kept, otherwise it is removed from the result. Can be used
 // along with WithFilterHost.
-func WithFilterPort(portFilter func(Port) bool) func(*Scanner) {
+func WithFilterPort(portFilter func(Port) bool) Option {
 	return func(s *Scanner) {
 		s.portFilter = portFilter
 	}
@@ -473,7 +477,7 @@ func WithFilterPort(portFilter func(Port) bool) func(*Scanner) {
 // don't fulfill a given condition. When the given function returns true,
 // the host is kept, otherwise it is removed from the result. Can be used
 // along with WithFilterPort.
-func WithFilterHost(hostFilter func(Host) bool) func(*Scanner) {
+func WithFilterHost(hostFilter func(Host) bool) Option {
 	return func(s *Scanner) {
 		s.hostFilter = hostFilter
 	}
@@ -482,14 +486,14 @@ func WithFilterHost(hostFilter func(Host) bool) func(*Scanner) {
 /*** Target specification ***/
 
 // WithTargets sets the target of a scanner.
-func WithTargets(targets ...string) func(*Scanner) {
+func WithTargets(targets ...string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, targets...)
 	}
 }
 
 // WithTargetExclusion sets the excluded targets of a scanner.
-func WithTargetExclusion(target string) func(*Scanner) {
+func WithTargetExclusion(target string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--exclude")
 		s.args = append(s.args, target)
@@ -497,7 +501,7 @@ func WithTargetExclusion(target string) func(*Scanner) {
 }
 
 // WithTargetInput sets the input file name to set the targets.
-func WithTargetInput(inputFileName string) func(*Scanner) {
+func WithTargetInput(inputFileName string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-iL")
 		s.args = append(s.args, inputFileName)
@@ -505,7 +509,7 @@ func WithTargetInput(inputFileName string) func(*Scanner) {
 }
 
 // WithTargetExclusionInput sets the input file name to set the target exclusions.
-func WithTargetExclusionInput(inputFileName string) func(*Scanner) {
+func WithTargetExclusionInput(inputFileName string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--excludefile")
 		s.args = append(s.args, inputFileName)
@@ -513,7 +517,7 @@ func WithTargetExclusionInput(inputFileName string) func(*Scanner) {
 }
 
 // WithRandomTargets sets the amount of targets to randomly choose from the targets.
-func WithRandomTargets(randomTargets int) func(*Scanner) {
+func WithRandomTargets(randomTargets int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-iR")
 		s.args = append(s.args, fmt.Sprint(randomTargets))
@@ -523,21 +527,21 @@ func WithRandomTargets(randomTargets int) func(*Scanner) {
 /*** Host discovery ***/
 
 // WithListScan sets the discovery mode to simply list the targets to scan and not scan them.
-func WithListScan() func(*Scanner) {
+func WithListScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sL")
 	}
 }
 
 // WithPingScan sets the discovery mode to simply ping the targets to scan and not scan them.
-func WithPingScan() func(*Scanner) {
+func WithPingScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sn")
 	}
 }
 
 // WithSkipHostDiscovery diables host discovery and considers all hosts as online.
-func WithSkipHostDiscovery() func(*Scanner) {
+func WithSkipHostDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-Pn")
 	}
@@ -546,7 +550,7 @@ func WithSkipHostDiscovery() func(*Scanner) {
 // WithSYNDiscovery sets the discovery mode to use SYN packets.
 // If the portList argument is empty, this will enable SYN discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithSYNDiscovery(ports ...string) func(*Scanner) {
+func WithSYNDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -557,7 +561,7 @@ func WithSYNDiscovery(ports ...string) func(*Scanner) {
 // WithACKDiscovery sets the discovery mode to use ACK packets.
 // If the portList argument is empty, this will enable ACK discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithACKDiscovery(ports ...string) func(*Scanner) {
+func WithACKDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -568,7 +572,7 @@ func WithACKDiscovery(ports ...string) func(*Scanner) {
 // WithUDPDiscovery sets the discovery mode to use UDP packets.
 // If the portList argument is empty, this will enable UDP discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithUDPDiscovery(ports ...string) func(*Scanner) {
+func WithUDPDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -582,7 +586,7 @@ func WithUDPDiscovery(ports ...string) func(*Scanner) {
 // for all ports. Otherwise, it will be only for the specified ports.
 // Warning: on Unix, only the privileged user root is generally
 // able to send and receive raw SCTP packets.
-func WithSCTPDiscovery(ports ...string) func(*Scanner) {
+func WithSCTPDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -595,7 +599,7 @@ func WithSCTPDiscovery(ports ...string) func(*Scanner) {
 // command.
 // Many hosts and firewalls block these packets, so this is usually not
 // the best for exploring networks.
-func WithICMPEchoDiscovery() func(*Scanner) {
+func WithICMPEchoDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-PE")
 	}
@@ -606,7 +610,7 @@ func WithICMPEchoDiscovery() func(*Scanner) {
 // This query can be valuable when administrators specifically block echo
 // request packets while forgetting that other ICMP queries can be used
 // for the same purpose.
-func WithICMPTimestampDiscovery() func(*Scanner) {
+func WithICMPTimestampDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-PP")
 	}
@@ -617,7 +621,7 @@ func WithICMPTimestampDiscovery() func(*Scanner) {
 // This query can be valuable when administrators specifically block echo
 // request packets while forgetting that other ICMP queries can be used
 // for the same purpose.
-func WithICMPNetMaskDiscovery() func(*Scanner) {
+func WithICMPNetMaskDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-PM")
 	}
@@ -628,7 +632,7 @@ func WithICMPNetMaskDiscovery() func(*Scanner) {
 // If no protocols are specified, the default is to send multiple IP
 // packets for ICMP (protocol 1), IGMP (protocol 2), and IP-in-IP
 // (protocol 4).
-func WithIPProtocolPingDiscovery(protocols ...string) func(*Scanner) {
+func WithIPProtocolPingDiscovery(protocols ...string) Option {
 	protocolList := strings.Join(protocols, ",")
 
 	return func(s *Scanner) {
@@ -638,7 +642,7 @@ func WithIPProtocolPingDiscovery(protocols ...string) func(*Scanner) {
 
 // WithDisabledDNSResolution disables DNS resolution in the discovery
 // step of the nmap scan.
-func WithDisabledDNSResolution() func(*Scanner) {
+func WithDisabledDNSResolution() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-n")
 	}
@@ -646,7 +650,7 @@ func WithDisabledDNSResolution() func(*Scanner) {
 
 // WithForcedDNSResolution enforces DNS resolution in the discovery
 // step of the nmap scan.
-func WithForcedDNSResolution() func(*Scanner) {
+func WithForcedDNSResolution() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-R")
 	}
@@ -654,7 +658,7 @@ func WithForcedDNSResolution() func(*Scanner) {
 
 // WithCustomDNSServers sets custom DNS servers for the scan.
 // List format: dns1[,dns2],...
-func WithCustomDNSServers(dnsServers ...string) func(*Scanner) {
+func WithCustomDNSServers(dnsServers ...string) Option {
 	dnsList := strings.Join(dnsServers, ",")
 
 	return func(s *Scanner) {
@@ -664,14 +668,14 @@ func WithCustomDNSServers(dnsServers ...string) func(*Scanner) {
 }
 
 // WithSystemDNS sets the scanner's DNS to the system's DNS.
-func WithSystemDNS() func(*Scanner) {
+func WithSystemDNS() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--system-dns")
 	}
 }
 
 // WithTraceRoute enables the tracing of the hop path to each host.
-func WithTraceRoute() func(*Scanner) {
+func WithTraceRoute() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--traceroute")
 	}
@@ -682,7 +686,7 @@ func WithTraceRoute() func(*Scanner) {
 // WithSYNScan sets the scan technique to use SYN packets over TCP.
 // This is the default method, as it is fast, stealthy and not
 // hampered by restrictive firewalls.
-func WithSYNScan() func(*Scanner) {
+func WithSYNScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sS")
 	}
@@ -692,7 +696,7 @@ func WithSYNScan() func(*Scanner) {
 // This is the default method used when a user does not have raw
 // packet privileges. Target machines are likely to log these
 // connections.
-func WithConnectScan() func(*Scanner) {
+func WithConnectScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sT")
 	}
@@ -704,7 +708,7 @@ func WithConnectScan() func(*Scanner) {
 // return a RST packet.
 // Nmap then labels them as unfiltered, meaning that they are reachable
 // by the ACK packet, but whether they are open or closed is undetermined.
-func WithACKScan() func(*Scanner) {
+func WithACKScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sA")
 	}
@@ -716,7 +720,7 @@ func WithACKScan() func(*Scanner) {
 // an implementation detail of certain systems to differentiate open ports
 // from closed ones, rather than always printing unfiltered when a RST
 // is returned.
-func WithWindowScan() func(*Scanner) {
+func WithWindowScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sW")
 	}
@@ -725,7 +729,7 @@ func WithWindowScan() func(*Scanner) {
 // WithMaimonScan sends the same packets as NULL, FIN, and Xmas scans,
 // except that the probe is FIN/ACK. Many BSD-derived systems will drop
 // these packets if the port is open.
-func WithMaimonScan() func(*Scanner) {
+func WithMaimonScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sM")
 	}
@@ -736,7 +740,7 @@ func WithMaimonScan() func(*Scanner) {
 // to check both protocols during the same run.
 // UDP scanning is generally slower than TCP, but should not
 // be ignored.
-func WithUDPScan() func(*Scanner) {
+func WithUDPScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sU")
 	}
@@ -747,7 +751,7 @@ func WithUDPScan() func(*Scanner) {
 // a loophole in the TCP RFC.
 // If an RST packet is received, the port is considered closed,
 // while no response means it is open|filtered.
-func WithTCPNullScan() func(*Scanner) {
+func WithTCPNullScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sN")
 	}
@@ -758,7 +762,7 @@ func WithTCPNullScan() func(*Scanner) {
 // This scan method can be used to exploit a loophole in the TCP RFC.
 // If an RST packet is received, the port is considered closed,
 // while no response means it is open|filtered.
-func WithTCPFINScan() func(*Scanner) {
+func WithTCPFINScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sF")
 	}
@@ -769,7 +773,7 @@ func WithTCPFINScan() func(*Scanner) {
 // This scan method can be used to exploit a loophole in the TCP RFC.
 // If an RST packet is received, the port is considered closed,
 // while no response means it is open|filtered.
-func WithTCPXmasScan() func(*Scanner) {
+func WithTCPXmasScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sX")
 	}
@@ -793,7 +797,7 @@ const (
 )
 
 // WithTCPScanFlags sets the scan technique to use custom TCP flags.
-func WithTCPScanFlags(flags ...TCPFlag) func(*Scanner) {
+func WithTCPScanFlags(flags ...TCPFlag) Option {
 	var total int
 	for _, flag := range flags {
 		total += int(flag)
@@ -810,7 +814,7 @@ func WithTCPScanFlags(flags ...TCPFlag) func(*Scanner) {
 // Besides being extraordinarily stealthy (due to its blind nature),
 // this scan type permits mapping out IP-based trust relationships
 // between machines.
-func WithIdleScan(zombieHost string, probePort int) func(*Scanner) {
+func WithIdleScan(zombieHost string, probePort int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sI")
 
@@ -828,7 +832,7 @@ func WithIdleScan(zombieHost string, probePort int) func(*Scanner) {
 // second on a fast network not hampered by restrictive firewalls.
 // Like SYN scan, INIT scan is relatively unobtrusive and stealthy,
 // since it never completes SCTP associations.
-func WithSCTPInitScan() func(*Scanner) {
+func WithSCTPInitScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sY")
 	}
@@ -839,7 +843,7 @@ func WithSCTPInitScan() func(*Scanner) {
 // The advantage of this scan type is that it is not as obvious a port
 // scan than an INIT scan. Also, there may be non-stateful firewall
 // rulesets blocking INIT chunks, but not COOKIE ECHO chunks.
-func WithSCTPCookieEchoScan() func(*Scanner) {
+func WithSCTPCookieEchoScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sZ")
 	}
@@ -850,7 +854,7 @@ func WithSCTPCookieEchoScan() func(*Scanner) {
 // (TCP, ICMP, IGMP, etc.) are supported by target machines. This isn't
 // technically a port scan, since it cycles through IP protocol numbers
 // rather than TCP or UDP port numbers.
-func WithIPProtocolScan() func(*Scanner) {
+func WithIPProtocolScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sO")
 	}
@@ -862,7 +866,7 @@ func WithIPProtocolScan() func(*Scanner) {
 // (user: anonymous password:-wwwuser@) are used.
 // The port number (and preceding colon) may be omitted as well, in which case the
 // default FTP port (21) on <server> is used.
-func WithFTPBounceScan(FTPRelayHost string) func(*Scanner) {
+func WithFTPBounceScan(FTPRelayHost string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-b")
 		s.args = append(s.args, FTPRelayHost)
@@ -872,7 +876,7 @@ func WithFTPBounceScan(FTPRelayHost string) func(*Scanner) {
 /*** Port specification and scan order ***/
 
 // WithPorts sets the ports which the scanner should scan on each host.
-func WithPorts(ports ...string) func(*Scanner) {
+func WithPorts(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -897,7 +901,7 @@ func WithPorts(ports ...string) func(*Scanner) {
 }
 
 // WithPortExclusions sets the ports that the scanner should not scan on each host.
-func WithPortExclusions(ports ...string) func(*Scanner) {
+func WithPortExclusions(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -907,7 +911,7 @@ func WithPortExclusions(ports ...string) func(*Scanner) {
 }
 
 // WithFastMode makes the scan faster by scanning fewer ports than the default scan.
-func WithFastMode() func(*Scanner) {
+func WithFastMode() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-F")
 	}
@@ -915,7 +919,7 @@ func WithFastMode() func(*Scanner) {
 
 // WithConsecutivePortScanning makes the scan go through ports consecutively instead of
 // picking them out randomly.
-func WithConsecutivePortScanning() func(*Scanner) {
+func WithConsecutivePortScanning() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-r")
 	}
@@ -923,7 +927,7 @@ func WithConsecutivePortScanning() func(*Scanner) {
 
 // WithMostCommonPorts sets the scanner to go through the provided number of most
 // common ports.
-func WithMostCommonPorts(number int) func(*Scanner) {
+func WithMostCommonPorts(number int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--top-ports")
 		s.args = append(s.args, fmt.Sprint(number))
@@ -932,7 +936,7 @@ func WithMostCommonPorts(number int) func(*Scanner) {
 
 // WithPortRatio sets the scanner to go the ports more common than the given ratio.
 // Ratio must be a float between 0 and 1.
-func WithPortRatio(ratio float32) func(*Scanner) {
+func WithPortRatio(ratio float32) Option {
 	return func(s *Scanner) {
 		if ratio < 0 || ratio > 1 {
 			panic("value given to nmap.WithPortRatio() should be between 0 and 1")
@@ -947,7 +951,7 @@ func WithPortRatio(ratio float32) func(*Scanner) {
 
 // WithServiceInfo enables the probing of open ports to determine service and version
 // info.
-func WithServiceInfo() func(*Scanner) {
+func WithServiceInfo() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sV")
 	}
@@ -957,7 +961,7 @@ func WithServiceInfo() func(*Scanner) {
 // probe the open ports to get version information.
 // Intensity should be a value between 0 (light) and 9 (try all probes). The
 // default value is 7.
-func WithVersionIntensity(intensity int16) func(*Scanner) {
+func WithVersionIntensity(intensity int16) Option {
 	return func(s *Scanner) {
 		if intensity < 0 || intensity > 9 {
 			panic("value given to nmap.WithVersionIntensity() should be between 0 and 9")
@@ -971,7 +975,7 @@ func WithVersionIntensity(intensity int16) func(*Scanner) {
 // WithVersionLight sets the level of intensity with which nmap should probe the
 // open ports to get version information to 2. This will make version scanning much
 // faster, but slightly less likely to identify services.
-func WithVersionLight() func(*Scanner) {
+func WithVersionLight() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--version-light")
 	}
@@ -980,7 +984,7 @@ func WithVersionLight() func(*Scanner) {
 // WithVersionAll sets the level of intensity with which nmap should probe the
 // open ports to get version information to 9. This will ensure that every single
 // probe is attempted against each port.
-func WithVersionAll() func(*Scanner) {
+func WithVersionAll() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--version-all")
 	}
@@ -989,7 +993,7 @@ func WithVersionAll() func(*Scanner) {
 // WithVersionTrace causes Nmap to print out extensive debugging info about what
 // version scanning is doing.
 // TODO: See how this works along with XML output.
-func WithVersionTrace() func(*Scanner) {
+func WithVersionTrace() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--version-trace")
 	}
@@ -1001,7 +1005,7 @@ func WithVersionTrace() func(*Scanner) {
 // set of scripts. It is equivalent to --script=default. Some of the scripts in
 // this category are considered intrusive and should not be run against a target
 // network without permission.
-func WithDefaultScript() func(*Scanner) {
+func WithDefaultScript() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sC")
 	}
@@ -1009,7 +1013,7 @@ func WithDefaultScript() func(*Scanner) {
 
 // WithScripts sets the scanner to perform a script scan using the enumerated
 // scripts, script directories and script categories.
-func WithScripts(scripts ...string) func(*Scanner) {
+func WithScripts(scripts ...string) Option {
 	scriptList := strings.Join(scripts, ",")
 
 	return func(s *Scanner) {
@@ -1018,7 +1022,7 @@ func WithScripts(scripts ...string) func(*Scanner) {
 }
 
 // WithScriptArguments provides arguments for scripts. If a value is the empty string, the key will be used as a flag.
-func WithScriptArguments(arguments map[string]string) func(*Scanner) {
+func WithScriptArguments(arguments map[string]string) Option {
 	var argList string
 
 	// Properly format the argument list from the map.
@@ -1043,21 +1047,21 @@ func WithScriptArguments(arguments map[string]string) func(*Scanner) {
 }
 
 // WithScriptArgumentsFile provides arguments for scripts from a file.
-func WithScriptArgumentsFile(inputFilePath string) func(*Scanner) {
+func WithScriptArgumentsFile(inputFilePath string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("--script-args-file=%s", inputFilePath))
 	}
 }
 
 // WithScriptTrace makes the scripts show all data sent and received.
-func WithScriptTrace() func(*Scanner) {
+func WithScriptTrace() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--script-trace")
 	}
 }
 
 // WithScriptUpdateDB updates the script database.
-func WithScriptUpdateDB() func(*Scanner) {
+func WithScriptUpdateDB() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--script-updatedb")
 	}
@@ -1066,7 +1070,7 @@ func WithScriptUpdateDB() func(*Scanner) {
 /*** OS Detection ***/
 
 // WithOSDetection enables OS detection.
-func WithOSDetection() func(*Scanner) {
+func WithOSDetection() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-O")
 	}
@@ -1076,14 +1080,14 @@ func WithOSDetection() func(*Scanner) {
 // hosts that do have at least one open TCP port, as it is unlikely to be effective.
 // This can save substantial time, particularly on -Pn scans against many hosts.
 // It only matters when OS detection is requested with -O or -A.
-func WithOSScanLimit() func(*Scanner) {
+func WithOSScanLimit() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--osscan-limit")
 	}
 }
 
 // WithOSScanGuess makes nmap attempt to guess the OS more aggressively.
-func WithOSScanGuess() func(*Scanner) {
+func WithOSScanGuess() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--osscan-guess")
 	}
@@ -1111,14 +1115,14 @@ const (
 )
 
 // WithTimingTemplate sets the timing template for nmap.
-func WithTimingTemplate(timing Timing) func(*Scanner) {
+func WithTimingTemplate(timing Timing) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("-T%d", timing))
 	}
 }
 
 // WithStatsEvery periodically prints a timing status message after each interval of time.
-func WithStatsEvery(interval string) func(*Scanner) {
+func WithStatsEvery(interval string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--stats-every")
 		s.args = append(s.args, interval)
@@ -1126,7 +1130,7 @@ func WithStatsEvery(interval string) func(*Scanner) {
 }
 
 // WithMinHostgroup sets the minimal parallel host scan group size.
-func WithMinHostgroup(size int) func(*Scanner) {
+func WithMinHostgroup(size int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--min-hostgroup")
 		s.args = append(s.args, fmt.Sprint(size))
@@ -1134,7 +1138,7 @@ func WithMinHostgroup(size int) func(*Scanner) {
 }
 
 // WithMaxHostgroup sets the maximal parallel host scan group size.
-func WithMaxHostgroup(size int) func(*Scanner) {
+func WithMaxHostgroup(size int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-hostgroup")
 		s.args = append(s.args, fmt.Sprint(size))
@@ -1142,7 +1146,7 @@ func WithMaxHostgroup(size int) func(*Scanner) {
 }
 
 // WithMinParallelism sets the minimal number of parallel probes.
-func WithMinParallelism(probes int) func(*Scanner) {
+func WithMinParallelism(probes int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--min-parallelism")
 		s.args = append(s.args, fmt.Sprint(probes))
@@ -1150,7 +1154,7 @@ func WithMinParallelism(probes int) func(*Scanner) {
 }
 
 // WithMaxParallelism sets the maximal number of parallel probes.
-func WithMaxParallelism(probes int) func(*Scanner) {
+func WithMaxParallelism(probes int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-parallelism")
 		s.args = append(s.args, fmt.Sprint(probes))
@@ -1158,7 +1162,7 @@ func WithMaxParallelism(probes int) func(*Scanner) {
 }
 
 // WithMinRTTTimeout sets the minimal probe round trip time.
-func WithMinRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
+func WithMinRTTTimeout(roundTripTime time.Duration) Option {
 	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -1168,7 +1172,7 @@ func WithMinRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
 }
 
 // WithMaxRTTTimeout sets the maximal probe round trip time.
-func WithMaxRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
+func WithMaxRTTTimeout(roundTripTime time.Duration) Option {
 	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -1178,7 +1182,7 @@ func WithMaxRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
 }
 
 // WithInitialRTTTimeout sets the initial probe round trip time.
-func WithInitialRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
+func WithInitialRTTTimeout(roundTripTime time.Duration) Option {
 	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -1188,7 +1192,7 @@ func WithInitialRTTTimeout(roundTripTime time.Duration) func(*Scanner) {
 }
 
 // WithMaxRetries sets the maximal number of port scan probe retransmissions.
-func WithMaxRetries(tries int) func(*Scanner) {
+func WithMaxRetries(tries int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-retries")
 		s.args = append(s.args, fmt.Sprint(tries))
@@ -1196,7 +1200,7 @@ func WithMaxRetries(tries int) func(*Scanner) {
 }
 
 // WithHostTimeout sets the time after which nmap should give up on a target host.
-func WithHostTimeout(timeout time.Duration) func(*Scanner) {
+func WithHostTimeout(timeout time.Duration) Option {
 	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -1206,7 +1210,7 @@ func WithHostTimeout(timeout time.Duration) func(*Scanner) {
 }
 
 // WithScanDelay sets the minimum time to wait between each probe sent to a host.
-func WithScanDelay(timeout time.Duration) func(*Scanner) {
+func WithScanDelay(timeout time.Duration) Option {
 	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -1216,7 +1220,7 @@ func WithScanDelay(timeout time.Duration) func(*Scanner) {
 }
 
 // WithMaxScanDelay sets the maximum time to wait between each probe sent to a host.
-func WithMaxScanDelay(timeout time.Duration) func(*Scanner) {
+func WithMaxScanDelay(timeout time.Duration) Option {
 	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -1226,7 +1230,7 @@ func WithMaxScanDelay(timeout time.Duration) func(*Scanner) {
 }
 
 // WithMinRate sets the minimal number of packets sent per second.
-func WithMinRate(packetsPerSecond int) func(*Scanner) {
+func WithMinRate(packetsPerSecond int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--min-rate")
 		s.args = append(s.args, fmt.Sprint(packetsPerSecond))
@@ -1234,7 +1238,7 @@ func WithMinRate(packetsPerSecond int) func(*Scanner) {
 }
 
 // WithMaxRate sets the maximal number of packets sent per second.
-func WithMaxRate(packetsPerSecond int) func(*Scanner) {
+func WithMaxRate(packetsPerSecond int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-rate")
 		s.args = append(s.args, fmt.Sprint(packetsPerSecond))
@@ -1248,7 +1252,7 @@ func WithMaxRate(packetsPerSecond int) func(*Scanner) {
 // filters, intrusion detection systems, and other annoyances to detect what
 // you are doing.
 // Some programs have trouble handling these tiny packets.
-func WithFragmentPackets() func(*Scanner) {
+func WithFragmentPackets() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-f")
 	}
@@ -1259,7 +1263,7 @@ func WithFragmentPackets() func(*Scanner) {
 // to make it harder for packet filters, intrusion detection systems, and other
 // annoyances to detect what you are doing.
 // Some programs have trouble handling these tiny packets.
-func WithMTU(offset int) func(*Scanner) {
+func WithMTU(offset int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--mtu")
 		s.args = append(s.args, fmt.Sprint(offset))
@@ -1278,7 +1282,7 @@ func WithMTU(offset int) func(*Scanner) {
 // for your real IP address.
 // If you put ME in the sixth position or later, some common port scan
 // detectors are unlikely to show your IP address at all.
-func WithDecoys(decoys ...string) func(*Scanner) {
+func WithDecoys(decoys ...string) Option {
 	decoyList := strings.Join(decoys, ",")
 
 	return func(s *Scanner) {
@@ -1294,7 +1298,7 @@ func WithDecoys(decoys ...string) func(*Scanner) {
 // WithSkipHostDiscovery are generally required for this sort of usage. Note
 // that you usually won't receive reply packets back (they will be addressed to
 // the IP you are spoofing), so Nmap won't produce useful reports.
-func WithSpoofIPAddress(ip string) func(*Scanner) {
+func WithSpoofIPAddress(ip string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-S")
 		s.args = append(s.args, ip)
@@ -1302,7 +1306,7 @@ func WithSpoofIPAddress(ip string) func(*Scanner) {
 }
 
 // WithInterface specifies which network interface to use for scanning.
-func WithInterface(iface string) func(*Scanner) {
+func WithInterface(iface string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-e")
 		s.args = append(s.args, iface)
@@ -1310,7 +1314,7 @@ func WithInterface(iface string) func(*Scanner) {
 }
 
 // WithSourcePort specifies from which port to scan.
-func WithSourcePort(port int16) func(*Scanner) {
+func WithSourcePort(port int16) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--source-port")
 		s.args = append(s.args, fmt.Sprint(port))
@@ -1318,7 +1322,7 @@ func WithSourcePort(port int16) func(*Scanner) {
 }
 
 // WithProxies allows to relay connection through HTTP/SOCKS4 proxies.
-func WithProxies(proxies ...string) func(*Scanner) {
+func WithProxies(proxies ...string) Option {
 	proxyList := strings.Join(proxies, ",")
 
 	return func(s *Scanner) {
@@ -1328,7 +1332,7 @@ func WithProxies(proxies ...string) func(*Scanner) {
 }
 
 // WithHexData appends a custom hex-encoded payload to sent packets.
-func WithHexData(data string) func(*Scanner) {
+func WithHexData(data string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--data")
 		s.args = append(s.args, data)
@@ -1336,7 +1340,7 @@ func WithHexData(data string) func(*Scanner) {
 }
 
 // WithASCIIData appends a custom ascii-encoded payload to sent packets.
-func WithASCIIData(data string) func(*Scanner) {
+func WithASCIIData(data string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--data-string")
 		s.args = append(s.args, data)
@@ -1344,7 +1348,7 @@ func WithASCIIData(data string) func(*Scanner) {
 }
 
 // WithDataLength appends a random payload of the given length to sent packets.
-func WithDataLength(length int) func(*Scanner) {
+func WithDataLength(length int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--data-length")
 		s.args = append(s.args, fmt.Sprint(length))
@@ -1356,7 +1360,7 @@ func WithDataLength(length int) func(*Scanner) {
 // path to a target even when more traditional traceroute-style
 // approaches fail. See http://seclists.org/nmap-dev/2006/q3/52
 // for examples of use.
-func WithIPOptions(options string) func(*Scanner) {
+func WithIPOptions(options string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--ip-options")
 		s.args = append(s.args, options)
@@ -1364,7 +1368,7 @@ func WithIPOptions(options string) func(*Scanner) {
 }
 
 // WithIPTimeToLive sets the IP time-to-live field of IP packets.
-func WithIPTimeToLive(ttl int16) func(*Scanner) {
+func WithIPTimeToLive(ttl int16) Option {
 	return func(s *Scanner) {
 		if ttl < 0 || ttl > 255 {
 			panic("value given to nmap.WithIPTimeToLive() should be between 0 and 255")
@@ -1381,7 +1385,7 @@ func WithIPTimeToLive(ttl int16) func(*Scanner) {
 // packets.
 // Valid argument examples are Apple, 0, 01:02:03:04:05:06,
 // deadbeefcafe, 0020F2, and Cisco.
-func WithSpoofMAC(argument string) func(*Scanner) {
+func WithSpoofMAC(argument string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--spoof-mac")
 		s.args = append(s.args, argument)
@@ -1393,7 +1397,7 @@ func WithSpoofMAC(argument string) func(*Scanner) {
 // stacks properly drop these packets, any responses received are
 // likely coming from a firewall or IDS that didn't bother to
 // verify the checksum.
-func WithBadSum() func(*Scanner) {
+func WithBadSum() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--badsum")
 	}
@@ -1402,7 +1406,7 @@ func WithBadSum() func(*Scanner) {
 /*** Output ***/
 
 // WithVerbosity sets and increases the verbosity level of nmap.
-func WithVerbosity(level int) func(*Scanner) {
+func WithVerbosity(level int) Option {
 
 	return func(s *Scanner) {
 		if level < 0 || level > 10 {
@@ -1413,7 +1417,7 @@ func WithVerbosity(level int) func(*Scanner) {
 }
 
 // WithDebugging sets and increases the debugging level of nmap.
-func WithDebugging(level int) func(*Scanner) {
+func WithDebugging(level int) Option {
 	return func(s *Scanner) {
 		if level < 0 || level > 10 {
 			panic("value given to nmap.WithDebugging() should be between 0 and 10")
@@ -1423,28 +1427,28 @@ func WithDebugging(level int) func(*Scanner) {
 }
 
 // WithReason makes nmap specify why a port is in a particular state.
-func WithReason() func(*Scanner) {
+func WithReason() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--reason")
 	}
 }
 
 // WithOpenOnly makes nmap only show open ports.
-func WithOpenOnly() func(*Scanner) {
+func WithOpenOnly() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--open")
 	}
 }
 
 // WithPacketTrace makes nmap show all packets sent and received.
-func WithPacketTrace() func(*Scanner) {
+func WithPacketTrace() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--packet-trace")
 	}
 }
 
 // WithInterfaceList makes nmap print host interfaces and routes.
-func WithInterfaceList() func(*Scanner) {
+func WithInterfaceList() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--iflist")
 	}
@@ -1452,7 +1456,7 @@ func WithInterfaceList() func(*Scanner) {
 
 // WithAppendOutput makes nmap append to files instead of overwriting them.
 // Currently does nothing, since this library doesn't write in files.
-func WithAppendOutput() func(*Scanner) {
+func WithAppendOutput() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--append-output")
 	}
@@ -1460,7 +1464,7 @@ func WithAppendOutput() func(*Scanner) {
 
 // WithResumePreviousScan makes nmap continue a scan that was aborted,
 // from an output file.
-func WithResumePreviousScan(filePath string) func(*Scanner) {
+func WithResumePreviousScan(filePath string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--resume")
 		s.args = append(s.args, filePath)
@@ -1469,7 +1473,7 @@ func WithResumePreviousScan(filePath string) func(*Scanner) {
 
 // WithStylesheet makes nmap apply an XSL stylesheet to transform its
 // XML output to HTML.
-func WithStylesheet(stylesheetPath string) func(*Scanner) {
+func WithStylesheet(stylesheetPath string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--stylesheet")
 		s.args = append(s.args, stylesheetPath)
@@ -1479,14 +1483,14 @@ func WithStylesheet(stylesheetPath string) func(*Scanner) {
 // WithWebXML makes nmap apply the default nmap.org stylesheet to transform
 // XML output to HTML. The stylesheet can be found at
 // https://nmap.org/svn/docs/nmap.xsl
-func WithWebXML() func(*Scanner) {
+func WithWebXML() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--webxml")
 	}
 }
 
 // WithNoStylesheet prevents the use of XSL stylesheets with the XML output.
-func WithNoStylesheet() func(*Scanner) {
+func WithNoStylesheet() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--no-stylesheet")
 	}
@@ -1495,7 +1499,7 @@ func WithNoStylesheet() func(*Scanner) {
 /*** Misc ***/
 
 // WithIPv6Scanning enables the use of IPv6 scanning.
-func WithIPv6Scanning() func(*Scanner) {
+func WithIPv6Scanning() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-6")
 	}
@@ -1506,7 +1510,7 @@ func WithIPv6Scanning() func(*Scanner) {
 // and WithTraceRoute at the same time.
 // Because script scanning with the default set is considered intrusive, you
 // should not use this method against target networks without permission.
-func WithAggressiveScan() func(*Scanner) {
+func WithAggressiveScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-A")
 	}
@@ -1515,7 +1519,7 @@ func WithAggressiveScan() func(*Scanner) {
 // WithDataDir specifies a custom data directory for nmap to get its
 // nmap-service-probes, nmap-services, nmap-protocols, nmap-rpc,
 // nmap-mac-prefixes, and nmap-os-db.
-func WithDataDir(directoryPath string) func(*Scanner) {
+func WithDataDir(directoryPath string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--datadir")
 		s.args = append(s.args, directoryPath)
@@ -1525,7 +1529,7 @@ func WithDataDir(directoryPath string) func(*Scanner) {
 // WithSendEthernet makes nmap send packets at the raw ethernet (data link)
 // layer rather than the higher IP (network) layer. By default, nmap chooses
 // the one which is generally best for the platform it is running on.
-func WithSendEthernet() func(*Scanner) {
+func WithSendEthernet() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--send-eth")
 	}
@@ -1533,21 +1537,21 @@ func WithSendEthernet() func(*Scanner) {
 
 // WithSendIP makes nmap send packets via raw IP sockets rather than sending
 // lower level ethernet frames.
-func WithSendIP() func(*Scanner) {
+func WithSendIP() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--send-ip")
 	}
 }
 
 // WithPrivileged makes nmap assume that the user is fully privileged.
-func WithPrivileged() func(*Scanner) {
+func WithPrivileged() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--privileged")
 	}
 }
 
 // WithUnprivileged makes nmap assume that the user lacks raw socket privileges.
-func WithUnprivileged() func(*Scanner) {
+func WithUnprivileged() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--unprivileged")
 	}
