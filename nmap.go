@@ -1556,3 +1556,19 @@ func WithUnprivileged() Option {
 		s.args = append(s.args, "--unprivileged")
 	}
 }
+
+// WithNmapOutput makes nmap output standard output to the filename specified.
+func WithNmapOutput(outputFileName string) Option {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-oN")
+		s.args = append(s.args, outputFileName)
+	}
+}
+
+// WithGrepOutput makes nmap output greppable output to the filename specified.
+func WithGrepOutput(outputFileName string) Option {
+	return func(s *Scanner) {
+		s.args = append(s.args, "-oG")
+		s.args = append(s.args, outputFileName)
+	}
+}
