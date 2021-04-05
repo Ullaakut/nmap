@@ -1707,12 +1707,12 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 			description: "set source port",
 
 			options: []Option{
-				WithSourcePort(4242),
+				WithSourcePort(65535),
 			},
 
 			expectedArgs: []string{
 				"--source-port",
-				"4242",
+				"65535",
 			},
 		},
 		{
