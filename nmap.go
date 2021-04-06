@@ -1314,7 +1314,7 @@ func WithInterface(iface string) Option {
 }
 
 // WithSourcePort specifies from which port to scan.
-func WithSourcePort(port int16) Option {
+func WithSourcePort(port uint16) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--source-port")
 		s.args = append(s.args, fmt.Sprint(port))
