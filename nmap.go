@@ -75,7 +75,9 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 		resume         bool
 	)
 
-	for _, arg := range s.args {
+	args := s.args
+	
+	for _, arg := range args {
 		if arg == "--resume" {
 			resume = true
 			break
@@ -84,14 +86,14 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 
 	if !resume {
 		// Enable XML output
-		s.args = append(s.args, "-oX")
+		args = append(args, "-oX")
 
 		// Get XML output in stdout instead of writing it in a file
-		s.args = append(s.args, "-")
+		args = append(args, "-")
 	}
 
 	// Prepare nmap process
-	cmd := exec.Command(s.binaryPath, s.args...)
+	cmd := exec.Command(s.binaryPath, args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
@@ -166,17 +168,19 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, warnings []string, err error) {
 	var stdout, stderr bytes.Buffer
 
+	args := s.args
+
 	// Enable XML output.
-	s.args = append(s.args, "-oX")
+	args = append(args, "-oX")
 
 	// Get XML output in stdout instead of writing it in a file.
-	s.args = append(s.args, "-")
+	args = append(args, "-")
 
 	// Enable progress output every second.
-	s.args = append(s.args, "--stats-every", "1s")
+	args = append(args, "--stats-every", "1s")
 
 	// Prepare nmap process.
-	cmd := exec.Command(s.binaryPath, s.args...)
+	cmd := exec.Command(s.binaryPath, args...)
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
@@ -277,17 +281,20 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 // RunWithStreamer runs nmap synchronously. The XML output is written directly to a file.
 // It uses a streamer interface to constantly stream the stdout.
 func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []string, err error) {
+
+	args := s.args
+
 	// Enable XML output.
-	s.args = append(s.args, "-oX")
+	args = append(args, "-oX")
 
 	// Get XML output in stdout instead of writing it in a file.
-	s.args = append(s.args, file)
+	args = append(args, file)
 
 	// Enable progress output every second.
-	s.args = append(s.args, "--stats-every", "5s")
+	args = append(args, "--stats-every", "5s")
 
 	// Prepare nmap process.
-	cmd := exec.CommandContext(s.ctx, s.binaryPath, s.args...)
+	cmd := exec.CommandContext(s.ctx, s.binaryPath, args...)
 
 	// Write stderr to buffer.
 	stderrBuf := bytes.Buffer{}
@@ -339,12 +346,15 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 // RunAsync runs nmap asynchronously and returns error.
 // TODO: RunAsync should return warnings as well.
 func (s *Scanner) RunAsync() error {
+
+	args := s.args
+
 	// Enable XML output.
-	s.args = append(s.args, "-oX")
+	args = append(args, "-oX")
 
 	// Get XML output in stdout instead of writing it in a file.
-	s.args = append(s.args, "-")
-	s.cmd = exec.Command(s.binaryPath, s.args...)
+	args = append(args, "-")
+	s.cmd = exec.Command(s.binaryPath, args...)
 
 	stderr, err := s.cmd.StderrPipe()
 	if err != nil {
