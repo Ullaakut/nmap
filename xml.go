@@ -215,22 +215,22 @@ func (o Owner) String() string {
 
 // Service contains detailed information about a service on an open port.
 type Service struct {
-	DeviceType    string `xml:"devicetype,attr" json:"device_type"`
-	ExtraInfo     string `xml:"extrainfo,attr" json:"extra_info"`
-	HighVersion   string `xml:"highver,attr" json:"high_version"`
-	Hostname      string `xml:"hostname,attr" json:"hostname"`
-	LowVersion    string `xml:"lowver,attr" json:"low_version"`
-	Method        string `xml:"method,attr" json:"method"`
-	Name          string `xml:"name,attr" json:"name"`
-	OSType        string `xml:"ostype,attr" json:"os_type"`
-	Product       string `xml:"product,attr" json:"product"`
-	Proto         string `xml:"proto,attr" json:"proto"`
-	RPCNum        string `xml:"rpcnum,attr" json:"rpc_num"`
-	ServiceFP     string `xml:"servicefp,attr" json:"service_fp"`
-	Tunnel        string `xml:"tunnel,attr" json:"tunnel"`
-	Version       string `xml:"version,attr" json:"version"`
-	Configuration int    `xml:"conf,attr" json:"configuration"`
-	CPEs          []CPE  `xml:"cpe" json:"cpes"`
+	DeviceType  string `xml:"devicetype,attr" json:"device_type"`
+	ExtraInfo   string `xml:"extrainfo,attr" json:"extra_info"`
+	HighVersion string `xml:"highver,attr" json:"high_version"`
+	Hostname    string `xml:"hostname,attr" json:"hostname"`
+	LowVersion  string `xml:"lowver,attr" json:"low_version"`
+	Method      string `xml:"method,attr" json:"method"`
+	Name        string `xml:"name,attr" json:"name"`
+	OSType      string `xml:"ostype,attr" json:"os_type"`
+	Product     string `xml:"product,attr" json:"product"`
+	Proto       string `xml:"proto,attr" json:"proto"`
+	RPCNum      string `xml:"rpcnum,attr" json:"rpc_num"`
+	ServiceFP   string `xml:"servicefp,attr" json:"service_fp"`
+	Tunnel      string `xml:"tunnel,attr" json:"tunnel"`
+	Version     string `xml:"version,attr" json:"version"`
+	Confidence  int    `xml:"conf,attr" json:"confidence"`
+	CPEs        []CPE  `xml:"cpe" json:"cpes"`
 }
 
 func (s Service) String() string {

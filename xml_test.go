@@ -870,12 +870,12 @@ func TestParseRunXML(t *testing.T) {
 								ID:       80,
 								Protocol: "tcp",
 								Service: Service{
-									Name:          "http",
-									ExtraInfo:     "(Unix) PHP/4.4.7",
-									Method:        "probed",
-									Product:       "Apache httpd",
-									Version:       "1.3.39",
-									Configuration: 10,
+									Name:       "http",
+									ExtraInfo:  "(Unix) PHP/4.4.7",
+									Method:     "probed",
+									Product:    "Apache httpd",
+									Version:    "1.3.39",
+									Confidence: 10,
 								},
 								State: State{
 									State:     "open",
@@ -897,9 +897,9 @@ func TestParseRunXML(t *testing.T) {
 								ID:       443,
 								Protocol: "tcp",
 								Service: Service{
-									Name:          "https",
-									Method:        "table",
-									Configuration: 3,
+									Name:       "https",
+									Method:     "table",
+									Confidence: 3,
 								},
 								State: State{
 									State:     "closed",
