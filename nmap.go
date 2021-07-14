@@ -1587,12 +1587,3 @@ func WithGrepOutput(outputFileName string) Option {
 func (s *Scanner) Args() []string {
 	return s.args
 }
-
-// PrintArgs print the nmap args
-func (s *Scanner) PrintArgs() string {
-	args := strings.Join(s.args, " ")
-
-	fmt.Print(args)
-
-	return args
-}
