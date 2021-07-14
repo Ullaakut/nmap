@@ -76,7 +76,7 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 	)
 
 	args := s.args
-	
+
 	for _, arg := range args {
 		if arg == "--resume" {
 			resume = true
@@ -1581,4 +1581,18 @@ func WithGrepOutput(outputFileName string) Option {
 		s.args = append(s.args, "-oG")
 		s.args = append(s.args, outputFileName)
 	}
+}
+
+// ReturnArgs return the list of nmap args
+func (s *Scanner) ReturnArgs() (args []string) {
+	return s.args
+}
+
+// PrintArgs print the nmap args
+func (s *Scanner) PrintArgs() (args string) {
+	args = strings.Join(s.args, " ")
+
+	fmt.Print(args)
+
+	return
 }
