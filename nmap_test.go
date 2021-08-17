@@ -338,7 +338,7 @@ func TestRunWithStreamer(t *testing.T) {
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
 				WithCustomArguments("tests/xml/scan_base.xml"),
 			},
-			expectedErr:      nil,
+			expectedErr: nil,
 		},
 	}
 
@@ -2105,12 +2105,12 @@ func TestAnalyzeWarnings(t *testing.T) {
 	}{
 		{
 			description: "Find no error warning",
-			warnings: []string{"NoWarning", "NoWarning"},
+			warnings:    []string{"NoWarning", "NoWarning"},
 			expectedErr: nil,
 		},
 		{
 			description: "Find malloc error",
-			warnings: []string{"   Malloc Failed! with "},
+			warnings:    []string{"   Malloc Failed! with "},
 			expectedErr: ErrMallocFailed,
 		},
 	}

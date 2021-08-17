@@ -9,30 +9,35 @@ import (
 	"strings"
 )
 
+// InterfaceList contains interfaces and routes
 type InterfaceList struct {
 	Interfaces []*Interface `json:"interfaces"`
-	Routes     []*Route `json:"routes"`
+	Routes     []*Route     `json:"routes"`
 }
 
+// Interface is a interface object
 type Interface struct {
-	Device string `json:"device"`
-	Short  string `json:"short"`
-	IP     net.IP `json:"ip"`
-	IPMask  net.IP `json:"ip_mask"`
-	Type   string `json:"type"`
-	Up     bool `json:"up"`
-	MTU    int `json:"mtu"`
+	Device string           `json:"device"`
+	Short  string           `json:"short"`
+	IP     net.IP           `json:"ip"`
+	IPMask net.IP           `json:"ip_mask"`
+	Type   string           `json:"type"`
+	Up     bool             `json:"up"`
+	MTU    int              `json:"mtu"`
 	Mac    net.HardwareAddr `json:"mac"`
 }
 
+// Route is a route object
 type Route struct {
-	DestinationIP net.IP `json:"destination_ip"`
+	DestinationIP     net.IP `json:"destination_ip"`
 	DestinationIPMask net.IP `json:"destination_ip_mask"`
-	Device      string `json:"device"`
-	Metric      int `json:"metric"`
-	Gateway     net.IP `json:"gateway"`
+	Device            string `json:"device"`
+	Metric            int    `json:"metric"`
+	Gateway           net.IP `json:"gateway"`
 }
 
+// GetInterfaceList runs nmap with --iflist option. The output will be parsed.
+// The return value is a struct containing all host interfaces and routes.
 func (s *Scanner) GetInterfaceList() (result *InterfaceList, err error) {
 	var stdout, stderr bytes.Buffer
 
@@ -54,7 +59,7 @@ func (s *Scanner) GetInterfaceList() (result *InterfaceList, err error) {
 	return result, nil
 }
 
-func parseInterfaces(content []byte) (*InterfaceList) {
+func parseInterfaces(content []byte) *InterfaceList {
 	list := InterfaceList{
 		Interfaces: make([]*Interface, 0),
 		Routes:     make([]*Route, 0),
@@ -86,7 +91,7 @@ func parseInterfaces(content []byte) (*InterfaceList) {
 func convertInterface(line string) *Interface {
 	splitted := strings.Fields(line)
 
-	if len(splitted) < 6{
+	if len(splitted) < 6 {
 		return nil
 	}
 	iface := &Interface{
@@ -117,7 +122,7 @@ func convertInterface(line string) *Interface {
 func convertRoute(line string) *Route {
 	splitted := strings.Fields(line)
 
-	if len(splitted) < 3{
+	if len(splitted) < 3 {
 		return nil
 	}
 
