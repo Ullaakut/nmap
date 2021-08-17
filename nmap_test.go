@@ -1909,28 +1909,6 @@ func TestOutput(t *testing.T) {
 			},
 		},
 		{
-			description: "enable interface listing",
-
-			options: []Option{
-				WithInterfaceList(),
-			},
-
-			expectedArgs: []string{
-				"--iflist",
-			},
-		},
-		{
-			description: "enable interface listing",
-
-			options: []Option{
-				WithInterfaceList(),
-			},
-
-			expectedArgs: []string{
-				"--iflist",
-			},
-		},
-		{
 			description: "enable appending output",
 
 			options: []Option{

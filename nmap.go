@@ -1457,13 +1457,6 @@ func WithPacketTrace() Option {
 	}
 }
 
-// WithInterfaceList makes nmap print host interfaces and routes.
-func WithInterfaceList() Option {
-	return func(s *Scanner) {
-		s.args = append(s.args, "--iflist")
-	}
-}
-
 // WithAppendOutput makes nmap append to files instead of overwriting them.
 // Currently does nothing, since this library doesn't write in files.
 func WithAppendOutput() Option {
