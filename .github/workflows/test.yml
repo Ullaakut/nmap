@@ -1,0 +1,35 @@
+name: test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    paths:
+      - '**.go'
+
+jobs:
+  go_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+        
+    - name: Install goveralls
+      run: go install github.com/mattn/goveralls@latest
+        
+    - name: Install nmap
+      run: sudo apt install -y nmap
+      
+    - name: Test
+      run: go test -coverprofile=c.out ./...
+      
+    - name: Create coverage report
+      run: go tool cover -func=c.out
+      
+    - name: Send coverage report
+      env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: goveralls -coverprofile=c.out -service=github
