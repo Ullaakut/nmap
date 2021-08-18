@@ -9,13 +9,13 @@ import (
 	"strings"
 )
 
-// InterfaceList contains interfaces and routes
+// InterfaceList contains interfaces and routes.
 type InterfaceList struct {
 	Interfaces []*Interface `json:"interfaces"`
 	Routes     []*Route     `json:"routes"`
 }
 
-// Interface is a interface object
+// Interface is a interface object.
 type Interface struct {
 	Device string           `json:"device"`
 	Short  string           `json:"short"`
@@ -27,7 +27,7 @@ type Interface struct {
 	Mac    net.HardwareAddr `json:"mac"`
 }
 
-// Route is a route object
+// Route is a route object.
 type Route struct {
 	DestinationIP     net.IP `json:"destination_ip"`
 	DestinationIPMask net.IP `json:"destination_ip_mask"`
@@ -36,7 +36,7 @@ type Route struct {
 	Gateway           net.IP `json:"gateway"`
 }
 
-// GetInterfaceList runs nmap with --iflist option. The output will be parsed.
+// GetInterfaceList runs nmap with the --iflist option. The output will be parsed.
 // The return value is a struct containing all host interfaces and routes.
 func (s *Scanner) GetInterfaceList() (result *InterfaceList, err error) {
 	var stdout, stderr bytes.Buffer
@@ -69,16 +69,16 @@ func parseInterfaces(content []byte) *InterfaceList {
 
 	for i, line := range lines {
 		if match, _ := regexp.MatchString(`[\*]INTERFACES[\*]`, line); match {
-			for _, line := range lines[i+2:] {
-				if iface := convertInterface(line); iface != nil {
+			for _, l := range lines[i+2:] {
+				if iface := convertInterface(l); iface != nil {
 					list.Interfaces = append(list.Interfaces, iface)
 				}
 			}
 		}
 
 		if match, _ := regexp.MatchString(`[\*]ROUTES[\*]`, line); match {
-			for _, line := range lines[i+2:] {
-				if route := convertRoute(line); route != nil {
+			for _, l := range lines[i+2:] {
+				if route := convertRoute(l); route != nil {
 					list.Routes = append(list.Routes, route)
 				}
 			}
@@ -89,30 +89,28 @@ func parseInterfaces(content []byte) *InterfaceList {
 }
 
 func convertInterface(line string) *Interface {
-	splitted := strings.Fields(line)
+	fields := strings.Fields(line)
 
-	if len(splitted) < 6 {
+	if len(fields) < 6 {
 		return nil
 	}
 	iface := &Interface{
-		Device: splitted[0],
-		Short:  splitted[1],
-		Type:   splitted[3],
+		Device: fields[0],
+		Short:  fields[1],
+		Type:   fields[3],
 	}
-	if ip, val, err := net.ParseCIDR(splitted[2]); err == nil {
+	if ip, val, err := net.ParseCIDR(fields[2]); err == nil {
 		iface.IP = ip
 		iface.IPMask = net.IP(val.Mask)
 	}
-	if strings.ToLower(splitted[4]) == "up" {
-		iface.Up = true
-	} else {
-		iface.Up = false
-	}
-	if val, err := strconv.Atoi(splitted[5]); err == nil {
+
+	iface.Up = strings.ToLower(fields[4]) == "up"
+
+	if val, err := strconv.Atoi(fields[5]); err == nil {
 		iface.MTU = val
 	}
-	if len(splitted) > 6 {
-		if val, err := net.ParseMAC(splitted[6]); err == nil {
+	if len(fields) > 6 {
+		if val, err := net.ParseMAC(fields[6]); err == nil {
 			iface.Mac = val
 		}
 	}
@@ -120,24 +118,24 @@ func convertInterface(line string) *Interface {
 }
 
 func convertRoute(line string) *Route {
-	splitted := strings.Fields(line)
+	fields := strings.Fields(line)
 
-	if len(splitted) < 3 {
+	if len(fields) < 3 {
 		return nil
 	}
 
 	route := &Route{
-		Device: splitted[1],
+		Device: fields[1],
 	}
-	if ip, val, err := net.ParseCIDR(splitted[0]); err == nil {
+	if ip, val, err := net.ParseCIDR(fields[0]); err == nil {
 		route.DestinationIP = ip
 		route.DestinationIPMask = net.IP(val.Mask)
 	}
-	if val, err := strconv.Atoi(splitted[2]); err == nil {
+	if val, err := strconv.Atoi(fields[2]); err == nil {
 		route.Metric = val
 	}
-	if len(splitted) > 3 {
-		route.Gateway = net.ParseIP(splitted[3])
+	if len(fields) > 3 {
+		route.Gateway = net.ParseIP(fields[3])
 	}
 	return route
 }

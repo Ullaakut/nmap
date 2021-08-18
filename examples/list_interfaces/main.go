@@ -14,10 +14,13 @@ func main() {
 	}
 
 	interfaceList, err := scanner.GetInterfaceList()
-
-	bytes, err := json.MarshalIndent(interfaceList, "", "   ")
 	if err != nil {
-		log.Fatalf("unable to marshall: %v", err)
+		log.Fatalf("could not get interface list: %v", err)
+	}
+
+	bytes, err := json.MarshalIndent(interfaceList, "", "\t")
+	if err != nil {
+		log.Fatalf("unable to marshal: %v", err)
 	}
 
 	fmt.Println(string(bytes))
