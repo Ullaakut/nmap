@@ -1,0 +1,22 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    paths:
+      - 'examples/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+
+    - name: Build examples
+      run: for dir in examples/*/; do go build -o $dir/bin $dir/main.go; done
+      
