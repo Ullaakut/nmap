@@ -1,7 +1,12 @@
 #!/bin/bash
 input=$1
+count=0
 while IFS= read -r line
 do
   echo "$line"
-  sleep .5
+  if [ $count -gt 13 ] && [ $count -lt 23 ]
+  then
+    sleep 1
+  fi
+  (( count++ ))
 done < "$input"
