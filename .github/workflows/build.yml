@@ -8,15 +8,30 @@ on:
       - 'examples/*'
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.16
 
-    - name: Build examples
-      run: for dir in examples/*/; do go build -o $dir/bin $dir/main.go; done
-      
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Cache Go modules
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # Here, we simply print the exact go version, to have it as part of the
+      # action's output, which might be convenient.
+      - name: Print Go version
+        run: go version
+
+      - name: Build examples
+        run: for dir in examples/*/; do go build -o $dir/bin $dir/main.go; done
