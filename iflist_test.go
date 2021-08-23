@@ -29,7 +29,7 @@ func TestConvertInterface(t *testing.T) {
 	assert.Equal(t, "loopback", i.Type)
 	assert.False(t, i.Up)
 	assert.Equal(t, 65536, i.MTU)
-	assert.Equal(t, net.HardwareAddr{0x11,0x11,0x11,0x11,0x11,0x11}, i.Mac)
+	assert.Equal(t, net.HardwareAddr{0x11, 0x11, 0x11, 0x11, 0x11, 0x11}, i.Mac)
 }
 
 func TestConvertRoute(t *testing.T) {

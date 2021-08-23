@@ -287,7 +287,7 @@ func TestRunWithProgress(t *testing.T) {
 
 			compareWholeRun:  true,
 			expectedResult:   r,
-			expectedProgress: []float32{56.66, 81.95, 87.84, 94.43, 97.76, 97.76},
+			expectedProgress: []float32{3.22, 56.66, 77.02, 81.95, 86.79, 87.84},
 			expectedErr:      nil,
 		},
 	}

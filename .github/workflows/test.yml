@@ -1,0 +1,60 @@
+name: test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    paths:
+      - '**.go'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v2
+
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16
+
+      - name: Cache Go modules
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # Here, we simply print the exact go version, to have it as part of the
+      # action's output, which might be convenient.
+      - name: Print Go version
+        run: go version
+      
+      # This check makes sure that the `go.mod` and `go.sum` files for Go
+      # modules are always up-to-date.
+      - name: Verify Go modules
+        run: go mod tidy && git status && git --no-pager diff && git diff-index --quiet HEAD --
+
+      # This check makes sure that the source code is formatted according to the
+      # Go standard `go fmt` formatting.
+      - name: Verify source code formatting
+        run: go fmt ./... && git status && git --no-pager diff && git diff-index --quiet HEAD --
+
+      - name: Install nmap
+        run: sudo apt install -y nmap
+
+      - name: Test
+        run: go test -coverprofile=c.out ./...
+
+      - name: Install goveralls
+        run: go install github.com/mattn/goveralls@latest
+
+      - name: Create coverage report
+        run: go tool cover -func=c.out
+
+      - name: Send coverage report
+        env:
+            COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: goveralls -coverprofile=c.out -service=github

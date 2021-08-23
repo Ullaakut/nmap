@@ -12,12 +12,16 @@
     <a href="https://goreportcard.com/report/github.com/Ullaakut/nmap">
         <img src="https://goreportcard.com/badge/github.com/Ullaakut/nmap">
     </a>
-    <a href="https://travis-ci.org/Ullaakut/nmap">
-        <img src="https://travis-ci.org/Ullaakut/nmap.svg?branch=master">
+    <a href="https://github.com/Ullaakut/nmap/actions/workflows/build.yml">
+        <img src="https://github.com/Ullaakut/nmap/actions/workflows/build.yml/badge.svg">
     </a>
-    <a href="https://coveralls.io/github/Ullaakut/nmap?branch=master">
-        <img src="https://coveralls.io/repos/github/Ullaakut/nmap/badge.svg?branch=master">
+    <a href="https://github.com/Ullaakut/nmap/actions/workflows/test.yml">
+        <img src="https://github.com/Ullaakut/nmap/actions/workflows/test.yml/badge.svg">
     </a>
+    <a href='https://coveralls.io/github/Ullaakut/nmap'>
+        <img src='https://coveralls.io/repos/github/Ullaakut/nmap/badge.svg' alt='Coverage Status' />
+    </a>
+
 <p>
 
 This library aims at providing idiomatic `nmap` bindings for go developers, in order to make it easier to write security audit tools using golang.
