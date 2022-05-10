@@ -329,9 +329,7 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 	// Process nmap stderr output containing none-critical errors and warnings.
 	// Everyone needs to check whether one or some of these warnings is a hard issue in their use case.
 	if stderrBuf.Len() > 0 {
-		for _, v := range strings.Split(strings.Trim(stderrBuf.String(), "\n"), "\n") {
-			warnings = append(warnings, v)
-		}
+		warnings = append(warnings, strings.Split(strings.Trim(stderrBuf.String(), "\n"), "\n")...)
 	}
 
 	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
