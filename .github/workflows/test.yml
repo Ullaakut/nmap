@@ -17,7 +17,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.17
 
       - name: Cache Go modules
         uses: actions/cache@v2
@@ -58,3 +58,9 @@ jobs:
         env:
             COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: goveralls -coverprofile=c.out -service=github
+
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: Run staticcheck for possible optimizations
+        run: staticcheck -tests=false

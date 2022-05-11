@@ -67,8 +67,10 @@ func parseInterfaces(content []byte) *InterfaceList {
 	output := string(content)
 	lines := strings.Split(output, "\n")
 
+	interfaceRegex := regexp.MustCompile(`\*INTERFACES\*`)
+	routesRegex := regexp.MustCompile(`\*ROUTES\*`)
 	for i, line := range lines {
-		if match, _ := regexp.MatchString(`[\*]INTERFACES[\*]`, line); match {
+		if interfaceRegex.MatchString(line) {
 			for _, l := range lines[i+2:] {
 				if iface := convertInterface(l); iface != nil {
 					list.Interfaces = append(list.Interfaces, iface)
@@ -76,7 +78,7 @@ func parseInterfaces(content []byte) *InterfaceList {
 			}
 		}
 
-		if match, _ := regexp.MatchString(`[\*]ROUTES[\*]`, line); match {
+		if routesRegex.MatchString(line) {
 			for _, l := range lines[i+2:] {
 				if route := convertRoute(l); route != nil {
 					list.Routes = append(list.Routes, route)
