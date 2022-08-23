@@ -1,9 +1,10 @@
 package nmap
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestScanner_GetInterfaceList(t *testing.T) {

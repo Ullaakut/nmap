@@ -532,6 +532,17 @@ func WithRandomTargets(randomTargets int) Option {
 	}
 }
 
+// WithUnique makes each address be scanned only once.
+// The default behavior is to scan each address as many times
+// as it is specified in the target list, such as when network
+// ranges overlap or different hostnames resolve to the same
+// address.
+func WithUnique() Option {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--unique")
+	}
+}
+
 /*** Host discovery ***/
 
 // WithListScan sets the discovery mode to simply list the targets to scan and not scan them.
@@ -1072,6 +1083,16 @@ func WithScriptTrace() Option {
 func WithScriptUpdateDB() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--script-updatedb")
+	}
+}
+
+// WithScriptTimeout sets the script timeout.
+func WithScriptTimeout(timeout time.Duration) Option {
+	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
+
+	return func(s *Scanner) {
+		s.args = append(s.args, "--script-timeout")
+		s.args = append(s.args, fmt.Sprintf("%dms", int(milliseconds)))
 	}
 }
 

@@ -549,6 +549,17 @@ func TestTargetSpecification(t *testing.T) {
 			},
 		},
 		{
+			description: "unique addresses",
+
+			options: []Option{
+				WithUnique(),
+			},
+
+			expectedArgs: []string{
+				"--unique",
+			},
+		},
+		{
 			description: "target exclusion",
 
 			options: []Option{
@@ -1339,6 +1350,18 @@ func TestScriptScan(t *testing.T) {
 
 			expectedArgs: []string{
 				"--script-updatedb",
+			},
+		},
+		{
+			description: "set script timeout",
+
+			options: []Option{
+				WithScriptTimeout(40 * time.Second),
+			},
+
+			expectedArgs: []string{
+				"--script-timeout",
+				"40000ms",
 			},
 		},
 	}
