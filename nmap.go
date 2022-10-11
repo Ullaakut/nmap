@@ -10,6 +10,7 @@ import (
 	"io"
 	"os/exec"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
@@ -29,7 +30,8 @@ type Streamer interface {
 
 // Scanner represents an Nmap scanner.
 type Scanner struct {
-	cmd *exec.Cmd
+	cmd               *exec.Cmd
+	modifySysProcAttr func(*syscall.SysProcAttr)
 
 	args       []string
 	binaryPath string
@@ -94,6 +96,9 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 
 	// Prepare nmap process
 	cmd := exec.Command(s.binaryPath, args...)
+	if s.modifySysProcAttr != nil {
+		s.modifySysProcAttr(cmd.SysProcAttr)
+	}
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
@@ -181,6 +186,9 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 
 	// Prepare nmap process.
 	cmd := exec.Command(s.binaryPath, args...)
+	if s.modifySysProcAttr != nil {
+		s.modifySysProcAttr(cmd.SysProcAttr)
+	}
 	cmd.Stderr = &stderr
 	cmd.Stdout = &stdout
 
@@ -295,6 +303,9 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 
 	// Prepare nmap process.
 	cmd := exec.CommandContext(s.ctx, s.binaryPath, args...)
+	if s.modifySysProcAttr != nil {
+		s.modifySysProcAttr(cmd.SysProcAttr)
+	}
 
 	// Write stderr to buffer.
 	stderrBuf := bytes.Buffer{}
@@ -353,6 +364,10 @@ func (s *Scanner) RunAsync() error {
 	// Get XML output in stdout instead of writing it in a file.
 	args = append(args, "-")
 	s.cmd = exec.Command(s.binaryPath, args...)
+
+	if s.modifySysProcAttr != nil {
+		s.modifySysProcAttr(s.cmd.SysProcAttr)
+	}
 
 	stderr, err := s.cmd.StderrPipe()
 	if err != nil {
@@ -1592,6 +1607,13 @@ func WithGrepOutput(outputFileName string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-oG")
 		s.args = append(s.args, outputFileName)
+	}
+}
+
+// WithCustomSysProcAttr allows customizing the *syscall.SysProcAttr on the *exec.Cmd instance
+func WithCustomSysProcAttr(f func(*syscall.SysProcAttr)) Option {
+	return func(s *Scanner) {
+		s.modifySysProcAttr = f
 	}
 }
 
