@@ -35,6 +35,7 @@ type Scanner struct {
 
 	args       []string
 	binaryPath string
+	sudoPath   string
 	ctx        context.Context
 
 	portFilter func(Port) bool
@@ -94,8 +95,14 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 		args = append(args, "-")
 	}
 
+	binaryPath := s.binaryPath
+	if s.sudoPath != "" {
+		args = append([]string{binaryPath}, args...)
+		binaryPath = s.sudoPath
+	}
+
 	// Prepare nmap process
-	cmd := exec.Command(s.binaryPath, args...)
+	cmd := exec.Command(binaryPath, args...)
 	if s.modifySysProcAttr != nil {
 		s.modifySysProcAttr(cmd.SysProcAttr)
 	}
@@ -184,8 +191,14 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 	// Enable progress output every second.
 	args = append(args, "--stats-every", "1s")
 
+	binaryPath := s.binaryPath
+	if s.sudoPath != "" {
+		args = append([]string{binaryPath}, args...)
+		binaryPath = s.sudoPath
+	}
+
 	// Prepare nmap process.
-	cmd := exec.Command(s.binaryPath, args...)
+	cmd := exec.Command(binaryPath, args...)
 	if s.modifySysProcAttr != nil {
 		s.modifySysProcAttr(cmd.SysProcAttr)
 	}
@@ -301,8 +314,14 @@ func (s *Scanner) RunWithStreamer(stream Streamer, file string) (warnings []stri
 	// Enable progress output every second.
 	args = append(args, "--stats-every", "5s")
 
+	binaryPath := s.binaryPath
+	if s.sudoPath != "" {
+		args = append([]string{binaryPath}, args...)
+		binaryPath = s.sudoPath
+	}
+
 	// Prepare nmap process.
-	cmd := exec.CommandContext(s.ctx, s.binaryPath, args...)
+	cmd := exec.CommandContext(s.ctx, binaryPath, args...)
 	if s.modifySysProcAttr != nil {
 		s.modifySysProcAttr(cmd.SysProcAttr)
 	}
@@ -363,7 +382,14 @@ func (s *Scanner) RunAsync() error {
 
 	// Get XML output in stdout instead of writing it in a file.
 	args = append(args, "-")
-	s.cmd = exec.Command(s.binaryPath, args...)
+
+	binaryPath := s.binaryPath
+	if s.sudoPath != "" {
+		args = append([]string{binaryPath}, args...)
+		binaryPath = s.sudoPath
+	}
+
+	s.cmd = exec.Command(binaryPath, args...)
 
 	if s.modifySysProcAttr != nil {
 		s.modifySysProcAttr(s.cmd.SysProcAttr)
@@ -457,6 +483,16 @@ func analyzeWarnings(warnings []string) error {
 		}
 	}
 	return nil
+}
+
+// WithSudo sets the scanner to run as root using the sudo command.
+func WithSudo() Option {
+	sudoPath, _ := exec.LookPath("sudo")
+	return func(s *Scanner) {
+		if sudoPath != "" {
+			s.sudoPath = sudoPath
+		}
+	}
 }
 
 // WithContext adds a context to a scanner, to make it cancellable and able to timeout.
