@@ -8,6 +8,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -124,47 +125,7 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 
 		return nil, warnings, ErrScanTimeout
 	case <-done:
-
-		// Process nmap stderr output containing none-critical errors and warnings
-		// Everyone needs to check whether one or some of these warnings is a hard issue in their use case
-		if stderr.Len() > 0 {
-			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-		}
-
-		// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
-		if err := analyzeWarnings(warnings); err != nil {
-			return nil, warnings, err
-		}
-
-		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
-		// Potentially available warnings are returned too, but probably not the reason for a broken XML.
-		result, err := Parse(stdout.Bytes())
-		if err != nil {
-			warnings = append(warnings, err.Error()) // Append parsing error to warnings for those who are interested.
-			return nil, warnings, ErrParseOutput
-		}
-
-		// Critical scan errors are reflected in the XML.
-		if result != nil && len(result.Stats.Finished.ErrorMsg) > 0 {
-			switch {
-			case strings.Contains(result.Stats.Finished.ErrorMsg, "Error resolving name"):
-				return result, warnings, ErrResolveName
-			// TODO: Add cases for other known errors we might want to guard.
-			default:
-				return result, warnings, fmt.Errorf(result.Stats.Finished.ErrorMsg)
-			}
-		}
-
-		// Call filters if they are set.
-		if s.portFilter != nil {
-			result = choosePorts(result, s.portFilter)
-		}
-		if s.hostFilter != nil {
-			result = chooseHosts(result, s.hostFilter)
-		}
-
-		// Return result, optional warnings but no error
-		return result, warnings, nil
+		return s.processOutput(stdout.Bytes(), stderr.Bytes())
 	}
 }
 
@@ -243,46 +204,7 @@ func (s *Scanner) RunWithProgress(liveProgress chan<- float32) (result *Run, war
 		// Trigger progress function exit.
 		close(doneProgress)
 
-		// Process nmap stderr output containing none-critical errors and warnings.
-		// Everyone needs to check whether one or some of these warnings is a hard issue in their use case.
-		if stderr.Len() > 0 {
-			warnings = strings.Split(strings.Trim(stderr.String(), "\n"), "\n")
-		}
-
-		// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
-		if err := analyzeWarnings(warnings); err != nil {
-			return nil, warnings, err
-		}
-
-		// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
-		// Potentially available warnings are returned too, but probably not the reason for a broken XML.
-		result, err := Parse(stdout.Bytes())
-		if err != nil {
-			warnings = append(warnings, err.Error()) // Append parsing error to warnings for those who are interested.
-			return nil, warnings, ErrParseOutput
-		}
-
-		// Critical scan errors are reflected in the XML.
-		if result != nil && len(result.Stats.Finished.ErrorMsg) > 0 {
-			switch {
-			case strings.Contains(result.Stats.Finished.ErrorMsg, "Error resolving name"):
-				return result, warnings, ErrResolveName
-			// TODO: Add cases for other known errors we might want to guard.
-			default:
-				return result, warnings, fmt.Errorf(result.Stats.Finished.ErrorMsg)
-			}
-		}
-
-		// Call filters if they are set.
-		if s.portFilter != nil {
-			result = choosePorts(result, s.portFilter)
-		}
-		if s.hostFilter != nil {
-			result = chooseHosts(result, s.hostFilter)
-		}
-
-		// Return result, optional warnings but no error.
-		return result, warnings, nil
+		return s.processOutput(stdout.Bytes(), stderr.Bytes())
 	}
 }
 
@@ -392,6 +314,100 @@ func (s *Scanner) RunAsync() error {
 	}()
 
 	return nil
+}
+
+// RunDirect runs nmap synchronously. The XML output is written directly to a file and stdout is written to the console.
+func (s *Scanner) RunDirect(file string) (result *Run, warnings []string, err error) {
+	var stderr bytes.Buffer
+
+	args := s.args
+
+	// Enable XML output
+	args = append(args, "-oX")
+
+	// Get XML output in stdout instead of writing it in a file
+	args = append(args, file)
+
+	// Prepare nmap process
+	cmd := exec.Command(s.binaryPath, args...)
+	if s.modifySysProcAttr != nil {
+		s.modifySysProcAttr(cmd.SysProcAttr)
+	}
+	cmd.Stderr = &stderr
+	cmd.Stdout = os.Stdout
+
+	// Run nmap process
+	err = cmd.Start()
+	if err != nil {
+		return nil, warnings, err
+	}
+
+	// Make a goroutine to notify the select when the scan is done.
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	// Wait for nmap process or timeout
+	select {
+	case <-s.ctx.Done():
+
+		// Context was done before the scan was finished.
+		// The process is killed and a timeout error is returned.
+		_ = cmd.Process.Kill()
+
+		return nil, warnings, ErrScanTimeout
+	case <-done:
+		xml, err := os.ReadFile(file)
+		if err != nil {
+			return nil, warnings, err
+		}
+
+		return s.processOutput(xml, stderr.Bytes())
+	}
+}
+
+func (s *Scanner) processOutput(xml []byte, stderr []byte) (result *Run, warnings []string, err error) {
+	// Process nmap stderr output containing none-critical errors and warnings
+	// Everyone needs to check whether one or some of these warnings is a hard issue in their use case
+	if len(stderr) > 0 {
+		warnings = strings.Split(strings.Trim(string(stderr), "\n"), "\n")
+	}
+
+	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
+	if err := analyzeWarnings(warnings); err != nil {
+		return nil, warnings, err
+	}
+
+	// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
+	// Potentially available warnings are returned too, but probably not the reason for a broken XML.
+	result, err = Parse(xml)
+	if err != nil {
+		warnings = append(warnings, err.Error()) // Append parsing error to warnings for those who are interested.
+		return nil, warnings, ErrParseOutput
+	}
+
+	// Critical scan errors are reflected in the XML.
+	if result != nil && len(result.Stats.Finished.ErrorMsg) > 0 {
+		switch {
+		case strings.Contains(result.Stats.Finished.ErrorMsg, "Error resolving name"):
+			return result, warnings, ErrResolveName
+		// TODO: Add cases for other known errors we might want to guard.
+		default:
+			return result, warnings, fmt.Errorf(result.Stats.Finished.ErrorMsg)
+		}
+	}
+
+	// Call filters if they are set.
+	if s.portFilter != nil {
+		result = choosePorts(result, s.portFilter)
+	}
+	if s.hostFilter != nil {
+		result = chooseHosts(result, s.hostFilter)
+	}
+
+	// Return result, optional warnings but no error
+	return result, warnings, nil
 }
 
 // Wait waits for the cmd to finish and returns error.
