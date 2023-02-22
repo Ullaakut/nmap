@@ -2140,7 +2140,7 @@ func TestAnalyzeWarnings(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			err := analyzeWarnings(test.warnings)
+			err := checkStdErr(test.warnings)
 
 			assert.Equal(t, test.expectedErr, err)
 		})
