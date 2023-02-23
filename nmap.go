@@ -104,12 +104,6 @@ func (s *Scanner) Context(ctx context.Context) *Scanner {
 	return s
 }
 
-// BinaryPath sets the nmap binary path for a scanner.
-func (s *Scanner) BinaryPath(binaryPath string) *Scanner {
-	s.binaryPath = binaryPath
-	return s
-}
-
 func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 	var stdout, stderr bytes.Buffer
 
@@ -327,6 +321,13 @@ func checkStdErr(stderr *bytes.Buffer, warnings *[]string) error {
 func WithCustomArguments(args ...string) ArgOption {
 	return func(s *Scanner) {
 		s.args = append(s.args, args...)
+	}
+}
+
+// WithBinaryPath sets the nmap binary path for a scanner.
+func WithBinaryPath(binaryPath string) ArgOption {
+	return func(s *Scanner) {
+		s.binaryPath = binaryPath
 	}
 }
 
