@@ -224,7 +224,7 @@ func (s *Scanner) Args() []string {
 	return s.args
 }
 
-func chooseHosts(result *Run, filter func(Host) bool) *Run {
+func chooseHosts(result *Run, filter func(Host) bool) {
 	var filteredHosts []Host
 
 	for _, host := range result.Hosts {
@@ -234,11 +234,9 @@ func chooseHosts(result *Run, filter func(Host) bool) *Run {
 	}
 
 	result.Hosts = filteredHosts
-
-	return result
 }
 
-func choosePorts(result *Run, filter func(Port) bool) *Run {
+func choosePorts(result *Run, filter func(Port) bool) {
 	for idx := range result.Hosts {
 		var filteredPorts []Port
 
@@ -250,8 +248,6 @@ func choosePorts(result *Run, filter func(Port) bool) *Run {
 
 		result.Hosts[idx].Ports = filteredPorts
 	}
-
-	return result
 }
 
 func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, stderr *bytes.Buffer, done chan error, doneProgress chan bool) error {
@@ -286,12 +282,11 @@ func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, std
 	}
 
 	// Call filters if they are set.
-	// TODO: Update functions for pointer
 	if s.portFilter != nil {
-		result = choosePorts(result, s.portFilter)
+		choosePorts(result, s.portFilter)
 	}
 	if s.hostFilter != nil {
-		result = chooseHosts(result, s.hostFilter)
+		chooseHosts(result, s.hostFilter)
 	}
 
 	return err
