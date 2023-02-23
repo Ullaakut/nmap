@@ -14,18 +14,20 @@ func main() {
 	defer cancel()
 
 	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
-	// with a 5 minute timeout.
+	// with a 5-minute timeout.
 	scanner, err := nmap.NewScanner(
 		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
 		nmap.WithPorts("80,443,843"),
-		nmap.WithContext(ctx),
 	)
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, _, err := scanner.Run()
+	var result nmap.Run
+	var warnings []string
+	err = scanner.Context(ctx).Run(&result, &warnings)
 	if err != nil {
+		log.Println(warnings)
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}
 

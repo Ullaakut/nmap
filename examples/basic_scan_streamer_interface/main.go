@@ -1,44 +1,34 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"strings"
-
 	"github.com/Ullaakut/nmap/v2"
+	"io"
+	"log"
 )
 
 // CustomType is your custom type in code.
 // You just have to make it a Streamer.
 type CustomType struct {
-	nmap.Streamer
-	File string
+	io.Writer
+	buf bytes.Buffer
 }
 
 // Write is a function that handles the normal nmap stdout.
 func (c *CustomType) Write(d []byte) (int, error) {
 	lines := string(d)
-
-	if strings.Contains(lines, "Stats: ") {
-		fmt.Print(lines)
-	}
-	return len(d), nil
+	fmt.Print(lines)
+	return c.buf.Write(d)
 }
 
 // Bytes returns scan result bytes.
 func (c *CustomType) Bytes() []byte {
-	data, err := ioutil.ReadFile(c.File)
-	if err != nil {
-		data = append(data, "\ncould not read File"...)
-	}
-	return data
+	return c.buf.Bytes()
 }
 
 func main() {
-	cType := &CustomType{
-		File: "/tmp/output.xml",
-	}
+	cType := &CustomType{}
 	scanner, err := nmap.NewScanner(
 		nmap.WithTargets("localhost"),
 		nmap.WithPorts("1-4000"),
@@ -49,17 +39,21 @@ func main() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	warnings, err := scanner.RunWithStreamer(cType, cType.File)
+	var result nmap.Run
+	var warnings []string
+	err = scanner.Streamer(cType).Run(&result, &warnings)
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}
 
 	fmt.Printf("Nmap warnings: %v\n", warnings)
 
-	result, err := nmap.Parse(cType.Bytes())
+	var result2 nmap.Run
+	err = nmap.Parse(cType.Bytes(), &result2)
 	if err != nil {
 		log.Fatalf("unable to parse nmap output: %v", err)
 	}
 
 	fmt.Printf("Nmap done: %d hosts up scanned in %.2f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
+	fmt.Printf("Streamer done: %d hosts up scanned in %.2f seconds\n", len(result2.Hosts), result.Stats.Finished.Elapsed)
 }

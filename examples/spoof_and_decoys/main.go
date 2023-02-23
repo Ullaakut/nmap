@@ -9,10 +9,11 @@ import (
 
 func main() {
 	// Equivalent to
-	// nmap -sS 192.168.0.10 \
+	// nmap -e eth0 -S 192.168.0.10 \
 	// -D 192.168.0.2,192.168.0.3,192.168.0.4,192.168.0.5,192.168.0.6,ME,192.168.0.8 \
 	// 192.168.0.72`.
 	scanner, err := nmap.NewScanner(
+		nmap.WithInterface("eth0"),
 		nmap.WithTargets("192.168.0.72"),
 		nmap.WithSpoofIPAddress("192.168.0.10"),
 		nmap.WithDecoys(
@@ -29,12 +30,16 @@ func main() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, _, err := scanner.Run()
+	fmt.Println(scanner.Args())
+
+	var result nmap.Run
+	var warnings []string
+	err = scanner.Run(&result, &warnings)
 	if err != nil {
 		log.Fatalf("nmap scan failed: %v", err)
 	}
 
-	printResults(result)
+	printResults(&result)
 }
 
 func printResults(result *nmap.Run) {

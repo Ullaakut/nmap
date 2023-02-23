@@ -10,7 +10,7 @@ import (
 func main() {
 	scanner, err := nmap.NewScanner(
 		nmap.WithTargets("localhost"),
-		nmap.WithPorts("1-4000"),
+		nmap.WithPorts("1-10000"),
 		nmap.WithServiceInfo(),
 		nmap.WithVerbosity(3),
 	)
@@ -27,7 +27,9 @@ func main() {
 		}
 	}()
 
-	result, _, err := scanner.RunWithProgress(progress)
+	var result nmap.Run
+	var warnings []string
+	err = scanner.Progress(progress).Run(&result, &warnings)
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}

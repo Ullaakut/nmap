@@ -14,18 +14,20 @@ func main() {
 	scanner, err := nmap.NewScanner(
 		nmap.WithTargets("192.168.0.0/24"),
 		nmap.WithFastMode(),
-		nmap.WithOSDetection(),
+		nmap.WithOSDetection(), // Needs to run with sudo
 	)
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, _, err := scanner.Run()
+	var result nmap.Run
+	var warnings []string
+	err = scanner.Run(&result, &warnings)
 	if err != nil {
 		log.Fatalf("nmap scan failed: %v", err)
 	}
 
-	countByOS(result)
+	countByOS(&result)
 }
 
 func countByOS(result *nmap.Run) {

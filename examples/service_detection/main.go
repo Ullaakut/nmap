@@ -12,7 +12,7 @@ func main() {
 	// nmap -sV -T4 192.168.0.0/24 with a filter to remove non-RTSP ports.
 	scanner, err := nmap.NewScanner(
 		nmap.WithTargets("192.168.0.0/24"),
-		nmap.WithPorts("554", "8554"),
+		nmap.WithPorts("80", "554", "8554"),
 		nmap.WithServiceInfo(),
 		nmap.WithTimingTemplate(nmap.TimingAggressive),
 		// Filter out ports that are not RTSP
@@ -35,7 +35,9 @@ func main() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, _, err := scanner.Run()
+	var result nmap.Run
+	var warnings []string
+	err = scanner.Run(&result, &warnings)
 	if err != nil {
 		log.Fatalf("nmap scan failed: %v", err)
 	}
