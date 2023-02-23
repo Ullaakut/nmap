@@ -8,6 +8,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -20,12 +21,6 @@ import (
 // ScanRunner represents something that can run a scan.
 type ScanRunner interface {
 	Run() (result *Run, warnings []string, err error)
-}
-
-// Streamer constantly streams the stdout.
-type Streamer interface {
-	Write(d []byte) (int, error)
-	Bytes() []byte
 }
 
 // Scanner represents n Nmap scanner.
@@ -42,7 +37,8 @@ type Scanner struct {
 
 	doneAsync    chan error
 	liveProgress chan float32
-	streamer     Streamer
+	streamer     io.Writer
+	toFile       *string
 
 	stderr, stdout bufio.Scanner
 }
@@ -90,10 +86,11 @@ func (s *Scanner) Progress(liveProgress chan float32) *Scanner {
 }
 
 func (s *Scanner) ToFile(file string) *Scanner {
+	s.toFile = &file
 	return s
 }
 
-func (s *Scanner) Streamer(stream Streamer) *Scanner {
+func (s *Scanner) Streamer(stream io.Writer) *Scanner {
 	s.streamer = stream
 	return s
 }
@@ -105,32 +102,41 @@ func (s *Scanner) Context(ctx context.Context) *Scanner {
 }
 
 func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
-	var stdout, stderr bytes.Buffer
+	var stdoutPipe io.ReadCloser
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
 
 	args := s.args
 
-	// Write XML to standard output
-	args = append(args, "-oX", "-")
+	// Write XML to standard output.
+	// If toFile is set then write XML to file and normal nmap output to stdout.
+	if s.toFile != nil {
+		args = append(args, "-oX", *s.toFile, "-oN", "-")
+	} else {
+		args = append(args, "-oX", "-")
+	}
 
 	// Prepare nmap process
 	cmd := exec.CommandContext(s.ctx, s.binaryPath, args...)
 	if s.modifySysProcAttr != nil {
 		s.modifySysProcAttr(cmd.SysProcAttr)
 	}
-	cmd.Stdout = &stdout
+	stdoutPipe, err = cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	stdoutDuplicate := io.TeeReader(stdoutPipe, &stdout)
 	cmd.Stderr = &stderr
 
 	var streamerGroup *errgroup.Group
 	if s.streamer != nil {
-		stdoutIn, err := cmd.StdoutPipe()
-		if err != nil {
-			return errors.WithMessage(err, "connect to StdoutPipe failed")
-		}
 		streamerGroup, _ = errgroup.WithContext(s.ctx)
 		streamerGroup.Go(func() error {
-			_, err = io.Copy(s.streamer, stdoutIn)
+			_, err = io.Copy(s.streamer, stdoutDuplicate)
 			return err
 		})
+	} else {
+		go io.Copy(ioutil.Discard, stdoutDuplicate)
 	}
 
 	// Run nmap process
