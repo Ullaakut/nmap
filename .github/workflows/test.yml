@@ -60,7 +60,7 @@ jobs:
         run: goveralls -coverprofile=c.out -service=github
 
       - name: Install staticcheck
-        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+        run: go install honnef.co/go/tools/cmd/staticcheck@v0.3.0
 
       - name: Run staticcheck for possible optimizations
         run: staticcheck -tests=false
