@@ -1,9 +1,9 @@
 package nmap
 
 import (
+	"bytes"
 	"context"
 	"encoding/xml"
-	"errors"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,18 +15,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type testStreamer struct {
-	Streamer
-}
+type testStreamer struct{}
 
 // Write is a function that handles the normal nmap stdout.
 func (c *testStreamer) Write(d []byte) (int, error) {
 	return len(d), nil
-}
-
-// Bytes returns scan result bytes.
-func (c *testStreamer) Bytes() []byte {
-	return []byte{}
 }
 
 func TestNmapNotInstalled(t *testing.T) {
@@ -71,8 +64,7 @@ func TestRun(t *testing.T) {
 				WithBinaryPath("/invalid"),
 			},
 
-			expectedErr:    true,
-			expectedResult: nil,
+			expectedErr: true,
 		},
 		{
 			description: "output can't be parsed",
@@ -205,9 +197,10 @@ func TestRun(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
+			ctx := context.Background()
 			if test.testTimeout {
-				ctx, cancel := context.WithTimeout(context.Background(), 99*time.Hour)
-				test.options = append(test.options, WithContext(ctx))
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(context.Background(), 99*time.Hour)
 
 				go (func() {
 					// Cancel context to force timeout
@@ -221,7 +214,9 @@ func TestRun(t *testing.T) {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
-			result, warns, err := s.Run()
+			var result = &Run{}
+			var warns []string
+			err = s.Context(ctx).Run(result, &warns)
 
 			if !assert.Equal(t, test.expectedErr, err != nil) {
 				return
@@ -229,13 +224,7 @@ func TestRun(t *testing.T) {
 
 			assert.Equal(t, test.expectedWarnings, warns)
 
-			if result == nil && test.expectedResult == nil {
-				return
-			} else if result == nil && test.expectedResult != nil {
-				t.Error("expected non-nil result, got nil")
-				return
-			} else if result != nil && test.expectedResult == nil {
-				t.Error("expected nil result, got non-nil")
+			if test.expectedResult == nil {
 				return
 			}
 
@@ -264,7 +253,8 @@ func TestRunWithProgress(t *testing.T) {
 		panic(err)
 	}
 
-	r, _ := Parse(dat)
+	var r = &Run{}
+	_ = Parse(dat, r)
 
 	tests := []struct {
 		description string
@@ -300,7 +290,9 @@ func TestRunWithProgress(t *testing.T) {
 			}
 
 			progress := make(chan float32, 5)
-			result, _, err := s.RunWithProgress(progress)
+			var result Run
+			var warnings []string
+			err = s.Progress(progress).Run(&result, &warnings)
 			assert.Equal(t, test.expectedErr, err)
 			if err != nil {
 				return
@@ -349,7 +341,9 @@ func TestRunWithStreamer(t *testing.T) {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
-			warnings, err := s.RunWithStreamer(streamer, "/tmp/nmap-stream-test")
+			var result Run
+			var warnings []string
+			err = s.Streamer(streamer).Run(&result, &warnings)
 
 			assert.Equal(t, test.expectedErr, err)
 
@@ -368,8 +362,7 @@ func TestRunAsync(t *testing.T) {
 		compareWholeRun bool
 
 		expectedResult      *Run
-		expectedRunAsyncErr error
-		expectedParseErr    error
+		expectedRunAsyncErr bool
 		expectedWaitErr     bool
 	}{
 		{
@@ -380,8 +373,7 @@ func TestRunAsync(t *testing.T) {
 				WithBinaryPath("/invalid"),
 			},
 
-			expectedResult:      nil,
-			expectedRunAsyncErr: errors.New("unable to execute asynchronous nmap run: fork/exec /invalid: no such file or directory"),
+			expectedRunAsyncErr: true,
 		},
 		{
 			description: "output can't be parsed",
@@ -391,8 +383,7 @@ func TestRunAsync(t *testing.T) {
 				WithBinaryPath("echo"),
 			},
 
-			expectedResult:   nil,
-			expectedParseErr: errors.New("EOF"),
+			expectedWaitErr: true,
 		},
 		{
 			description: "context timeout",
@@ -403,21 +394,21 @@ func TestRunAsync(t *testing.T) {
 
 			testTimeout: true,
 
-			expectedResult:  nil,
 			expectedWaitErr: true,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
+			ctx := context.Background()
 			if test.testTimeout {
-				ctx, cancel := context.WithTimeout(context.Background(), 99*time.Hour)
-				test.options = append(test.options, WithContext(ctx))
+				var cancel context.CancelFunc
+				ctx, cancel = context.WithTimeout(context.Background(), 99*time.Hour)
 
 				go (func() {
 					// Cancel context to force timeout
 					defer cancel()
-					time.Sleep(1 * time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 				})()
 			}
 
@@ -426,21 +417,18 @@ func TestRunAsync(t *testing.T) {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
-			err = s.RunAsync()
-			assert.Equal(t, test.expectedRunAsyncErr, err)
+			done := make(chan error)
+			var result = &Run{}
+			var warnings []string
+			err = s.Context(ctx).Async(done).Run(result, &warnings)
+			if test.expectedRunAsyncErr {
+				assert.NotNil(t, err)
+			}
 			if err != nil {
 				return
 			}
 
-			stdout := s.GetStdout()
-			var content []byte
-			go func() {
-				for stdout.Scan() {
-					content = stdout.Bytes()
-				}
-			}()
-
-			err = s.Wait()
+			err = <-done
 			if test.expectedWaitErr {
 				assert.Error(t, err)
 			} else {
@@ -450,15 +438,7 @@ func TestRunAsync(t *testing.T) {
 				return
 			}
 
-			result, err := Parse(content)
-			assert.Equal(t, test.expectedParseErr, err)
-
-			if result == nil && test.expectedResult == nil {
-				return
-			} else if result == nil && test.expectedResult != nil {
-				t.Error("expected non-nil result, got nil")
-				return
-			} else if test.expectedResult == nil {
+			if test.expectedResult == nil {
 				return
 			}
 
@@ -466,14 +446,6 @@ func TestRunAsync(t *testing.T) {
 				result.rawXML = nil
 				if !reflect.DeepEqual(test.expectedResult, result) {
 					t.Errorf("expected result to be %+v, got %+v", test.expectedResult, result)
-				}
-			} else {
-				if result.Args != test.expectedResult.Args {
-					t.Errorf("expected args %q got %q", test.expectedResult.Args, result.Args)
-				}
-
-				if result.Scanner != test.expectedResult.Scanner {
-					t.Errorf("expected scanner %q got %q", test.expectedResult.Scanner, result.Scanner)
 				}
 			}
 		})
@@ -2118,31 +2090,36 @@ func TestMiscellaneous(t *testing.T) {
 	}
 }
 
-func TestAnalyzeWarnings(t *testing.T) {
+func TestCheckStdErr(t *testing.T) {
 	tests := []struct {
 		description string
-
-		warnings []string
-
+		stderr      string
+		warnings    []string
 		expectedErr error
 	}{
 		{
 			description: "Find no error warning",
+			stderr:      " NoWarning  \nNoWarning  ",
 			warnings:    []string{"NoWarning", "NoWarning"},
 			expectedErr: nil,
 		},
 		{
 			description: "Find malloc error",
-			warnings:    []string{"   Malloc Failed! with "},
+			stderr:      "   Malloc Failed! with ",
+			warnings:    []string{"Malloc Failed! with"},
 			expectedErr: ErrMallocFailed,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			err := checkStdErr(test.warnings)
+			buf := bytes.Buffer{}
+			_, _ = buf.Write([]byte(test.stderr))
+			var warnings []string
+			err := checkStdErr(&buf, &warnings)
 
 			assert.Equal(t, test.expectedErr, err)
+			assert.True(t, reflect.DeepEqual(test.warnings, warnings))
 		})
 	}
 }
