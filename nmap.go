@@ -2,7 +2,6 @@
 package nmap
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/xml"
@@ -25,7 +24,6 @@ type ScanRunner interface {
 
 // Scanner represents n Nmap scanner.
 type Scanner struct {
-	cmd               *exec.Cmd
 	modifySysProcAttr func(*syscall.SysProcAttr)
 
 	args       []string
@@ -39,8 +37,6 @@ type Scanner struct {
 	liveProgress chan float32
 	streamer     io.Writer
 	toFile       *string
-
-	stderr, stdout bufio.Scanner
 }
 
 // ArgOption is a function that is used for grouping of Scanner options.
