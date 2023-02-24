@@ -319,7 +319,8 @@ func TestToReader(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result, err := Parse(rawXML)
+	var result Run
+	err = Parse(rawXML, &result)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1082,14 +1083,15 @@ func TestParseRunXML(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			result, err := Parse(rawXML)
+			var result Run
+			err = Parse(rawXML, &result)
 
 			// Remove rawXML before comparing
-			if result != nil {
+			if err != nil {
 				result.rawXML = []byte{}
 			}
 
-			compareResults(t, test.expectedResult, result)
+			compareResults(t, test.expectedResult, &result)
 
 			if err != test.expectedError {
 				t.Errorf("expected %v got %v", test.expectedError, err)
