@@ -197,26 +197,12 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 	return err
 }
 
-// Wait waits for the cmd to finish and returns error.
-func (s *Scanner) Wait() error {
-	return s.cmd.Wait()
-}
-
-// GetStdout returns stdout variable for scanner.
-func (s *Scanner) GetStdout() bufio.Scanner {
-	return s.stdout
-}
-
-// GetStderr returns stderr variable for scanner.
-func (s *Scanner) GetStderr() bufio.Scanner {
-	return s.stderr
-}
-
 // AddOptions sets more scan options after the scan is created.
-func (s *Scanner) AddOptions(options ...ArgOption) {
+func (s *Scanner) AddOptions(options ...ArgOption) *Scanner {
 	for _, option := range options {
 		option(s)
 	}
+	return s
 }
 
 // Args return the list of nmap args
