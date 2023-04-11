@@ -45,7 +45,7 @@ Most pentest tools are currently written using Python and not Go, because it is 
 - [x] Run a nmap scan asynchronously.
 - [x] Scan progress may be piped.
 - [x] Write the nmap output to a given file while also parsing it to the struct.
-- [x] Stream the nmap output to an `io.Writer` while also parsing it to the struct.
+- [x] Stream the nmap output to an `io.Writer` interface while also parsing it to the struct.
 - [x] Functionality to show local interfaces and routes.
 
 ## Simple example
