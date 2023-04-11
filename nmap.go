@@ -112,7 +112,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 		args = append(args, "-oX", "-")
 	}
 
-	// Prepare nmap process
+	// Prepare nmap process.
 	cmd := exec.CommandContext(s.ctx, s.binaryPath, args...)
 	if s.modifySysProcAttr != nil {
 		s.modifySysProcAttr(cmd.SysProcAttr)
@@ -135,7 +135,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 		go io.Copy(ioutil.Discard, stdoutDuplicate)
 	}
 
-	// Run nmap process
+	// Run nmap process.
 	err = cmd.Start()
 	if err != nil {
 		return err
@@ -201,7 +201,7 @@ func (s *Scanner) AddOptions(options ...ArgOption) *Scanner {
 	return s
 }
 
-// Args return the list of nmap args
+// Args return the list of nmap args.
 func (s *Scanner) Args() []string {
 	return s.args
 }
@@ -233,14 +233,14 @@ func choosePorts(result *Run, filter func(Port) bool) {
 }
 
 func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, stderr *bytes.Buffer, done chan error, doneProgress chan bool) error {
-	// Wait for nmap to finish
+	// Wait for nmap to finish.
 	var err = <-done
 	close(doneProgress)
 	if err != nil {
 		return err
 	}
 
-	// Check stderr output
+	// Check stderr output.
 	if err := checkStdErr(stderr, warnings); err != nil {
 		return err
 	}
@@ -274,7 +274,7 @@ func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, std
 	return err
 }
 
-// checkStdErr will write the stderr to warnings array.
+// checkStdErr writes the output of stderr to the warnings array.
 // It also processes nmap stderr output containing none-critical errors and warnings.
 func checkStdErr(stderr *bytes.Buffer, warnings *[]string) error {
 	if stderr.Len() <= 0 {
