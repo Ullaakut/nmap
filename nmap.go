@@ -73,7 +73,7 @@ func (s *Scanner) Async(doneAsync chan error) *Scanner {
 }
 
 func (s *Scanner) Progress(liveProgress chan float32) *Scanner {
-	s.args = append(s.args, "--stats-every", "1s")
+	s.args = append(s.args, "--stats-every", "100ms")
 	s.liveProgress = liveProgress
 	return s
 }
@@ -160,10 +160,11 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 					close(s.liveProgress)
 					return
 				default:
-					time.Sleep(time.Second)
+					time.Sleep(time.Millisecond * 100)
 					_ = xml.Unmarshal(stdout.Bytes(), p)
-					if len(p.TaskProgress) > 0 {
-						s.liveProgress <- p.TaskProgress[len(p.TaskProgress)-1].Percent
+					progressIndex := len(p.TaskProgress) - 1
+					if progressIndex >= 0 {
+						s.liveProgress <- p.TaskProgress[progressIndex].Percent
 					}
 				}
 			}

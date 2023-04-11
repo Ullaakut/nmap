@@ -6,7 +6,7 @@ do
   echo "$line"
   if [ $count -gt 13 ] && [ $count -lt 23 ]
   then
-    sleep 1
+    sleep 0.1
   fi
   (( count++ ))
 done < "$input"

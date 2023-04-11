@@ -32,7 +32,7 @@ func main() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	fmt.Println(scanner.Args())
+	fmt.Println("Running the following nmap command:", scanner.Args())
 
 	var result nmap.Run
 	var warnings []string
