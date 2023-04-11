@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/Ullaakut/nmap/v2"
+	"github.com/Ullaakut/nmap/v3"
 	"io"
 	"log"
 )

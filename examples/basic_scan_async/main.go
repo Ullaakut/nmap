@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/Ullaakut/nmap/v2"
+	"github.com/Ullaakut/nmap/v3"
 	"log"
 )
 

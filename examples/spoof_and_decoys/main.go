@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Ullaakut/nmap/v2"
+	"github.com/Ullaakut/nmap/v3"
 )
 
 func main() {
