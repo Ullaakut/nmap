@@ -67,27 +67,38 @@ func NewScanner(ctx context.Context, options ...ArgOption) (*Scanner, error) {
 	return scanner, nil
 }
 
+// Async will run the nmap scan asynchronously. You need to provide a channel with error type.
+// When the scan is finished an error or nil will be piped through this channel.
 func (s *Scanner) Async(doneAsync chan error) *Scanner {
 	s.doneAsync = doneAsync
 	return s
 }
 
+// Progress pipes the progress of nmap every 100ms. It needs a channel of type float.
 func (s *Scanner) Progress(liveProgress chan float32) *Scanner {
 	s.args = append(s.args, "--stats-every", "100ms")
 	s.liveProgress = liveProgress
 	return s
 }
 
+// ToFile enables the Scanner to write the nmap XML output to a given path.
+// Nmap will write the normal CLI output to stdout.
+// This option will not parse the nmap output to the struct *Run. You may parse it yourself after the run.
 func (s *Scanner) ToFile(file string) *Scanner {
 	s.toFile = &file
 	return s
 }
 
+// Streamer takes an io.Writer that receives the XML output.
+// So the stdout of nmap will be duplicated to the given stream and *Run.
+// This will not disable parsing the output to the struct.
 func (s *Scanner) Streamer(stream io.Writer) *Scanner {
 	s.streamer = stream
 	return s
 }
 
+// Run will run the Scanner with the enabled options.
+// You need to create a Run struct and warnings array first so the function can parse it.
 func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 	var stdoutPipe io.ReadCloser
 	var stdout bytes.Buffer

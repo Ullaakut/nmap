@@ -11,7 +11,7 @@ func WithPorts(ports ...string) ArgOption {
 
 	return func(s *Scanner) {
 		// Find if any port is set.
-		var place int = -1
+		var place = -1
 		for p, value := range s.args {
 			if value == "-p" {
 				place = p
