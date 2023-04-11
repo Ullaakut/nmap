@@ -40,13 +40,13 @@ Most pentest tools are currently written using Python and not Go, because it is 
 
 - [x] All of `nmap`'s native options.
 - [x] Additional [idiomatic go filters](examples/service_detection/main.go#L19) for filtering hosts and ports.
-- [x] [Cancellable contexts support](examples/basic_scan/main.go).
 - [x] Helpful enums for nmap commands. (time templates, os families, port states, etc.)
 - [x] Complete documentation of each option, mostly insipred from nmap's documentation.
-
-## TODO
-
-- [ ] Add asynchronous scan, send scan progress percentage and time estimation through channel
+- [x] Run a nmap scan asynchronously.
+- [x] Scan progress may be piped.
+- [x] Write the nmap output to a given file while also parsing it to the struct.
+- [x] Stream the nmap output to an `io.Writer` while also parsing it to the struct.
+- [x] Functionality to show local interfaces and routes.
 
 ## Simple example
 
@@ -59,7 +59,7 @@ import (
     "log"
     "time"
 
-    "github.com/Ullaakut/nmap/v2"
+    "github.com/Ullaakut/nmap/v3"
 )
 
 func main() {
@@ -67,24 +67,25 @@ func main() {
     defer cancel()
 
     // Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
-    // with a 5 minute timeout.
+    // with a 5-minute timeout.
     scanner, err := nmap.NewScanner(
+		ctx,
         nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
         nmap.WithPorts("80,443,843"),
-        nmap.WithContext(ctx),
     )
     if err != nil {
         log.Fatalf("unable to create nmap scanner: %v", err)
     }
 
-    result, warnings, err := scanner.Run()
-    if err != nil {
-        log.Fatalf("unable to run nmap scan: %v", err)
-    }
-
-    if warnings != nil {
-        log.Printf("Warnings: \n %v", warnings)
-    }
+	var result nmap.Run
+	var warnings []string
+	err = scanner.Run(&result, &warnings)
+	if len(warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non critical errors from nmap.
+	}
+	if err != nil {
+		log.Fatalf("unable to run nmap scan: %v", err)
+	}
 
     // Use the results to print an example output
     for _, host := range result.Hosts {
@@ -131,9 +132,14 @@ Nmap done: 3 hosts up scanned in 1.29 seconds
 
 More examples:
 
+- [Basic scan](examples/basic_scan/main.go)
+- [Basic scan but asynchronously](examples/basic_scan_async/main.go)
+- [Basic scan with nmap progress piped through](examples/basic_scan_progress/main.go)
+- [Basic scan with output to a streamer](examples/basic_scan_streamer_interface/main.go)
 - [Count hosts for each operating system on a network](examples/count_hosts_by_os/main.go)
 - [Service detection](examples/service_detection/main.go)
 - [IP address spoofing and decoys](examples/spoof_and_decoys/main.go)
+- [List local interfaces](examples/list_interfaces/main.go)
 
 ## External resources
 
