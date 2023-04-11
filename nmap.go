@@ -44,11 +44,12 @@ type Scanner struct {
 type ArgOption func(*Scanner)
 
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
-func NewScanner(options ...ArgOption) (*Scanner, error) {
+func NewScanner(ctx context.Context, options ...ArgOption) (*Scanner, error) {
 	scanner := &Scanner{
 		doneAsync:    nil,
 		liveProgress: nil,
 		streamer:     nil,
+		ctx:          ctx,
 	}
 
 	for _, option := range options {
@@ -61,10 +62,6 @@ func NewScanner(options ...ArgOption) (*Scanner, error) {
 		if err != nil {
 			return nil, ErrNmapNotInstalled
 		}
-	}
-
-	if scanner.ctx == nil {
-		scanner.ctx = context.Background()
 	}
 
 	return scanner, nil
@@ -88,12 +85,6 @@ func (s *Scanner) ToFile(file string) *Scanner {
 
 func (s *Scanner) Streamer(stream io.Writer) *Scanner {
 	s.streamer = stream
-	return s
-}
-
-// Context adds a context to a scanner, to make it cancellable and able to timeout.
-func (s *Scanner) Context(ctx context.Context) *Scanner {
-	s.ctx = ctx
 	return s
 }
 

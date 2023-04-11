@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/Ullaakut/nmap/v2"
 	"log"
@@ -12,8 +13,9 @@ func main() {
 		warnings []string
 	)
 	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
-	// with a 5 minute timeout.
+	// with a 5-minute timeout.
 	s, err := nmap.NewScanner(
+		context.Background(),
 		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
 		nmap.WithPorts("80,443,843"),
 	)

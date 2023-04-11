@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/Ullaakut/nmap/v2"
@@ -8,7 +9,7 @@ import (
 )
 
 func main() {
-	scanner, err := nmap.NewScanner()
+	scanner, err := nmap.NewScanner(context.Background())
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}

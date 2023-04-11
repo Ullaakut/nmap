@@ -1,6 +1,7 @@
 package nmap
 
 import (
+	"context"
 	"fmt"
 	"log"
 )
@@ -9,6 +10,7 @@ import (
 // that are given to nmap.
 func ExampleScanner_simple() {
 	s, err := NewScanner(
+		context.Background(),
 		WithTargets("google.com", "facebook.com", "youtube.com"),
 		WithCustomDNSServers("8.8.8.8", "8.8.4.4"),
 		WithTimingTemplate(TimingFastest),
@@ -36,6 +38,7 @@ func ExampleScanner_simple() {
 // and ports.
 func ExampleScanner_filters() {
 	s, err := NewScanner(
+		context.Background(),
 		WithTargets("google.com", "facebook.com"),
 		WithPorts("843"),
 		WithFilterHost(func(h Host) bool {

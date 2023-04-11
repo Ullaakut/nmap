@@ -16,6 +16,7 @@ func main() {
 	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
 	// with a 5-minute timeout.
 	scanner, err := nmap.NewScanner(
+		ctx,
 		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
 		nmap.WithPorts("80,443,843"),
 	)
@@ -25,7 +26,7 @@ func main() {
 
 	var result nmap.Run
 	var warnings []string
-	err = scanner.Context(ctx).Run(&result, &warnings)
+	err = scanner.Run(&result, &warnings)
 	if len(warnings) > 0 {
 		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non critical errors from nmap.
 	}

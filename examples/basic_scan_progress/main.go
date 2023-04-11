@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -9,6 +10,7 @@ import (
 
 func main() {
 	scanner, err := nmap.NewScanner(
+		context.Background(),
 		nmap.WithTargets("localhost"),
 		nmap.WithPorts("1-10000"),
 		nmap.WithServiceInfo(),

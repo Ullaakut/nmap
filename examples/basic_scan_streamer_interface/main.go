@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/Ullaakut/nmap/v2"
 	"io"
@@ -30,6 +31,7 @@ func (c *CustomType) Bytes() []byte {
 func main() {
 	cType := &CustomType{}
 	scanner, err := nmap.NewScanner(
+		context.Background(),
 		nmap.WithTargets("localhost"),
 		nmap.WithPorts("1-4000"),
 		nmap.WithServiceInfo(),

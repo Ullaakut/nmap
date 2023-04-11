@@ -26,7 +26,7 @@ func TestNmapNotInstalled(t *testing.T) {
 	oldPath := os.Getenv("PATH")
 	_ = os.Setenv("PATH", "")
 
-	s, err := NewScanner()
+	s, err := NewScanner(context.TODO())
 	if err == nil {
 		t.Error("expected NewScanner to fail if nmap is not found in $PATH")
 	}
@@ -209,14 +209,14 @@ func TestRun(t *testing.T) {
 				})()
 			}
 
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(ctx, test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
 			var result = &Run{}
 			var warns []string
-			err = s.Context(ctx).Run(result, &warns)
+			err = s.Run(result, &warns)
 
 			if !assert.Equal(t, test.expectedErr, err != nil) {
 				return
@@ -284,7 +284,7 @@ func TestRunWithProgress(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
@@ -336,7 +336,7 @@ func TestRunWithStreamer(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
@@ -412,7 +412,7 @@ func TestRunAsync(t *testing.T) {
 				})()
 			}
 
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(ctx, test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
@@ -420,7 +420,7 @@ func TestRunAsync(t *testing.T) {
 			done := make(chan error)
 			var result = &Run{}
 			var warnings []string
-			err = s.Context(ctx).Async(done).Run(result, &warnings)
+			err = s.Async(done).Run(result, &warnings)
 			if test.expectedRunAsyncErr {
 				assert.NotNil(t, err)
 			}
@@ -559,7 +559,7 @@ func TestTargetSpecification(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -804,7 +804,7 @@ func TestHostDiscovery(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1008,7 +1008,7 @@ func TestScanTechniques(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1123,7 +1123,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 				}()
 			}
 
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1223,7 +1223,7 @@ func TestServiceDetection(t *testing.T) {
 				}()
 			}
 
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1340,7 +1340,7 @@ func TestScriptScan(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1406,7 +1406,7 @@ func TestOSDetection(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1609,7 +1609,7 @@ func TestTimingAndPerformance(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1828,7 +1828,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 				}()
 			}
 
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -1976,7 +1976,7 @@ func TestOutput(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}
@@ -2078,7 +2078,7 @@ func TestMiscellaneous(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			s, err := NewScanner(test.options...)
+			s, err := NewScanner(context.TODO(), test.options...)
 			if err != nil {
 				panic(err)
 			}

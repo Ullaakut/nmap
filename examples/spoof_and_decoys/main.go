@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -13,6 +14,7 @@ func main() {
 	// -D 192.168.0.2,192.168.0.3,192.168.0.4,192.168.0.5,192.168.0.6,ME,192.168.0.8 \
 	// 192.168.0.72`.
 	scanner, err := nmap.NewScanner(
+		context.Background(),
 		nmap.WithInterface("eth0"),
 		nmap.WithTargets("192.168.0.72"),
 		nmap.WithSpoofIPAddress("192.168.0.10"),
