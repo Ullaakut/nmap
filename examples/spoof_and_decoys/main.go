@@ -51,17 +51,15 @@ func main() {
 
 	fmt.Println("Running the following nmap command:", scanner.Args())
 
-	var result nmap.Run
-	var warnings []string
-	err = scanner.Run(&result, &warnings)
-	if len(warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non critical errors from nmap.
+	result, warnings, err := scanner.Run()
+	if len(*warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
 	}
 	if err != nil {
 		log.Fatalf("nmap scan failed: %v", err)
 	}
 
-	printResults(&result)
+	printResults(result)
 }
 
 func printResults(result *nmap.Run) {

@@ -20,9 +20,7 @@ func ExampleScanner_simple() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	var scanResult Run
-	var warnings []string
-	err = s.Run(&scanResult, &warnings)
+	scanResult, _, err := s.Run()
 	if err != nil {
 		log.Fatalf("nmap encountered an error: %v", err)
 	}
@@ -55,9 +53,7 @@ func ExampleScanner_filters() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	var scanResult Run
-	var warnings []string
-	err = s.Run(&scanResult, &warnings)
+	scanResult, _, err := s.Run()
 	if err != nil {
 		log.Fatalf("nmap encountered an error: %v", err)
 	}

@@ -24,11 +24,9 @@ func main() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	var result nmap.Run
-	var warnings []string
-	err = scanner.Run(&result, &warnings)
-	if len(warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non-critical errors from nmap.
+	result, warnings, err := scanner.Run()
+	if len(*warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
 	}
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)

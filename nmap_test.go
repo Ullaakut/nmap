@@ -64,7 +64,8 @@ func TestRun(t *testing.T) {
 				WithBinaryPath("/invalid"),
 			},
 
-			expectedErr: true,
+			expectedErr:      true,
+			expectedWarnings: []string{},
 		},
 		{
 			description: "output can't be parsed",
@@ -86,7 +87,8 @@ func TestRun(t *testing.T) {
 
 			testTimeout: true,
 
-			expectedErr: true,
+			expectedErr:      true,
+			expectedWarnings: []string{},
 		},
 		{
 			description: "scan localhost",
@@ -100,6 +102,8 @@ func TestRun(t *testing.T) {
 				Args:    nmapPath + " -T5 -oX - localhost",
 				Scanner: "nmap",
 			},
+
+			expectedWarnings: []string{},
 		},
 		{
 			description: "scan invalid target",
@@ -121,7 +125,8 @@ func TestRun(t *testing.T) {
 				WithCustomArguments("tests/xml/scan_error_resolving_name.xml"),
 			},
 
-			expectedErr: true,
+			expectedErr:      true,
+			expectedWarnings: []string{},
 			expectedResult: &Run{
 				Scanner: "fake_nmap",
 				Args:    "nmap test",
@@ -134,7 +139,8 @@ func TestRun(t *testing.T) {
 				WithCustomArguments("tests/xml/scan_error_other.xml"),
 			},
 
-			expectedErr: true,
+			expectedErr:      true,
+			expectedWarnings: []string{},
 			expectedResult: &Run{
 				Scanner: "fake_nmap",
 				Args:    "nmap test",
@@ -154,7 +160,8 @@ func TestRun(t *testing.T) {
 				WithTimingTemplate(TimingFastest),
 			},
 
-			compareWholeRun: true,
+			compareWholeRun:  true,
+			expectedWarnings: []string{},
 
 			expectedResult: &Run{
 				XMLName: xml.Name{Local: "nmaprun"},
@@ -214,15 +221,13 @@ func TestRun(t *testing.T) {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
-			var result = &Run{}
-			var warns []string
-			err = s.Run(result, &warns)
+			result, warns, err := s.Run()
 
 			if !assert.Equal(t, test.expectedErr, err != nil) {
 				return
 			}
 
-			assert.Equal(t, test.expectedWarnings, warns)
+			assert.Equal(t, test.expectedWarnings, *warns)
 
 			if test.expectedResult == nil {
 				return
@@ -290,9 +295,7 @@ func TestRunWithProgress(t *testing.T) {
 			}
 
 			progress := make(chan float32, 5)
-			var result Run
-			var warnings []string
-			err = s.Progress(progress).Run(&result, &warnings)
+			result, _, err := s.Progress(progress).Run()
 			assert.Equal(t, test.expectedErr, err)
 			if err != nil {
 				return
@@ -330,7 +333,8 @@ func TestRunWithStreamer(t *testing.T) {
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
 				WithCustomArguments("tests/xml/scan_base.xml"),
 			},
-			expectedErr: nil,
+			expectedErr:      nil,
+			expectedWarnings: []string{},
 		},
 	}
 
@@ -341,13 +345,11 @@ func TestRunWithStreamer(t *testing.T) {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
 			}
 
-			var result Run
-			var warnings []string
-			err = s.Streamer(streamer).Run(&result, &warnings)
+			_, warnings, err := s.Streamer(streamer).Run()
 
 			assert.Equal(t, test.expectedErr, err)
 
-			assert.Equal(t, test.expectedWarnings, warnings)
+			assert.Equal(t, test.expectedWarnings, *warnings)
 		})
 	}
 }
@@ -418,9 +420,7 @@ func TestRunAsync(t *testing.T) {
 			}
 
 			done := make(chan error)
-			var result = &Run{}
-			var warnings []string
-			err = s.Async(done).Run(result, &warnings)
+			result, _, err := s.Async(done).Run()
 			if test.expectedRunAsyncErr {
 				assert.NotNil(t, err)
 			}

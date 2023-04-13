@@ -13,7 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -99,10 +98,12 @@ func (s *Scanner) Streamer(stream io.Writer) *Scanner {
 
 // Run will run the Scanner with the enabled options.
 // You need to create a Run struct and warnings array first so the function can parse it.
-func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
+func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 	var stdoutPipe io.ReadCloser
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
+
+	warnings = &[]string{} // Instantiate warnings array
 
 	args := s.args
 
@@ -121,7 +122,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 	}
 	stdoutPipe, err = cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return result, warnings, err
 	}
 	stdoutDuplicate := io.TeeReader(stdoutPipe, &stdout)
 	cmd.Stderr = &stderr
@@ -140,7 +141,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 	// Run nmap process.
 	err = cmd.Start()
 	if err != nil {
-		return err
+		return result, warnings, err
 	}
 
 	// Add goroutine that updates chan when command is finished.
@@ -151,7 +152,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 		if streamerErrs != nil {
 			streamerError := streamerErrs.Wait()
 			if streamerError != nil {
-				*warnings = append(*warnings, errors.WithMessage(err, "read from stdout failed").Error())
+				*warnings = append(*warnings, fmt.Sprintf("read from stdout failed: %s", err))
 			}
 		}
 		done <- err
@@ -185,6 +186,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 	// Check if function should run async.
 	// When async process nmap result in goroutine that waits for nmap command finish.
 	// Else block and process nmap result in this function scope.
+	result = &Run{}
 	if s.doneAsync != nil {
 		go func() {
 			s.doneAsync <- s.processNmapResult(result, warnings, &stdout, &stderr, done, doneProgress)
@@ -193,7 +195,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 		err = s.processNmapResult(result, warnings, &stdout, &stderr, done, doneProgress)
 	}
 
-	return err
+	return result, warnings, err
 }
 
 // AddOptions sets more scan options after the scan is created.

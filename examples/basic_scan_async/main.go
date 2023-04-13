@@ -9,10 +9,6 @@ import (
 )
 
 func main() {
-	var (
-		result   nmap.Run
-		warnings []string
-	)
 	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
 	// with a 5-minute timeout.
 	s, err := nmap.NewScanner(
@@ -26,14 +22,15 @@ func main() {
 
 	// Executes asynchronously, allowing results to be streamed in real time.
 	done := make(chan error)
-	if err := s.Async(done).Run(&result, &warnings); err != nil {
+	result, warnings, err := s.Async(done).Run()
+	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Blocks main until the scan has completed.
 	if err := <-done; err != nil {
-		if len(warnings) > 0 {
-			log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non critical errors from nmap.
+		if len(*warnings) > 0 {
+			log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
 		}
 		log.Fatal(err)
 	}
