@@ -56,6 +56,14 @@ func (r Run) ToReader() io.Reader {
 	return bytes.NewReader(r.rawXML)
 }
 
+func (r *Run) FromFile(filename string) error {
+	readFile, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	return Parse(readFile, r)
+}
+
 // ScanInfo represents the scan information.
 type ScanInfo struct {
 	NumServices int    `xml:"numservices,attr" json:"num_services"`
@@ -432,8 +440,7 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 	return t.ParseTime(attr.Value)
 }
 
-// Parse takes a byte array of nmap xml data and unmarshals it into a
-// Run struct.
+// Parse takes a byte array of nmap xml data and unmarshal it into a Run struct.
 func Parse(content []byte, result *Run) error {
 	result.rawXML = content
 

@@ -80,8 +80,7 @@ func (s *Scanner) Progress(liveProgress chan float32) *Scanner {
 }
 
 // ToFile enables the Scanner to write the nmap XML output to a given path.
-// Nmap will write the normal CLI output to stdout.
-// This option will not parse the nmap output to the struct *Run. You may parse it yourself after the run.
+// Nmap will write the normal CLI output to stdout. The XML is parsed from file after the scan is finished.
 func (s *Scanner) ToFile(file string) *Scanner {
 	s.toFile = &file
 	return s
@@ -251,7 +250,11 @@ func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, std
 
 	// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
 	// Potentially available warnings are returned too, but probably not the reason for a broken XML.
-	err = Parse(stdout.Bytes(), result)
+	if s.toFile != nil {
+		err = result.FromFile(*s.toFile)
+	} else {
+		err = Parse(stdout.Bytes(), result)
+	}
 	if err != nil {
 		*warnings = append(*warnings, err.Error()) // Append parsing error to warnings for those who are interested.
 		return ErrParseOutput

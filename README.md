@@ -43,7 +43,7 @@ Most pentest tools are currently written using Python and not Go, because it is 
 - [x] Helpful enums for nmap commands. (time templates, os families, port states, etc.)
 - [x] Complete documentation of each option, mostly insipred from nmap's documentation.
 - [x] Run a nmap scan asynchronously.
-- [x] Scan progress may be piped.
+- [x] Scan progress can be piped through a channel.
 - [x] Write the nmap output to a given file while also parsing it to the struct.
 - [x] Stream the nmap output to an `io.Writer` interface while also parsing it to the struct.
 - [x] Functionality to show local interfaces and routes.
@@ -63,44 +63,42 @@ import (
 )
 
 func main() {
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 
-    // Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
-    // with a 5-minute timeout.
-    scanner, err := nmap.NewScanner(
-        ctx,
-        nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
-        nmap.WithPorts("80,443,843"),
-    )
-    if err != nil {
-        log.Fatalf("unable to create nmap scanner: %v", err)
-    }
+	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
+	// with a 5-minute timeout.
+	scanner, err := nmap.NewScanner(
+		ctx,
+		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
+		nmap.WithPorts("80,443,843"),
+	)
+	if err != nil {
+		log.Fatalf("unable to create nmap scanner: %v", err)
+	}
 
-	var result nmap.Run
-	var warnings []string
-	err = scanner.Run(&result, &warnings)
-	if len(warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non-critical errors from nmap.
+	result, warnings, err := scanner.Run()
+	if len(*warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
 	}
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}
 
-    // Use the results to print an example output
-    for _, host := range result.Hosts {
-        if len(host.Ports) == 0 || len(host.Addresses) == 0 {
-            continue
-        }
+	// Use the results to print an example output
+	for _, host := range result.Hosts {
+		if len(host.Ports) == 0 || len(host.Addresses) == 0 {
+			continue
+		}
 
-        fmt.Printf("Host %q:\n", host.Addresses[0])
+		fmt.Printf("Host %q:\n", host.Addresses[0])
 
-        for _, port := range host.Ports {
-            fmt.Printf("\tPort %d/%s %s %s\n", port.ID, port.Protocol, port.State, port.Service.Name)
-        }
-    }
+		for _, port := range host.Ports {
+			fmt.Printf("\tPort %d/%s %s %s\n", port.ID, port.Protocol, port.State, port.Service.Name)
+		}
+	}
 
-    fmt.Printf("Nmap done: %d hosts up scanned in %3f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
+	fmt.Printf("Nmap done: %d hosts up scanned in %.2f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
 }
 ```
 
