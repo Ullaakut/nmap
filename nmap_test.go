@@ -47,7 +47,7 @@ func TestRun(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		testTimeout     bool
 		compareWholeRun bool
@@ -59,7 +59,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "invalid binary path",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0"),
 				WithBinaryPath("/invalid"),
 			},
@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "output can't be parsed",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0"),
 				WithBinaryPath("echo"),
 			},
@@ -80,7 +80,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "context timeout",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0/16"),
 			},
 
@@ -91,7 +91,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "scan localhost",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("localhost"),
 				WithTimingTemplate(TimingFastest),
 			},
@@ -104,7 +104,7 @@ func TestRun(t *testing.T) {
 		{
 			description: "scan invalid target",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTimingTemplate(TimingFastest),
 			},
 
@@ -116,7 +116,7 @@ func TestRun(t *testing.T) {
 		},
 		{
 			description: "scan error resolving name",
-			options: []ArgOption{
+			options: []Option{
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
 				WithCustomArguments("tests/xml/scan_error_resolving_name.xml"),
 			},
@@ -129,7 +129,7 @@ func TestRun(t *testing.T) {
 		},
 		{
 			description: "scan unsupported error",
-			options: []ArgOption{
+			options: []Option{
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
 				WithCustomArguments("tests/xml/scan_error_other.xml"),
 			},
@@ -142,7 +142,7 @@ func TestRun(t *testing.T) {
 		},
 		{
 			description: "scan localhost with filters",
-			options: []ArgOption{
+			options: []Option{
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
 				WithCustomArguments("tests/xml/scan_invalid_services.xml"),
 				WithFilterHost(func(h Host) bool {
@@ -259,7 +259,7 @@ func TestRunWithProgress(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		compareWholeRun bool
 
@@ -270,7 +270,7 @@ func TestRunWithProgress(t *testing.T) {
 	}{
 		{
 			description: "fake scan with slow output for progress streaming",
-			options: []ArgOption{
+			options: []Option{
 				WithBinaryPath("tests/scripts/fake_nmap_delay.sh"),
 				WithCustomArguments("tests/xml/scan_base.xml"),
 			},
@@ -319,14 +319,14 @@ func TestRunWithStreamer(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedErr      error
 		expectedWarnings []string
 	}{
 		{
 			description: "fake scan with streaming",
-			options: []ArgOption{
+			options: []Option{
 				WithBinaryPath("tests/scripts/fake_nmap.sh"),
 				WithCustomArguments("tests/xml/scan_base.xml"),
 			},
@@ -356,7 +356,7 @@ func TestRunAsync(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		testTimeout     bool
 		compareWholeRun bool
@@ -368,7 +368,7 @@ func TestRunAsync(t *testing.T) {
 		{
 			description: "invalid binary path",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0"),
 				WithBinaryPath("/invalid"),
 			},
@@ -378,7 +378,7 @@ func TestRunAsync(t *testing.T) {
 		{
 			description: "output can't be parsed",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0"),
 				WithBinaryPath("echo"),
 			},
@@ -388,7 +388,7 @@ func TestRunAsync(t *testing.T) {
 		{
 			description: "context timeout",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0/16"),
 			},
 
@@ -456,14 +456,14 @@ func TestTargetSpecification(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedArgs []string
 	}{
 		{
 			description: "custom arguments",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0/24"),
 				WithCustomArguments("--invalid-argument"),
 			},
@@ -476,7 +476,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "set target",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0/24"),
 			},
 
@@ -487,7 +487,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "set multiple targets",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargets("0.0.0.0", "192.168.1.1"),
 			},
 
@@ -499,7 +499,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "set target from file",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargetInput("/targets.txt"),
 			},
 
@@ -511,7 +511,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "choose random targets",
 
-			options: []ArgOption{
+			options: []Option{
 				WithRandomTargets(4),
 			},
 
@@ -523,7 +523,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "unique addresses",
 
-			options: []ArgOption{
+			options: []Option{
 				WithUnique(),
 			},
 
@@ -534,7 +534,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "target exclusion",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargetExclusion("192.168.0.1,172.16.100.0/24"),
 			},
 
@@ -546,7 +546,7 @@ func TestTargetSpecification(t *testing.T) {
 		{
 			description: "target exclusion from file",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTargetExclusionInput("/exclude_targets.txt"),
 			},
 
@@ -575,14 +575,14 @@ func TestHostDiscovery(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedArgs []string
 	}{
 		{
 			description: "list targets to scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithListScan(),
 			},
 
@@ -593,7 +593,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "ping scan - disable port scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithPingScan(),
 			},
 
@@ -604,7 +604,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "skip host discovery",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSkipHostDiscovery(),
 			},
 
@@ -615,7 +615,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "TCP SYN packets for all ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSYNDiscovery(),
 			},
 
@@ -626,7 +626,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "TCP SYN packets for specific ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSYNDiscovery("443", "8443"),
 			},
 
@@ -637,7 +637,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "TCP ACK packets for all ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithACKDiscovery(),
 			},
 
@@ -648,7 +648,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "TCP ACK packets for specific ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithACKDiscovery("443", "8443"),
 			},
 
@@ -659,7 +659,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "UDP packets for all ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithUDPDiscovery(),
 			},
 
@@ -670,7 +670,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "UDP packets for specific ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithUDPDiscovery("443", "8443"),
 			},
 
@@ -681,7 +681,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "SCTP packets for all ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSCTPDiscovery(),
 			},
 
@@ -692,7 +692,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "SCTP packets for specific ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSCTPDiscovery("443", "8443"),
 			},
 
@@ -703,7 +703,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "ICMP echo request discovery probes",
 
-			options: []ArgOption{
+			options: []Option{
 				WithICMPEchoDiscovery(),
 			},
 
@@ -714,7 +714,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "ICMP Timestamp request discovery probes",
 
-			options: []ArgOption{
+			options: []Option{
 				WithICMPTimestampDiscovery(),
 			},
 
@@ -725,7 +725,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "ICMP NetMask request discovery probes",
 
-			options: []ArgOption{
+			options: []Option{
 				WithICMPNetMaskDiscovery(),
 			},
 
@@ -736,7 +736,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "IP protocol ping",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIPProtocolPingDiscovery("1", "2", "4"),
 			},
 
@@ -747,7 +747,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "disable DNS resolution during discovery",
 
-			options: []ArgOption{
+			options: []Option{
 				WithDisabledDNSResolution(),
 			},
 
@@ -758,7 +758,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "enforce DNS resolution during discovery",
 
-			options: []ArgOption{
+			options: []Option{
 				WithForcedDNSResolution(),
 			},
 
@@ -769,7 +769,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "custom DNS server",
 
-			options: []ArgOption{
+			options: []Option{
 				WithCustomDNSServers("8.8.8.8", "8.8.4.4"),
 			},
 
@@ -781,7 +781,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "use system DNS",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSystemDNS(),
 			},
 
@@ -792,7 +792,7 @@ func TestHostDiscovery(t *testing.T) {
 		{
 			description: "traceroute",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTraceRoute(),
 			},
 
@@ -820,14 +820,14 @@ func TestScanTechniques(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedArgs []string
 	}{
 		{
 			description: "TCP SYN scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSYNScan(),
 			},
 
@@ -838,7 +838,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "TCP Connect() scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithConnectScan(),
 			},
 
@@ -849,7 +849,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "TCP ACK scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithACKScan(),
 			},
 
@@ -860,7 +860,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "TCP Window scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithWindowScan(),
 			},
 
@@ -871,7 +871,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "Maimon scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMaimonScan(),
 			},
 
@@ -882,7 +882,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "UDP scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithUDPScan(),
 			},
 
@@ -893,7 +893,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "TCP Null scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTCPNullScan(),
 			},
 
@@ -904,7 +904,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "TCP FIN scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTCPFINScan(),
 			},
 
@@ -915,7 +915,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "TCP Xmas scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTCPXmasScan(),
 			},
 
@@ -926,7 +926,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "TCP custom scan flags",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTCPScanFlags(FlagACK, FlagFIN, FlagNULL),
 			},
 
@@ -938,7 +938,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "idle scan through zombie host with probe port specified",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIdleScan("192.168.1.1", 61436),
 			},
 
@@ -950,7 +950,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "idle scan through zombie host without probe port specified",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIdleScan("192.168.1.1", 0),
 			},
 
@@ -962,7 +962,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "SCTP INIT scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSCTPInitScan(),
 			},
 
@@ -973,7 +973,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "SCTP COOKIE-ECHO scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSCTPCookieEchoScan(),
 			},
 
@@ -984,7 +984,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "IP protocol scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIPProtocolScan(),
 			},
 
@@ -995,7 +995,7 @@ func TestScanTechniques(t *testing.T) {
 		{
 			description: "FTP bounce scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithFTPBounceScan("192.168.0.254"),
 			},
 
@@ -1024,7 +1024,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedPanic string
 		expectedArgs  []string
@@ -1032,7 +1032,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 		{
 			description: "specify ports to scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithPorts("554", "8554"),
 				WithPorts("80-81"),
 			},
@@ -1045,7 +1045,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 		{
 			description: "exclude ports to scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithPortExclusions("554", "8554"),
 			},
 
@@ -1057,7 +1057,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 		{
 			description: "fast mode - scan fewer ports than the default scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithFastMode(),
 			},
 
@@ -1068,7 +1068,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 		{
 			description: "consecutive port scanning",
 
-			options: []ArgOption{
+			options: []Option{
 				WithConsecutivePortScanning(),
 			},
 
@@ -1079,7 +1079,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 		{
 			description: "scan most commonly open ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMostCommonPorts(5),
 			},
 
@@ -1091,7 +1091,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 		{
 			description: "scan most commonly open ports given a ratio - should be rounded to 0.4",
 
-			options: []ArgOption{
+			options: []Option{
 				WithPortRatio(0.42010101),
 			},
 
@@ -1103,7 +1103,7 @@ func TestPortSpecAndScanOrder(t *testing.T) {
 		{
 			description: "scan most commonly open ports given a ratio - should be invalid and panic",
 
-			options: []ArgOption{
+			options: []Option{
 				WithPortRatio(2),
 			},
 
@@ -1139,7 +1139,7 @@ func TestServiceDetection(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedPanic string
 		expectedArgs  []string
@@ -1147,7 +1147,7 @@ func TestServiceDetection(t *testing.T) {
 		{
 			description: "service detection",
 
-			options: []ArgOption{
+			options: []Option{
 				WithServiceInfo(),
 			},
 
@@ -1158,7 +1158,7 @@ func TestServiceDetection(t *testing.T) {
 		{
 			description: "service detection custom intensity",
 
-			options: []ArgOption{
+			options: []Option{
 				WithVersionIntensity(1),
 			},
 
@@ -1170,7 +1170,7 @@ func TestServiceDetection(t *testing.T) {
 		{
 			description: "service detection custom intensity - should panic since not between 0 and 9",
 
-			options: []ArgOption{
+			options: []Option{
 				WithVersionIntensity(42),
 			},
 
@@ -1179,7 +1179,7 @@ func TestServiceDetection(t *testing.T) {
 		{
 			description: "service detection light intensity",
 
-			options: []ArgOption{
+			options: []Option{
 				WithVersionLight(),
 			},
 
@@ -1190,7 +1190,7 @@ func TestServiceDetection(t *testing.T) {
 		{
 			description: "service detection highest intensity",
 
-			options: []ArgOption{
+			options: []Option{
 				WithVersionAll(),
 			},
 
@@ -1201,7 +1201,7 @@ func TestServiceDetection(t *testing.T) {
 		{
 			description: "service detection enable trace",
 
-			options: []ArgOption{
+			options: []Option{
 				WithVersionTrace(),
 			},
 
@@ -1240,7 +1240,7 @@ func TestScriptScan(t *testing.T) {
 		description string
 
 		targets       []string
-		options       []ArgOption
+		options       []Option
 		unorderedArgs bool
 
 		expectedArgs []string
@@ -1248,7 +1248,7 @@ func TestScriptScan(t *testing.T) {
 		{
 			description: "default script scan",
 
-			options: []ArgOption{
+			options: []Option{
 				WithDefaultScript(),
 			},
 
@@ -1259,7 +1259,7 @@ func TestScriptScan(t *testing.T) {
 		{
 			description: "custom script list",
 
-			options: []ArgOption{
+			options: []Option{
 				WithScripts("./scripts/", "/etc/nmap/nse/scripts"),
 			},
 
@@ -1270,7 +1270,7 @@ func TestScriptScan(t *testing.T) {
 		{
 			description: "script arguments",
 
-			options: []ArgOption{
+			options: []Option{
 				WithScriptArguments(map[string]string{
 					"user":                  "foo",
 					"pass":                  "\",{}=bar\"",
@@ -1294,7 +1294,7 @@ func TestScriptScan(t *testing.T) {
 		{
 			description: "script arguments file",
 
-			options: []ArgOption{
+			options: []Option{
 				WithScriptArgumentsFile("/script_args.txt"),
 			},
 
@@ -1305,7 +1305,7 @@ func TestScriptScan(t *testing.T) {
 		{
 			description: "enable script trace",
 
-			options: []ArgOption{
+			options: []Option{
 				WithScriptTrace(),
 			},
 
@@ -1316,7 +1316,7 @@ func TestScriptScan(t *testing.T) {
 		{
 			description: "update script database",
 
-			options: []ArgOption{
+			options: []Option{
 				WithScriptUpdateDB(),
 			},
 
@@ -1327,7 +1327,7 @@ func TestScriptScan(t *testing.T) {
 		{
 			description: "set script timeout",
 
-			options: []ArgOption{
+			options: []Option{
 				WithScriptTimeout(40 * time.Second),
 			},
 
@@ -1365,14 +1365,14 @@ func TestOSDetection(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedArgs []string
 	}{
 		{
 			description: "enable OS detection",
 
-			options: []ArgOption{
+			options: []Option{
 				WithOSDetection(),
 			},
 
@@ -1383,7 +1383,7 @@ func TestOSDetection(t *testing.T) {
 		{
 			description: "enable OS scan limit",
 
-			options: []ArgOption{
+			options: []Option{
 				WithOSScanLimit(),
 			},
 
@@ -1394,7 +1394,7 @@ func TestOSDetection(t *testing.T) {
 		{
 			description: "enable OS scan guess",
 
-			options: []ArgOption{
+			options: []Option{
 				WithOSScanGuess(),
 			},
 
@@ -1422,14 +1422,14 @@ func TestTimingAndPerformance(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedArgs []string
 	}{
 		{
 			description: "set timing template",
 
-			options: []ArgOption{
+			options: []Option{
 				WithTimingTemplate(TimingAggressive),
 			},
 
@@ -1440,7 +1440,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set stats every",
 
-			options: []ArgOption{
+			options: []Option{
 				WithStatsEvery("5s"),
 			},
 
@@ -1452,7 +1452,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set min hostgroup",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMinHostgroup(42),
 			},
 
@@ -1464,7 +1464,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set max hostgroup",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMaxHostgroup(42),
 			},
 
@@ -1476,7 +1476,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set min parallelism",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMinParallelism(42),
 			},
 
@@ -1488,7 +1488,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set max parallelism",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMaxParallelism(42),
 			},
 
@@ -1500,7 +1500,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set min rtt-timeout",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMinRTTTimeout(2 * time.Minute),
 			},
 
@@ -1512,7 +1512,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set max rtt-timeout",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMaxRTTTimeout(8 * time.Hour),
 			},
 
@@ -1524,7 +1524,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set initial rtt-timeout",
 
-			options: []ArgOption{
+			options: []Option{
 				WithInitialRTTTimeout(8 * time.Hour),
 			},
 
@@ -1536,7 +1536,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set max retries",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMaxRetries(42),
 			},
 
@@ -1548,7 +1548,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set host timeout",
 
-			options: []ArgOption{
+			options: []Option{
 				WithHostTimeout(42 * time.Second),
 			},
 
@@ -1560,7 +1560,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set scan delay",
 
-			options: []ArgOption{
+			options: []Option{
 				WithScanDelay(42 * time.Millisecond),
 			},
 
@@ -1572,7 +1572,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set max scan delay",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMaxScanDelay(42 * time.Millisecond),
 			},
 
@@ -1584,7 +1584,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set min rate",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMinRate(42),
 			},
 
@@ -1596,7 +1596,7 @@ func TestTimingAndPerformance(t *testing.T) {
 		{
 			description: "set max rate",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMaxRate(42),
 			},
 
@@ -1625,7 +1625,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedPanic string
 		expectedArgs  []string
@@ -1633,7 +1633,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "fragment packets",
 
-			options: []ArgOption{
+			options: []Option{
 				WithFragmentPackets(),
 			},
 
@@ -1644,7 +1644,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "custom fragment packet size",
 
-			options: []ArgOption{
+			options: []Option{
 				WithMTU(42),
 			},
 
@@ -1656,7 +1656,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "enable decoys",
 
-			options: []ArgOption{
+			options: []Option{
 				WithDecoys(
 					"192.168.1.1",
 					"192.168.1.2",
@@ -1677,7 +1677,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "spoof IP address",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSpoofIPAddress("192.168.1.1"),
 			},
 
@@ -1689,7 +1689,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set interface",
 
-			options: []ArgOption{
+			options: []Option{
 				WithInterface("eth0"),
 			},
 
@@ -1701,7 +1701,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set source port",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSourcePort(65535),
 			},
 
@@ -1713,7 +1713,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set proxies",
 
-			options: []ArgOption{
+			options: []Option{
 				WithProxies("4242", "8484"),
 			},
 
@@ -1725,7 +1725,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set custom hex payload",
 
-			options: []ArgOption{
+			options: []Option{
 				WithHexData("0x8b6c42"),
 			},
 
@@ -1737,7 +1737,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set custom ascii payload",
 
-			options: []ArgOption{
+			options: []Option{
 				WithASCIIData("pale brownish"),
 			},
 
@@ -1749,7 +1749,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set custom random payload length",
 
-			options: []ArgOption{
+			options: []Option{
 				WithDataLength(42),
 			},
 
@@ -1761,7 +1761,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set custom IP options",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIPOptions("S 192.168.1.1 10.0.0.3"),
 			},
 
@@ -1773,7 +1773,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set custom TTL",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIPTimeToLive(254),
 			},
 
@@ -1785,7 +1785,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "set custom TTL - invalid value should panic",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIPTimeToLive(-254),
 			},
 
@@ -1794,7 +1794,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "spoof mac address",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSpoofMAC("08:67:47:0A:78:E4"),
 			},
 
@@ -1806,7 +1806,7 @@ func TestFirewallAndIDSEvasionAndSpoofing(t *testing.T) {
 		{
 			description: "send packets with bad checksum",
 
-			options: []ArgOption{
+			options: []Option{
 				WithBadSum(),
 			},
 
@@ -1844,14 +1844,14 @@ func TestOutput(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedArgs []string
 	}{
 		{
 			description: "set verbosity",
 
-			options: []ArgOption{
+			options: []Option{
 				WithVerbosity(5),
 			},
 
@@ -1862,7 +1862,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "set debugging",
 
-			options: []ArgOption{
+			options: []Option{
 				WithDebugging(3),
 			},
 
@@ -1873,7 +1873,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "display reason",
 
-			options: []ArgOption{
+			options: []Option{
 				WithReason(),
 			},
 
@@ -1884,7 +1884,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "show only open ports",
 
-			options: []ArgOption{
+			options: []Option{
 				WithOpenOnly(),
 			},
 
@@ -1895,7 +1895,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "enable packet trace",
 
-			options: []ArgOption{
+			options: []Option{
 				WithPacketTrace(),
 			},
 
@@ -1906,7 +1906,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "enable appending output",
 
-			options: []ArgOption{
+			options: []Option{
 				WithAppendOutput(),
 			},
 
@@ -1917,7 +1917,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "resume scan from file",
 
-			options: []ArgOption{
+			options: []Option{
 				WithResumePreviousScan("/nmap_scan.xml"),
 			},
 
@@ -1929,7 +1929,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "use stylesheet from file",
 
-			options: []ArgOption{
+			options: []Option{
 				WithStylesheet("/nmap_stylesheet.xsl"),
 			},
 
@@ -1941,7 +1941,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "use stylesheet from file",
 
-			options: []ArgOption{
+			options: []Option{
 				WithStylesheet("/nmap_stylesheet.xsl"),
 			},
 
@@ -1953,7 +1953,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "use default nmap stylesheet",
 
-			options: []ArgOption{
+			options: []Option{
 				WithWebXML(),
 			},
 
@@ -1964,7 +1964,7 @@ func TestOutput(t *testing.T) {
 		{
 			description: "disable stylesheets",
 
-			options: []ArgOption{
+			options: []Option{
 				WithNoStylesheet(),
 			},
 
@@ -1992,14 +1992,14 @@ func TestMiscellaneous(t *testing.T) {
 	tests := []struct {
 		description string
 
-		options []ArgOption
+		options []Option
 
 		expectedArgs []string
 	}{
 		{
 			description: "enable ipv6 scanning",
 
-			options: []ArgOption{
+			options: []Option{
 				WithIPv6Scanning(),
 			},
 
@@ -2010,7 +2010,7 @@ func TestMiscellaneous(t *testing.T) {
 		{
 			description: "enable aggressive scanning",
 
-			options: []ArgOption{
+			options: []Option{
 				WithAggressiveScan(),
 			},
 
@@ -2021,7 +2021,7 @@ func TestMiscellaneous(t *testing.T) {
 		{
 			description: "set data dir",
 
-			options: []ArgOption{
+			options: []Option{
 				WithDataDir("/etc/nmap/data"),
 			},
 
@@ -2033,7 +2033,7 @@ func TestMiscellaneous(t *testing.T) {
 		{
 			description: "send packets over ethernet",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSendEthernet(),
 			},
 
@@ -2044,7 +2044,7 @@ func TestMiscellaneous(t *testing.T) {
 		{
 			description: "send packets over IP",
 
-			options: []ArgOption{
+			options: []Option{
 				WithSendIP(),
 			},
 
@@ -2055,7 +2055,7 @@ func TestMiscellaneous(t *testing.T) {
 		{
 			description: "assume user is privileged",
 
-			options: []ArgOption{
+			options: []Option{
 				WithPrivileged(),
 			},
 
@@ -2066,7 +2066,7 @@ func TestMiscellaneous(t *testing.T) {
 		{
 			description: "assume user is unprivileged",
 
-			options: []ArgOption{
+			options: []Option{
 				WithUnprivileged(),
 			},
 

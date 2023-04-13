@@ -6,21 +6,21 @@ import (
 )
 
 // WithListScan sets the discovery mode to simply list the targets to scan and not scan them.
-func WithListScan() ArgOption {
+func WithListScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sL")
 	}
 }
 
 // WithPingScan sets the discovery mode to simply ping the targets to scan and not scan them.
-func WithPingScan() ArgOption {
+func WithPingScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sn")
 	}
 }
 
 // WithSkipHostDiscovery diables host discovery and considers all hosts as online.
-func WithSkipHostDiscovery() ArgOption {
+func WithSkipHostDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-Pn")
 	}
@@ -29,7 +29,7 @@ func WithSkipHostDiscovery() ArgOption {
 // WithSYNDiscovery sets the discovery mode to use SYN packets.
 // If the portList argument is empty, this will enable SYN discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithSYNDiscovery(ports ...string) ArgOption {
+func WithSYNDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -40,7 +40,7 @@ func WithSYNDiscovery(ports ...string) ArgOption {
 // WithACKDiscovery sets the discovery mode to use ACK packets.
 // If the portList argument is empty, this will enable ACK discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithACKDiscovery(ports ...string) ArgOption {
+func WithACKDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -51,7 +51,7 @@ func WithACKDiscovery(ports ...string) ArgOption {
 // WithUDPDiscovery sets the discovery mode to use UDP packets.
 // If the portList argument is empty, this will enable UDP discovery
 // for all ports. Otherwise, it will be only for the specified ports.
-func WithUDPDiscovery(ports ...string) ArgOption {
+func WithUDPDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -65,7 +65,7 @@ func WithUDPDiscovery(ports ...string) ArgOption {
 // for all ports. Otherwise, it will be only for the specified ports.
 // Warning: on Unix, only the privileged user root is generally
 // able to send and receive raw SCTP packets.
-func WithSCTPDiscovery(ports ...string) ArgOption {
+func WithSCTPDiscovery(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -78,7 +78,7 @@ func WithSCTPDiscovery(ports ...string) ArgOption {
 // command.
 // Many hosts and firewalls block these packets, so this is usually not
 // the best for exploring networks.
-func WithICMPEchoDiscovery() ArgOption {
+func WithICMPEchoDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-PE")
 	}
@@ -89,7 +89,7 @@ func WithICMPEchoDiscovery() ArgOption {
 // This query can be valuable when administrators specifically block echo
 // request packets while forgetting that other ICMP queries can be used
 // for the same purpose.
-func WithICMPTimestampDiscovery() ArgOption {
+func WithICMPTimestampDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-PP")
 	}
@@ -100,7 +100,7 @@ func WithICMPTimestampDiscovery() ArgOption {
 // This query can be valuable when administrators specifically block echo
 // request packets while forgetting that other ICMP queries can be used
 // for the same purpose.
-func WithICMPNetMaskDiscovery() ArgOption {
+func WithICMPNetMaskDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-PM")
 	}
@@ -111,7 +111,7 @@ func WithICMPNetMaskDiscovery() ArgOption {
 // If no protocols are specified, the default is to send multiple IP
 // packets for ICMP (protocol 1), IGMP (protocol 2), and IP-in-IP
 // (protocol 4).
-func WithIPProtocolPingDiscovery(protocols ...string) ArgOption {
+func WithIPProtocolPingDiscovery(protocols ...string) Option {
 	protocolList := strings.Join(protocols, ",")
 
 	return func(s *Scanner) {
@@ -121,7 +121,7 @@ func WithIPProtocolPingDiscovery(protocols ...string) ArgOption {
 
 // WithDisabledDNSResolution disables DNS resolution in the discovery
 // step of the nmap scan.
-func WithDisabledDNSResolution() ArgOption {
+func WithDisabledDNSResolution() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-n")
 	}
@@ -129,7 +129,7 @@ func WithDisabledDNSResolution() ArgOption {
 
 // WithForcedDNSResolution enforces DNS resolution in the discovery
 // step of the nmap scan.
-func WithForcedDNSResolution() ArgOption {
+func WithForcedDNSResolution() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-R")
 	}
@@ -137,7 +137,7 @@ func WithForcedDNSResolution() ArgOption {
 
 // WithCustomDNSServers sets custom DNS servers for the scan.
 // List format: dns1[,dns2],...
-func WithCustomDNSServers(dnsServers ...string) ArgOption {
+func WithCustomDNSServers(dnsServers ...string) Option {
 	dnsList := strings.Join(dnsServers, ",")
 
 	return func(s *Scanner) {
@@ -147,14 +147,14 @@ func WithCustomDNSServers(dnsServers ...string) ArgOption {
 }
 
 // WithSystemDNS sets the scanner's DNS to the system's DNS.
-func WithSystemDNS() ArgOption {
+func WithSystemDNS() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--system-dns")
 	}
 }
 
 // WithTraceRoute enables the tracing of the hop path to each host.
-func WithTraceRoute() ArgOption {
+func WithTraceRoute() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--traceroute")
 	}

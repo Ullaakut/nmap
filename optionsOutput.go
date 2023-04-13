@@ -3,7 +3,7 @@ package nmap
 import "fmt"
 
 // WithVerbosity sets and increases the verbosity level of nmap.
-func WithVerbosity(level int) ArgOption {
+func WithVerbosity(level int) Option {
 
 	return func(s *Scanner) {
 		if level < 0 || level > 10 {
@@ -14,7 +14,7 @@ func WithVerbosity(level int) ArgOption {
 }
 
 // WithDebugging sets and increases the debugging level of nmap.
-func WithDebugging(level int) ArgOption {
+func WithDebugging(level int) Option {
 	return func(s *Scanner) {
 		if level < 0 || level > 10 {
 			panic("value given to nmap.WithDebugging() should be between 0 and 10")
@@ -24,21 +24,21 @@ func WithDebugging(level int) ArgOption {
 }
 
 // WithReason makes nmap specify why a port is in a particular state.
-func WithReason() ArgOption {
+func WithReason() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--reason")
 	}
 }
 
 // WithOpenOnly makes nmap only show open ports.
-func WithOpenOnly() ArgOption {
+func WithOpenOnly() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--open")
 	}
 }
 
 // WithPacketTrace makes nmap show all packets sent and received.
-func WithPacketTrace() ArgOption {
+func WithPacketTrace() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--packet-trace")
 	}
@@ -46,7 +46,7 @@ func WithPacketTrace() ArgOption {
 
 // WithAppendOutput makes nmap append to files instead of overwriting them.
 // Currently does nothing, since this library doesn't write in files.
-func WithAppendOutput() ArgOption {
+func WithAppendOutput() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--append-output")
 	}
@@ -54,7 +54,7 @@ func WithAppendOutput() ArgOption {
 
 // WithResumePreviousScan makes nmap continue a scan that was aborted,
 // from an output file.
-func WithResumePreviousScan(filePath string) ArgOption {
+func WithResumePreviousScan(filePath string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--resume")
 		s.args = append(s.args, filePath)
@@ -63,7 +63,7 @@ func WithResumePreviousScan(filePath string) ArgOption {
 
 // WithStylesheet makes nmap apply an XSL stylesheet to transform its
 // XML output to HTML.
-func WithStylesheet(stylesheetPath string) ArgOption {
+func WithStylesheet(stylesheetPath string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--stylesheet")
 		s.args = append(s.args, stylesheetPath)
@@ -73,14 +73,14 @@ func WithStylesheet(stylesheetPath string) ArgOption {
 // WithWebXML makes nmap apply the default nmap.org stylesheet to transform
 // XML output to HTML. The stylesheet can be found at
 // https://nmap.org/svn/docs/nmap.xsl
-func WithWebXML() ArgOption {
+func WithWebXML() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--webxml")
 	}
 }
 
 // WithNoStylesheet prevents the use of XSL stylesheets with the XML output.
-func WithNoStylesheet() ArgOption {
+func WithNoStylesheet() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--no-stylesheet")
 	}

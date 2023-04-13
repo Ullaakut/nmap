@@ -10,7 +10,7 @@ import (
 // filters, intrusion detection systems, and other annoyances to detect what
 // you are doing.
 // Some programs have trouble handling these tiny packets.
-func WithFragmentPackets() ArgOption {
+func WithFragmentPackets() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-f")
 	}
@@ -21,7 +21,7 @@ func WithFragmentPackets() ArgOption {
 // to make it harder for packet filters, intrusion detection systems, and other
 // annoyances to detect what you are doing.
 // Some programs have trouble handling these tiny packets.
-func WithMTU(offset int) ArgOption {
+func WithMTU(offset int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--mtu")
 		s.args = append(s.args, fmt.Sprint(offset))
@@ -40,7 +40,7 @@ func WithMTU(offset int) ArgOption {
 // for your real IP address.
 // If you put ME in the sixth position or later, some common port scan
 // detectors are unlikely to show your IP address at all.
-func WithDecoys(decoys ...string) ArgOption {
+func WithDecoys(decoys ...string) Option {
 	decoyList := strings.Join(decoys, ",")
 
 	return func(s *Scanner) {
@@ -56,7 +56,7 @@ func WithDecoys(decoys ...string) ArgOption {
 // WithSkipHostDiscovery are generally required for this sort of usage. Note
 // that you usually won't receive reply packets back (they will be addressed to
 // the IP you are spoofing), so Nmap won't produce useful reports.
-func WithSpoofIPAddress(ip string) ArgOption {
+func WithSpoofIPAddress(ip string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-S")
 		s.args = append(s.args, ip)
@@ -64,7 +64,7 @@ func WithSpoofIPAddress(ip string) ArgOption {
 }
 
 // WithInterface specifies which network interface to use for scanning.
-func WithInterface(iface string) ArgOption {
+func WithInterface(iface string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-e")
 		s.args = append(s.args, iface)
@@ -72,7 +72,7 @@ func WithInterface(iface string) ArgOption {
 }
 
 // WithSourcePort specifies from which port to scan.
-func WithSourcePort(port uint16) ArgOption {
+func WithSourcePort(port uint16) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--source-port")
 		s.args = append(s.args, fmt.Sprint(port))
@@ -80,7 +80,7 @@ func WithSourcePort(port uint16) ArgOption {
 }
 
 // WithProxies allows to relay connection through HTTP/SOCKS4 proxies.
-func WithProxies(proxies ...string) ArgOption {
+func WithProxies(proxies ...string) Option {
 	proxyList := strings.Join(proxies, ",")
 
 	return func(s *Scanner) {
@@ -90,7 +90,7 @@ func WithProxies(proxies ...string) ArgOption {
 }
 
 // WithHexData appends a custom hex-encoded payload to sent packets.
-func WithHexData(data string) ArgOption {
+func WithHexData(data string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--data")
 		s.args = append(s.args, data)
@@ -98,7 +98,7 @@ func WithHexData(data string) ArgOption {
 }
 
 // WithASCIIData appends a custom ascii-encoded payload to sent packets.
-func WithASCIIData(data string) ArgOption {
+func WithASCIIData(data string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--data-string")
 		s.args = append(s.args, data)
@@ -106,7 +106,7 @@ func WithASCIIData(data string) ArgOption {
 }
 
 // WithDataLength appends a random payload of the given length to sent packets.
-func WithDataLength(length int) ArgOption {
+func WithDataLength(length int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--data-length")
 		s.args = append(s.args, fmt.Sprint(length))
@@ -118,7 +118,7 @@ func WithDataLength(length int) ArgOption {
 // path to a target even when more traditional traceroute-style
 // approaches fail. See http://seclists.org/nmap-dev/2006/q3/52
 // for examples of use.
-func WithIPOptions(options string) ArgOption {
+func WithIPOptions(options string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--ip-options")
 		s.args = append(s.args, options)
@@ -126,7 +126,7 @@ func WithIPOptions(options string) ArgOption {
 }
 
 // WithIPTimeToLive sets the IP time-to-live field of IP packets.
-func WithIPTimeToLive(ttl int16) ArgOption {
+func WithIPTimeToLive(ttl int16) Option {
 	return func(s *Scanner) {
 		if ttl < 0 || ttl > 255 {
 			panic("value given to nmap.WithIPTimeToLive() should be between 0 and 255")
@@ -143,7 +143,7 @@ func WithIPTimeToLive(ttl int16) ArgOption {
 // packets.
 // Valid argument examples are Apple, 0, 01:02:03:04:05:06,
 // deadbeefcafe, 0020F2, and Cisco.
-func WithSpoofMAC(argument string) ArgOption {
+func WithSpoofMAC(argument string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--spoof-mac")
 		s.args = append(s.args, argument)
@@ -155,7 +155,7 @@ func WithSpoofMAC(argument string) ArgOption {
 // stacks properly drop these packets, any responses received are
 // likely coming from a firewall or IDS that didn't bother to
 // verify the checksum.
-func WithBadSum() ArgOption {
+func WithBadSum() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--badsum")
 	}

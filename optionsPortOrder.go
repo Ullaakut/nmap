@@ -6,7 +6,7 @@ import (
 )
 
 // WithPorts sets the ports which the scanner should scan on each host.
-func WithPorts(ports ...string) ArgOption {
+func WithPorts(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -31,7 +31,7 @@ func WithPorts(ports ...string) ArgOption {
 }
 
 // WithPortExclusions sets the ports that the scanner should not scan on each host.
-func WithPortExclusions(ports ...string) ArgOption {
+func WithPortExclusions(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) {
@@ -41,7 +41,7 @@ func WithPortExclusions(ports ...string) ArgOption {
 }
 
 // WithFastMode makes the scan faster by scanning fewer ports than the default scan.
-func WithFastMode() ArgOption {
+func WithFastMode() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-F")
 	}
@@ -49,7 +49,7 @@ func WithFastMode() ArgOption {
 
 // WithConsecutivePortScanning makes the scan go through ports consecutively instead of
 // picking them out randomly.
-func WithConsecutivePortScanning() ArgOption {
+func WithConsecutivePortScanning() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-r")
 	}
@@ -57,7 +57,7 @@ func WithConsecutivePortScanning() ArgOption {
 
 // WithMostCommonPorts sets the scanner to go through the provided number of most
 // common ports.
-func WithMostCommonPorts(number int) ArgOption {
+func WithMostCommonPorts(number int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--top-ports")
 		s.args = append(s.args, fmt.Sprint(number))
@@ -66,7 +66,7 @@ func WithMostCommonPorts(number int) ArgOption {
 
 // WithPortRatio sets the scanner to go the ports more common than the given ratio.
 // Ratio must be a float between 0 and 1.
-func WithPortRatio(ratio float32) ArgOption {
+func WithPortRatio(ratio float32) Option {
 	return func(s *Scanner) {
 		if ratio < 0 || ratio > 1 {
 			panic("value given to nmap.WithPortRatio() should be between 0 and 1")

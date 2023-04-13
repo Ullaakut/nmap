@@ -39,12 +39,12 @@ type Scanner struct {
 	toFile       *string
 }
 
-// ArgOption is a function that is used for grouping of Scanner options.
-// ArgOption adds or removes nmap command line arguments.
-type ArgOption func(*Scanner)
+// Option is a function that is used for grouping of Scanner options.
+// Option adds or removes nmap command line arguments.
+type Option func(*Scanner)
 
 // NewScanner creates a new Scanner, and can take options to apply to the scanner.
-func NewScanner(ctx context.Context, options ...ArgOption) (*Scanner, error) {
+func NewScanner(ctx context.Context, options ...Option) (*Scanner, error) {
 	scanner := &Scanner{
 		doneAsync:    nil,
 		liveProgress: nil,
@@ -126,10 +126,10 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 	stdoutDuplicate := io.TeeReader(stdoutPipe, &stdout)
 	cmd.Stderr = &stderr
 
-	var streamerGroup *errgroup.Group
+	var streamerErrs *errgroup.Group
 	if s.streamer != nil {
-		streamerGroup, _ = errgroup.WithContext(s.ctx)
-		streamerGroup.Go(func() error {
+		streamerErrs, _ = errgroup.WithContext(s.ctx)
+		streamerErrs.Go(func() error {
 			_, err = io.Copy(s.streamer, stdoutDuplicate)
 			return err
 		})
@@ -143,13 +143,13 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 		return err
 	}
 
-	// Add goroutine that updates chan when command finished.
+	// Add goroutine that updates chan when command is finished.
 	done := make(chan error, 1)
 	doneProgress := make(chan bool, 1)
 	go func() {
 		err := cmd.Wait()
-		if streamerGroup != nil {
-			streamerError := streamerGroup.Wait()
+		if streamerErrs != nil {
+			streamerError := streamerErrs.Wait()
 			if streamerError != nil {
 				*warnings = append(*warnings, errors.WithMessage(err, "read from stdout failed").Error())
 			}
@@ -197,7 +197,7 @@ func (s *Scanner) Run(result *Run, warnings *[]string) (err error) {
 }
 
 // AddOptions sets more scan options after the scan is created.
-func (s *Scanner) AddOptions(options ...ArgOption) *Scanner {
+func (s *Scanner) AddOptions(options ...Option) *Scanner {
 	for _, option := range options {
 		option(s)
 	}
@@ -305,14 +305,14 @@ func checkStdErr(stderr *bytes.Buffer, warnings *[]string) error {
 // You can use this as a quick way to paste an nmap command into your go code,
 // but remember that the whole purpose of this repository is to be idiomatic,
 // provide type checking, enums for the values that can be passed, etc.
-func WithCustomArguments(args ...string) ArgOption {
+func WithCustomArguments(args ...string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, args...)
 	}
 }
 
 // WithBinaryPath sets the nmap binary path for a scanner.
-func WithBinaryPath(binaryPath string) ArgOption {
+func WithBinaryPath(binaryPath string) Option {
 	return func(s *Scanner) {
 		s.binaryPath = binaryPath
 	}
@@ -322,7 +322,7 @@ func WithBinaryPath(binaryPath string) ArgOption {
 // don't fulfill a given condition. When the given function returns true,
 // the port is kept, otherwise it is removed from the result. Can be used
 // along with WithFilterHost.
-func WithFilterPort(portFilter func(Port) bool) ArgOption {
+func WithFilterPort(portFilter func(Port) bool) Option {
 	return func(s *Scanner) {
 		s.portFilter = portFilter
 	}
@@ -332,7 +332,7 @@ func WithFilterPort(portFilter func(Port) bool) ArgOption {
 // don't fulfill a given condition. When the given function returns true,
 // the host is kept, otherwise it is removed from the result. Can be used
 // along with WithFilterPort.
-func WithFilterHost(hostFilter func(Host) bool) ArgOption {
+func WithFilterHost(hostFilter func(Host) bool) Option {
 	return func(s *Scanner) {
 		s.hostFilter = hostFilter
 	}

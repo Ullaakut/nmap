@@ -25,14 +25,14 @@ const (
 )
 
 // WithTimingTemplate sets the timing template for nmap.
-func WithTimingTemplate(timing Timing) ArgOption {
+func WithTimingTemplate(timing Timing) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("-T%d", timing))
 	}
 }
 
 // WithStatsEvery periodically prints a timing status message after each interval of time.
-func WithStatsEvery(interval string) ArgOption {
+func WithStatsEvery(interval string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--stats-every")
 		s.args = append(s.args, interval)
@@ -40,7 +40,7 @@ func WithStatsEvery(interval string) ArgOption {
 }
 
 // WithMinHostgroup sets the minimal parallel host scan group size.
-func WithMinHostgroup(size int) ArgOption {
+func WithMinHostgroup(size int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--min-hostgroup")
 		s.args = append(s.args, fmt.Sprint(size))
@@ -48,7 +48,7 @@ func WithMinHostgroup(size int) ArgOption {
 }
 
 // WithMaxHostgroup sets the maximal parallel host scan group size.
-func WithMaxHostgroup(size int) ArgOption {
+func WithMaxHostgroup(size int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-hostgroup")
 		s.args = append(s.args, fmt.Sprint(size))
@@ -56,7 +56,7 @@ func WithMaxHostgroup(size int) ArgOption {
 }
 
 // WithMinParallelism sets the minimal number of parallel probes.
-func WithMinParallelism(probes int) ArgOption {
+func WithMinParallelism(probes int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--min-parallelism")
 		s.args = append(s.args, fmt.Sprint(probes))
@@ -64,7 +64,7 @@ func WithMinParallelism(probes int) ArgOption {
 }
 
 // WithMaxParallelism sets the maximal number of parallel probes.
-func WithMaxParallelism(probes int) ArgOption {
+func WithMaxParallelism(probes int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-parallelism")
 		s.args = append(s.args, fmt.Sprint(probes))
@@ -72,7 +72,7 @@ func WithMaxParallelism(probes int) ArgOption {
 }
 
 // WithMinRTTTimeout sets the minimal probe round trip time.
-func WithMinRTTTimeout(roundTripTime time.Duration) ArgOption {
+func WithMinRTTTimeout(roundTripTime time.Duration) Option {
 	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -82,7 +82,7 @@ func WithMinRTTTimeout(roundTripTime time.Duration) ArgOption {
 }
 
 // WithMaxRTTTimeout sets the maximal probe round trip time.
-func WithMaxRTTTimeout(roundTripTime time.Duration) ArgOption {
+func WithMaxRTTTimeout(roundTripTime time.Duration) Option {
 	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -92,7 +92,7 @@ func WithMaxRTTTimeout(roundTripTime time.Duration) ArgOption {
 }
 
 // WithInitialRTTTimeout sets the initial probe round trip time.
-func WithInitialRTTTimeout(roundTripTime time.Duration) ArgOption {
+func WithInitialRTTTimeout(roundTripTime time.Duration) Option {
 	milliseconds := roundTripTime.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -102,7 +102,7 @@ func WithInitialRTTTimeout(roundTripTime time.Duration) ArgOption {
 }
 
 // WithMaxRetries sets the maximal number of port scan probe retransmissions.
-func WithMaxRetries(tries int) ArgOption {
+func WithMaxRetries(tries int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-retries")
 		s.args = append(s.args, fmt.Sprint(tries))
@@ -110,7 +110,7 @@ func WithMaxRetries(tries int) ArgOption {
 }
 
 // WithHostTimeout sets the time after which nmap should give up on a target host.
-func WithHostTimeout(timeout time.Duration) ArgOption {
+func WithHostTimeout(timeout time.Duration) Option {
 	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -120,7 +120,7 @@ func WithHostTimeout(timeout time.Duration) ArgOption {
 }
 
 // WithScanDelay sets the minimum time to wait between each probe sent to a host.
-func WithScanDelay(timeout time.Duration) ArgOption {
+func WithScanDelay(timeout time.Duration) Option {
 	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -130,7 +130,7 @@ func WithScanDelay(timeout time.Duration) ArgOption {
 }
 
 // WithMaxScanDelay sets the maximum time to wait between each probe sent to a host.
-func WithMaxScanDelay(timeout time.Duration) ArgOption {
+func WithMaxScanDelay(timeout time.Duration) Option {
 	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {
@@ -140,7 +140,7 @@ func WithMaxScanDelay(timeout time.Duration) ArgOption {
 }
 
 // WithMinRate sets the minimal number of packets sent per second.
-func WithMinRate(packetsPerSecond int) ArgOption {
+func WithMinRate(packetsPerSecond int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--min-rate")
 		s.args = append(s.args, fmt.Sprint(packetsPerSecond))
@@ -148,7 +148,7 @@ func WithMinRate(packetsPerSecond int) ArgOption {
 }
 
 // WithMaxRate sets the maximal number of packets sent per second.
-func WithMaxRate(packetsPerSecond int) ArgOption {
+func WithMaxRate(packetsPerSecond int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--max-rate")
 		s.args = append(s.args, fmt.Sprint(packetsPerSecond))

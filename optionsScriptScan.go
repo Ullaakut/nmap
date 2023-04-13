@@ -10,7 +10,7 @@ import (
 // set of scripts. It is equivalent to --script=default. Some of the scripts in
 // this category are considered intrusive and should not be run against a target
 // network without permission.
-func WithDefaultScript() ArgOption {
+func WithDefaultScript() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sC")
 	}
@@ -18,7 +18,7 @@ func WithDefaultScript() ArgOption {
 
 // WithScripts sets the scanner to perform a script scan using the enumerated
 // scripts, script directories and script categories.
-func WithScripts(scripts ...string) ArgOption {
+func WithScripts(scripts ...string) Option {
 	scriptList := strings.Join(scripts, ",")
 
 	return func(s *Scanner) {
@@ -27,7 +27,7 @@ func WithScripts(scripts ...string) ArgOption {
 }
 
 // WithScriptArguments provides arguments for scripts. If a value is the empty string, the key will be used as a flag.
-func WithScriptArguments(arguments map[string]string) ArgOption {
+func WithScriptArguments(arguments map[string]string) Option {
 	var argList string
 
 	// Properly format the argument list from the map.
@@ -52,28 +52,28 @@ func WithScriptArguments(arguments map[string]string) ArgOption {
 }
 
 // WithScriptArgumentsFile provides arguments for scripts from a file.
-func WithScriptArgumentsFile(inputFilePath string) ArgOption {
+func WithScriptArgumentsFile(inputFilePath string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, fmt.Sprintf("--script-args-file=%s", inputFilePath))
 	}
 }
 
 // WithScriptTrace makes the scripts show all data sent and received.
-func WithScriptTrace() ArgOption {
+func WithScriptTrace() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--script-trace")
 	}
 }
 
 // WithScriptUpdateDB updates the script database.
-func WithScriptUpdateDB() ArgOption {
+func WithScriptUpdateDB() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "--script-updatedb")
 	}
 }
 
 // WithScriptTimeout sets the script timeout.
-func WithScriptTimeout(timeout time.Duration) ArgOption {
+func WithScriptTimeout(timeout time.Duration) Option {
 	milliseconds := timeout.Round(time.Nanosecond).Nanoseconds() / 1000000
 
 	return func(s *Scanner) {

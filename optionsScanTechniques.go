@@ -5,7 +5,7 @@ import "fmt"
 // WithSYNScan sets the scan technique to use SYN packets over TCP.
 // This is the default method, as it is fast, stealthy and not
 // hampered by restrictive firewalls.
-func WithSYNScan() ArgOption {
+func WithSYNScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sS")
 	}
@@ -15,7 +15,7 @@ func WithSYNScan() ArgOption {
 // This is the default method used when a user does not have raw
 // packet privileges. Target machines are likely to log these
 // connections.
-func WithConnectScan() ArgOption {
+func WithConnectScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sT")
 	}
@@ -27,7 +27,7 @@ func WithConnectScan() ArgOption {
 // return a RST packet.
 // Nmap then labels them as unfiltered, meaning that they are reachable
 // by the ACK packet, but whether they are open or closed is undetermined.
-func WithACKScan() ArgOption {
+func WithACKScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sA")
 	}
@@ -39,7 +39,7 @@ func WithACKScan() ArgOption {
 // an implementation detail of certain systems to differentiate open ports
 // from closed ones, rather than always printing unfiltered when a RST
 // is returned.
-func WithWindowScan() ArgOption {
+func WithWindowScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sW")
 	}
@@ -48,7 +48,7 @@ func WithWindowScan() ArgOption {
 // WithMaimonScan sends the same packets as NULL, FIN, and Xmas scans,
 // except that the probe is FIN/ACK. Many BSD-derived systems will drop
 // these packets if the port is open.
-func WithMaimonScan() ArgOption {
+func WithMaimonScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sM")
 	}
@@ -59,7 +59,7 @@ func WithMaimonScan() ArgOption {
 // to check both protocols during the same run.
 // UDP scanning is generally slower than TCP, but should not
 // be ignored.
-func WithUDPScan() ArgOption {
+func WithUDPScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sU")
 	}
@@ -70,7 +70,7 @@ func WithUDPScan() ArgOption {
 // a loophole in the TCP RFC.
 // If an RST packet is received, the port is considered closed,
 // while no response means it is open|filtered.
-func WithTCPNullScan() ArgOption {
+func WithTCPNullScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sN")
 	}
@@ -81,7 +81,7 @@ func WithTCPNullScan() ArgOption {
 // This scan method can be used to exploit a loophole in the TCP RFC.
 // If an RST packet is received, the port is considered closed,
 // while no response means it is open|filtered.
-func WithTCPFINScan() ArgOption {
+func WithTCPFINScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sF")
 	}
@@ -92,7 +92,7 @@ func WithTCPFINScan() ArgOption {
 // This scan method can be used to exploit a loophole in the TCP RFC.
 // If an RST packet is received, the port is considered closed,
 // while no response means it is open|filtered.
-func WithTCPXmasScan() ArgOption {
+func WithTCPXmasScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sX")
 	}
@@ -116,7 +116,7 @@ const (
 )
 
 // WithTCPScanFlags sets the scan technique to use custom TCP flags.
-func WithTCPScanFlags(flags ...TCPFlag) ArgOption {
+func WithTCPScanFlags(flags ...TCPFlag) Option {
 	var total int
 	for _, flag := range flags {
 		total += int(flag)
@@ -133,7 +133,7 @@ func WithTCPScanFlags(flags ...TCPFlag) ArgOption {
 // Besides being extraordinarily stealthy (due to its blind nature),
 // this scan type permits mapping out IP-based trust relationships
 // between machines.
-func WithIdleScan(zombieHost string, probePort int) ArgOption {
+func WithIdleScan(zombieHost string, probePort int) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sI")
 
@@ -151,7 +151,7 @@ func WithIdleScan(zombieHost string, probePort int) ArgOption {
 // second on a fast network not hampered by restrictive firewalls.
 // Like SYN scan, INIT scan is relatively unobtrusive and stealthy,
 // since it never completes SCTP associations.
-func WithSCTPInitScan() ArgOption {
+func WithSCTPInitScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sY")
 	}
@@ -162,7 +162,7 @@ func WithSCTPInitScan() ArgOption {
 // The advantage of this scan type is that it is not as obvious a port
 // scan than an INIT scan. Also, there may be non-stateful firewall
 // rulesets blocking INIT chunks, but not COOKIE ECHO chunks.
-func WithSCTPCookieEchoScan() ArgOption {
+func WithSCTPCookieEchoScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sZ")
 	}
@@ -173,7 +173,7 @@ func WithSCTPCookieEchoScan() ArgOption {
 // (TCP, ICMP, IGMP, etc.) are supported by target machines. This isn't
 // technically a port scan, since it cycles through IP protocol numbers
 // rather than TCP or UDP port numbers.
-func WithIPProtocolScan() ArgOption {
+func WithIPProtocolScan() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-sO")
 	}
@@ -185,7 +185,7 @@ func WithIPProtocolScan() ArgOption {
 // (user: anonymous password:-wwwuser@) are used.
 // The port number (and preceding colon) may be omitted as well, in which case the
 // default FTP port (21) on <server> is used.
-func WithFTPBounceScan(FTPRelayHost string) ArgOption {
+func WithFTPBounceScan(FTPRelayHost string) Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-b")
 		s.args = append(s.args, FTPRelayHost)
