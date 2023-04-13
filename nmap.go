@@ -304,7 +304,8 @@ func checkStdErr(stderr *bytes.Buffer, warnings *[]string) error {
 // There should be no reason to use this, unless you are using a custom build
 // of nmap or that this repository isn't up to date with the latest options
 // of the official nmap release.
-// You can use this as a quick way to paste an nmap command into your go code,
+//
+// Deprecated: You can use this as a quick way to paste an nmap command into your go code,
 // but remember that the whole purpose of this repository is to be idiomatic,
 // provide type checking, enums for the values that can be passed, etc.
 func WithCustomArguments(args ...string) Option {

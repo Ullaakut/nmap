@@ -21,7 +21,11 @@ func WithPorts(ports ...string) Option {
 
 		// Add ports.
 		if place >= 0 {
-			portList = s.args[place+1] + "," + portList
+			if len(s.args)-1 == place {
+				s.args = append(s.args, "")
+			} else {
+				portList = s.args[place+1] + "," + portList
+			}
 			s.args[place+1] = portList
 		} else {
 			s.args = append(s.args, "-p")
