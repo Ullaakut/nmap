@@ -1,26 +1,31 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/Ullaakut/nmap/v2"
-	osfamily "github.com/Ullaakut/nmap/v2/pkg/osfamilies"
+	"github.com/Ullaakut/nmap/v3"
+	osfamily "github.com/Ullaakut/nmap/v3/pkg/osfamilies"
 )
 
 func main() {
 	// Equivalent to
 	// nmap -F -O 192.168.0.0/24
 	scanner, err := nmap.NewScanner(
+		context.Background(),
 		nmap.WithTargets("192.168.0.0/24"),
 		nmap.WithFastMode(),
-		nmap.WithOSDetection(),
+		nmap.WithOSDetection(), // Needs to run with sudo
 	)
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, _, err := scanner.Run()
+	result, warnings, err := scanner.Run()
+	if len(*warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+	}
 	if err != nil {
 		log.Fatalf("nmap scan failed: %v", err)
 	}

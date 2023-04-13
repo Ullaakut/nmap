@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"time"
 
-	family "github.com/Ullaakut/nmap/v2/pkg/osfamilies"
+	family "github.com/Ullaakut/nmap/v3/pkg/osfamilies"
 )
 
 // Run represents an nmap scanning run.
@@ -40,12 +40,28 @@ type Run struct {
 
 // ToFile writes a Run as XML into the specified file path.
 func (r Run) ToFile(filePath string) error {
-	return ioutil.WriteFile(filePath, r.rawXML, 0666)
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	_, err = file.Write(r.rawXML)
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 // ToReader writes the raw XML into an streamable buffer.
 func (r Run) ToReader() io.Reader {
 	return bytes.NewReader(r.rawXML)
+}
+
+func (r *Run) FromFile(filename string) error {
+	readFile, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+	return Parse(readFile, r)
 }
 
 // ScanInfo represents the scan information.
@@ -424,14 +440,11 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 	return t.ParseTime(attr.Value)
 }
 
-// Parse takes a byte array of nmap xml data and unmarshals it into a
-// Run struct.
-func Parse(content []byte) (*Run, error) {
-	r := &Run{
-		rawXML: content,
-	}
+// Parse takes a byte array of nmap xml data and unmarshal it into a Run struct.
+func Parse(content []byte, result *Run) error {
+	result.rawXML = content
 
-	err := xml.Unmarshal(content, r)
+	err := xml.Unmarshal(content, result)
 
-	return r, err
+	return err
 }

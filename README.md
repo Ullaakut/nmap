@@ -8,9 +8,9 @@
     <a href="LICENSE">
         <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" />
     </a>
-    <a href="https://pkg.go.dev/github.com/Ullaakut/nmap/v2"><img src="https://pkg.go.dev/badge/github.com/Ullaakut/nmap/v2" alt="PkgGoDev github.com/Ullaakut/nmap/v2"></a>
-    <a href="https://goreportcard.com/report/github.com/Ullaakut/nmap">
-        <img src="https://goreportcard.com/badge/github.com/Ullaakut/nmap">
+    <a href="https://pkg.go.dev/github.com/Ullaakut/nmap/v3"><img src="https://pkg.go.dev/badge/github.com/Ullaakut/nmap/v3" alt="PkgGoDev github.com/Ullaakut/nmap/v3"></a>
+    <a href="https://goreportcard.com/report/github.com/Ullaakut/nmap/v3">
+        <img src="https://goreportcard.com/badge/github.com/Ullaakut/nmap/v3">
     </a>
     <a href="https://github.com/Ullaakut/nmap/actions/workflows/build.yml">
         <img src="https://github.com/Ullaakut/nmap/actions/workflows/build.yml/badge.svg">
@@ -40,13 +40,13 @@ Most pentest tools are currently written using Python and not Go, because it is 
 
 - [x] All of `nmap`'s native options.
 - [x] Additional [idiomatic go filters](examples/service_detection/main.go#L19) for filtering hosts and ports.
-- [x] [Cancellable contexts support](examples/basic_scan/main.go).
 - [x] Helpful enums for nmap commands. (time templates, os families, port states, etc.)
 - [x] Complete documentation of each option, mostly insipred from nmap's documentation.
-
-## TODO
-
-- [ ] Add asynchronous scan, send scan progress percentage and time estimation through channel
+- [x] Run a nmap scan asynchronously.
+- [x] Scan progress can be piped through a channel.
+- [x] Write the nmap output to a given file while also parsing it to the struct.
+- [x] Stream the nmap output to an `io.Writer` interface while also parsing it to the struct.
+- [x] Functionality to show local interfaces and routes.
 
 ## Simple example
 
@@ -59,47 +59,46 @@ import (
     "log"
     "time"
 
-    "github.com/Ullaakut/nmap/v2"
+    "github.com/Ullaakut/nmap/v3"
 )
 
 func main() {
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 
-    // Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
-    // with a 5 minute timeout.
-    scanner, err := nmap.NewScanner(
-        nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
-        nmap.WithPorts("80,443,843"),
-        nmap.WithContext(ctx),
-    )
-    if err != nil {
-        log.Fatalf("unable to create nmap scanner: %v", err)
-    }
+	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
+	// with a 5-minute timeout.
+	scanner, err := nmap.NewScanner(
+		ctx,
+		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
+		nmap.WithPorts("80,443,843"),
+	)
+	if err != nil {
+		log.Fatalf("unable to create nmap scanner: %v", err)
+	}
 
-    result, warnings, err := scanner.Run()
-    if err != nil {
-        log.Fatalf("unable to run nmap scan: %v", err)
-    }
+	result, warnings, err := scanner.Run()
+	if len(*warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+	}
+	if err != nil {
+		log.Fatalf("unable to run nmap scan: %v", err)
+	}
 
-    if warnings != nil {
-        log.Printf("Warnings: \n %v", warnings)
-    }
+	// Use the results to print an example output
+	for _, host := range result.Hosts {
+		if len(host.Ports) == 0 || len(host.Addresses) == 0 {
+			continue
+		}
 
-    // Use the results to print an example output
-    for _, host := range result.Hosts {
-        if len(host.Ports) == 0 || len(host.Addresses) == 0 {
-            continue
-        }
+		fmt.Printf("Host %q:\n", host.Addresses[0])
 
-        fmt.Printf("Host %q:\n", host.Addresses[0])
+		for _, port := range host.Ports {
+			fmt.Printf("\tPort %d/%s %s %s\n", port.ID, port.Protocol, port.State, port.Service.Name)
+		}
+	}
 
-        for _, port := range host.Ports {
-            fmt.Printf("\tPort %d/%s %s %s\n", port.ID, port.Protocol, port.State, port.Service.Name)
-        }
-    }
-
-    fmt.Printf("Nmap done: %d hosts up scanned in %3f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
+	fmt.Printf("Nmap done: %d hosts up scanned in %.2f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
 }
 ```
 
@@ -131,9 +130,14 @@ Nmap done: 3 hosts up scanned in 1.29 seconds
 
 More examples:
 
+- [Basic scan](examples/basic_scan/main.go)
+- [Basic scan but asynchronously](examples/basic_scan_async/main.go)
+- [Basic scan with nmap progress piped through](examples/basic_scan_progress/main.go)
+- [Basic scan with output to a streamer](examples/basic_scan_streamer_interface/main.go)
 - [Count hosts for each operating system on a network](examples/count_hosts_by_os/main.go)
 - [Service detection](examples/service_detection/main.go)
 - [IP address spoofing and decoys](examples/spoof_and_decoys/main.go)
+- [List local interfaces](examples/list_interfaces/main.go)
 
 ## External resources
 

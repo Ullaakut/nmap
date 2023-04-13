@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Ullaakut/nmap/v2"
+	"github.com/Ullaakut/nmap/v3"
 )
 
 func main() {
@@ -14,17 +14,20 @@ func main() {
 	defer cancel()
 
 	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
-	// with a 5 minute timeout.
+	// with a 5-minute timeout.
 	scanner, err := nmap.NewScanner(
+		ctx,
 		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
 		nmap.WithPorts("80,443,843"),
-		nmap.WithContext(ctx),
 	)
 	if err != nil {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, _, err := scanner.Run()
+	result, warnings, err := scanner.Run()
+	if len(*warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+	}
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}

@@ -1,18 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/Ullaakut/nmap/v2"
+	"github.com/Ullaakut/nmap/v3"
 )
 
 func main() {
 	// Equivalent to
 	// nmap -sV -T4 192.168.0.0/24 with a filter to remove non-RTSP ports.
 	scanner, err := nmap.NewScanner(
+		context.Background(),
 		nmap.WithTargets("192.168.0.0/24"),
-		nmap.WithPorts("554", "8554"),
+		nmap.WithPorts("80", "554", "8554"),
 		nmap.WithServiceInfo(),
 		nmap.WithTimingTemplate(nmap.TimingAggressive),
 		// Filter out ports that are not RTSP
@@ -35,7 +37,10 @@ func main() {
 		log.Fatalf("unable to create nmap scanner: %v", err)
 	}
 
-	result, _, err := scanner.Run()
+	result, warnings, err := scanner.Run()
+	if len(*warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+	}
 	if err != nil {
 		log.Fatalf("nmap scan failed: %v", err)
 	}

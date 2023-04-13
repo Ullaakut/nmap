@@ -1,21 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"strings"
 
-	"github.com/Ullaakut/nmap/v2"
+	"github.com/Ullaakut/nmap/v3"
 )
 
 func main() {
-	var (
-		resultBytes []byte
-		errorBytes  []byte
-	)
 	// Equivalent to `/usr/local/bin/nmap -p 80,443,843 google.com facebook.com youtube.com`,
-	// with a 5 minute timeout.
+	// with a 5-minute timeout.
 	s, err := nmap.NewScanner(
+		context.Background(),
 		nmap.WithTargets("google.com", "facebook.com", "youtube.com"),
 		nmap.WithPorts("80,443,843"),
 	)
@@ -24,45 +21,18 @@ func main() {
 	}
 
 	// Executes asynchronously, allowing results to be streamed in real time.
-	if err := s.RunAsync(); err != nil {
-		panic(err)
+	done := make(chan error)
+	result, warnings, err := s.Async(done).Run()
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	// Connect to stdout of scanner.
-	stdout := s.GetStdout()
-
-	// Connect to stderr of scanner.
-	stderr := s.GetStderr()
-
-	// Goroutine to watch for stdout and print to screen. Additionally it stores
-	// the bytes intoa variable for processiing later.
-	go func() {
-		for stdout.Scan() {
-			fmt.Println(stdout.Text())
-			resultBytes = append(resultBytes, stdout.Bytes()...)
-		}
-	}()
-
-	// Goroutine to watch for stderr and print to screen. Additionally it stores
-	// the bytes intoa variable for processiing later.
-	go func() {
-		for stderr.Scan() {
-			errorBytes = append(errorBytes, stderr.Bytes()...)
-		}
-	}()
 
 	// Blocks main until the scan has completed.
-	if err := s.Wait(); err != nil {
-		panic(err)
-	}
-
-	// Parsing the results into corresponding structs.
-	result, err := nmap.Parse(resultBytes)
-
-	// Parsing the results into the NmapError slice of our nmap Struct.
-	result.NmapErrors = strings.Split(string(errorBytes), "\n")
-	if err != nil {
-		panic(err)
+	if err := <-done; err != nil {
+		if len(*warnings) > 0 {
+			log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+		}
+		log.Fatal(err)
 	}
 
 	// Use the results to print an example output
