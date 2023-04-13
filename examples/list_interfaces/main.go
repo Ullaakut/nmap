@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Ullaakut/nmap/v3"
 	"log"
+
+	"github.com/Ullaakut/nmap/v3"
 )
 
 func main() {

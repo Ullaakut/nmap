@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/Ullaakut/nmap/v3"
 	"log"
 	"os"
+
+	"github.com/Ullaakut/nmap/v3"
 )
 
 func main() {
@@ -23,11 +24,12 @@ func main() {
 	var result nmap.Run
 	var warnings []string
 	err = scanner.Streamer(os.Stdout).Run(&result, &warnings)
+	if len(warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non critical errors from nmap.
+	}
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)
 	}
-
-	fmt.Printf("Nmap warnings: %v\n", warnings)
 
 	fmt.Printf("Nmap done: %d hosts up scanned in %.2f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
 }
