@@ -7,7 +7,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -135,7 +134,7 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 			return err
 		})
 	} else {
-		go io.Copy(ioutil.Discard, stdoutDuplicate)
+		go io.Copy(io.Discard, stdoutDuplicate)
 	}
 
 	// Run nmap process.

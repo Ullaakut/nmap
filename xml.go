@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"time"
 
@@ -40,7 +40,15 @@ type Run struct {
 
 // ToFile writes a Run as XML into the specified file path.
 func (r Run) ToFile(filePath string) error {
-	return ioutil.WriteFile(filePath, r.rawXML, 0666)
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return err
+	}
+	_, err = file.Write(r.rawXML)
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 // ToReader writes the raw XML into an streamable buffer.
