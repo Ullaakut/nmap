@@ -106,9 +106,9 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 	args := s.args
 
 	// Write XML to standard output.
-	// If toFile is set then write XML to file and normal nmap output to stdout.
+	// If toFile is set then write XML to file.
 	if s.toFile != nil {
-		args = append(args, "-oX", *s.toFile, "-oN", "-")
+		args = append(args, "-oX", *s.toFile)
 	} else {
 		args = append(args, "-oX", "-")
 	}
