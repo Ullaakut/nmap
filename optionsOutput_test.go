@@ -138,6 +138,17 @@ func TestOutput(t *testing.T) {
 				"--no-stylesheet",
 			},
 		},
+		{
+			description: "disable interactions",
+
+			options: []Option{
+				WithNonInteractive(),
+			},
+
+			expectedArgs: []string{
+				"--noninteractive",
+			},
+		},
 	}
 
 	for _, test := range tests {
