@@ -86,8 +86,8 @@ func WithNoStylesheet() Option {
 	}
 }
 
-// WithNoInteraction disable runtime interactions via keyboard
-func WithNoInteraction() Option {
+// WithNonInteractive disable runtime interactions via keyboard
+func WithNonInteractive() Option {
 	return func(s *Scanner) {
 		s.args = append(s.Args(), "--noninteractive")
 	}

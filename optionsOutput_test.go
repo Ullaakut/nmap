@@ -142,7 +142,7 @@ func TestOutput(t *testing.T) {
 			description: "disable interactions",
 
 			options: []Option{
-				WithNoInteraction(),
+				WithNonInteractive(),
 			},
 
 			expectedArgs: []string{
