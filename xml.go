@@ -115,6 +115,7 @@ type Host struct {
 	IPIDSequence  IPIDSequence  `xml:"ipidsequence" json:"ip_id_sequence"`
 	OS            OS            `xml:"os" json:"os"`
 	StartTime     Timestamp     `xml:"starttime,attr,omitempty" json:"start_time"`
+	TimedOut      bool          `xml:"timedout,attr,omitempty" json:"timed_out"`
 	Status        Status        `xml:"status" json:"status"`
 	TCPSequence   TCPSequence   `xml:"tcpsequence" json:"tcp_sequence"`
 	TCPTSSequence TCPTSSequence `xml:"tcptssequence" json:"tcp_ts_sequence"`
