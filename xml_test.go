@@ -438,6 +438,9 @@ func TestParseRunXML(t *testing.T) {
 				},
 				Hosts: []Host{
 					{
+						StartTime: Timestamp(time.Unix(1684341000, 0)),
+						EndTime:   Timestamp(time.Unix(1684342000, 0)),
+						TimedOut:  true,
 						IPIDSequence: IPIDSequence{
 							Class:  "All zeros",
 							Values: "0,0,0,0,0,0",
@@ -1179,6 +1182,10 @@ func compareResults(t *testing.T, expected, got *Run) {
 				t.Errorf("unexpected host distance, expected %+v got %+v", expected.Hosts[idx].Distance, got.Hosts[idx].Distance)
 			}
 
+			if !reflect.DeepEqual(expected.Hosts[idx].EndTime, got.Hosts[idx].EndTime) {
+				t.Errorf("unexpected host end time, expected %+v got %+v", expected.Hosts[idx].EndTime, got.Hosts[idx].EndTime)
+			}
+
 			if !reflect.DeepEqual(expected.Hosts[idx].ExtraPorts, got.Hosts[idx].ExtraPorts) {
 				t.Errorf("unexpected host extra ports, expected %+v got %+v", expected.Hosts[idx].ExtraPorts, got.Hosts[idx].ExtraPorts)
 			}
@@ -1231,6 +1238,10 @@ func compareResults(t *testing.T, expected, got *Run) {
 
 			if !reflect.DeepEqual(expected.Hosts[idx].StartTime, got.Hosts[idx].StartTime) {
 				t.Errorf("unexpected host start time, expected %+v got %+v", expected.Hosts[idx].StartTime, got.Hosts[idx].StartTime)
+			}
+
+			if !reflect.DeepEqual(expected.Hosts[idx].TimedOut, got.Hosts[idx].TimedOut) {
+				t.Errorf("unexpected host timedout, expected %+v got %+v", expected.Hosts[idx].TimedOut, got.Hosts[idx].TimedOut)
 			}
 
 			if !reflect.DeepEqual(expected.Hosts[idx].Status, got.Hosts[idx].Status) {

@@ -35,7 +35,7 @@
     <taskend task="System CNAME DNS resolution of 8 hosts." time="1201481086" />
     <taskbegin task="SCRIPT ENGINE" time="1201481086" />
     <taskend task="SCRIPT ENGINE" time="1201481197" />
-    <host>
+    <host starttime="1684341000" endtime="1684342000" timedout="true">
         <status state="up" reason="reset"/>
         <address addr="66.35.250.168" addrtype="ipv4" />
         <hostnames>
