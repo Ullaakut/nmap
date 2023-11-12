@@ -2,6 +2,7 @@
 package nmap
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/xml"
@@ -15,9 +16,12 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var _ ScanRunner = (*Scanner)(nil)
+
 // ScanRunner represents something that can run a scan.
 type ScanRunner interface {
-	Run() (result *Run, warnings []string, err error)
+	Run() (result *Run, warnings *[]string, err error)
+	Version() (any, error)
 }
 
 // Scanner represents n Nmap scanner.
@@ -92,6 +96,55 @@ func (s *Scanner) ToFile(file string) *Scanner {
 func (s *Scanner) Streamer(stream io.Writer) *Scanner {
 	s.streamer = stream
 	return s
+}
+
+// Version returns the version of the installed nmap binary
+func (s *Scanner) Version() (result any, err error) {
+	s.args = append(s.args, "-V")
+	args := s.args
+	cmd := exec.CommandContext(s.ctx, s.binaryPath, args...)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return nil, err
+	}
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		m := scanner.Text()
+		splitted := strings.Split(m, " ")
+		if len(splitted) >= 2 {
+			result = splitted[2]
+			break
+		}
+	}
+
+	errScanner := bufio.NewScanner(stderr)
+	var errorOutput = []string{}
+	for errScanner.Scan() {
+		m := errScanner.Text()
+		errorOutput = append(errorOutput, m)
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return
+	}
+
+	if len(errorOutput) > 0 {
+		return nil, fmt.Errorf("%v", errorOutput)
+	}
+
+	return result, nil
 }
 
 // Run will run the Scanner with the enabled options.

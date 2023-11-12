@@ -224,20 +224,20 @@ func TestFormatTableXML(t *testing.T) {
 
 	expectedXML := [][]byte{
 		[]byte(fmt.Sprintf(`<Table key="%s">`, table.Key)),
-		[]byte(fmt.Sprintf(`<table>`)),
+		[]byte(`<table>`),
 		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Tables[0].Elements[0].Key, table.Tables[0].Elements[0].Value)),
 		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[0].Elements[1].Value)),
-		[]byte(fmt.Sprintf(`</table>`)),
+		[]byte(`</table>`),
 		[]byte(fmt.Sprintf(`<table key="%s">`, table.Tables[1].Key)),
 		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[1].Elements[0].Value)),
 		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Tables[1].Elements[1].Value)),
-		[]byte(fmt.Sprintf(`</table>`)),
+		[]byte(`</table>`),
 		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[0].Key, table.Elements[0].Value)),
 		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[1].Key, table.Elements[1].Value)),
 		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[2].Key, table.Elements[2].Value)),
 		[]byte(fmt.Sprintf(`<elem key="%s">%s</elem>`, table.Elements[3].Key, table.Elements[3].Value)),
 		[]byte(fmt.Sprintf(`<elem>%s</elem>`, table.Elements[4].Value)),
-		[]byte(fmt.Sprintf(`</Table>`)),
+		[]byte(`</Table>`),
 	}
 
 	XML, err := xml.Marshal(table)
