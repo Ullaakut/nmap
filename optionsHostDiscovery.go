@@ -19,7 +19,7 @@ func WithPingScan() Option {
 	}
 }
 
-// WithSkipHostDiscovery diables host discovery and considers all hosts as online.
+// WithSkipHostDiscovery disables host discovery and considers all hosts as online.
 func WithSkipHostDiscovery() Option {
 	return func(s *Scanner) {
 		s.args = append(s.args, "-Pn")
