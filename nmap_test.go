@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -483,4 +486,78 @@ func TestCheckStdErr(t *testing.T) {
 			assert.True(t, reflect.DeepEqual(test.warnings, warnings))
 		})
 	}
+}
+
+// Test to verify the fix for a race condition works
+// See: https://github.com/Ullaakut/nmap/issues/122
+func TestParseXMLOutputRaceCondition(t *testing.T) {
+	scans := make(chan int, 100)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var wg sync.WaitGroup
+
+	// Publish many scan orders
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for taskId := 0; taskId < 1000; taskId++ {
+			wg.Add(1)
+			scans <- taskId
+		}
+	}()
+
+	// Consume scan orders with workers in parallel
+	for worker := 1; worker <= 10; worker++ {
+		wg.Add(1)
+		go func(w int) {
+			defer wg.Done()
+			for {
+				var taskId int
+
+				select {
+				case <-ctx.Done():
+					t.Logf("stopping worker %d", w)
+					return
+				case i, ok := <-scans:
+					if !ok {
+						t.Logf("stopping worker %d", w)
+						return
+					}
+					taskId = i
+				default:
+					t.Logf("stopping worker %d", w)
+					return
+				}
+
+				_, err := getNmapVersion(ctx)
+				if err != nil {
+					t.Errorf("[w:%d] failed scan %d with err: %s", w, taskId, err)
+				} else {
+					t.Logf("[w:%d] completed scan %d", w, taskId)
+				}
+				wg.Done()
+			}
+		}(worker)
+	}
+
+	wg.Wait()
+}
+
+// getNmapVersion returns the version of nmap installed on the system.
+// e.g. "7.80".
+func getNmapVersion(ctx context.Context) (string, error) {
+	scanner, err := NewScanner(ctx)
+	if err != nil {
+		return "", fmt.Errorf("nmap.NewScanner: %w", err)
+	}
+
+	var sb strings.Builder
+	scanner.Streamer(&sb)
+	results, warnings, err := scanner.Run()
+
+	if err != nil {
+		return "", fmt.Errorf("nmap.Run: %w (%v). Result: %+v", err, warnings, sb.String())
+	}
+	return results.Version, nil
 }
