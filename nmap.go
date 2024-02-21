@@ -9,6 +9,7 @@ import (
 	"io"
 	"os/exec"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -125,15 +126,25 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 	stdoutDuplicate := io.TeeReader(stdoutPipe, &stdout)
 	cmd.Stderr = &stderr
 
+	// According to cmd.StdoutPipe() doc, we must not "call Wait before all reads from the pipe have completed"
+	// We use this WaitGroup to wait for all IO operations to finish before calling wait
+	var wg sync.WaitGroup
+
 	var streamerErrs *errgroup.Group
 	if s.streamer != nil {
 		streamerErrs, _ = errgroup.WithContext(s.ctx)
+		wg.Add(1)
 		streamerErrs.Go(func() error {
+			defer wg.Done()
 			_, err = io.Copy(s.streamer, stdoutDuplicate)
 			return err
 		})
 	} else {
-		go io.Copy(io.Discard, stdoutDuplicate)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			io.Copy(io.Discard, stdoutDuplicate)
+		}()
 	}
 
 	// Run nmap process.
@@ -145,7 +156,9 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 	// Add goroutine that updates chan when command is finished.
 	done := make(chan error, 1)
 	doneProgress := make(chan bool, 1)
+
 	go func() {
+		wg.Wait()
 		err := cmd.Wait()
 		if streamerErrs != nil {
 			streamerError := streamerErrs.Wait()
