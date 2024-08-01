@@ -2,6 +2,7 @@ package nmap
 
 import (
 	"fmt"
+	"strings"
 )
 
 // WithTargets sets the target of a scanner.
@@ -11,11 +12,13 @@ func WithTargets(targets ...string) Option {
 	}
 }
 
-// WithTargetExclusion sets the excluded targets of a scanner.
-func WithTargetExclusion(target string) Option {
+// WithTargetExclusions sets the excluded targets of a scanner.
+func WithTargetExclusions(targets ...string) Option {
+	targetList := strings.Join(targets, ",")
+
 	return func(s *Scanner) {
 		s.args = append(s.args, "--exclude")
-		s.args = append(s.args, target)
+		s.args = append(s.args, targetList)
 	}
 }
 
