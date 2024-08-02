@@ -89,7 +89,7 @@ func TestTargetSpecification(t *testing.T) {
 			description: "target exclusion",
 
 			options: []Option{
-				WithTargetExclusion("192.168.0.1,172.16.100.0/24"),
+				WithTargetExclusions("192.168.0.1", "172.16.100.0/24"),
 			},
 
 			expectedArgs: []string{
