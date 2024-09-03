@@ -176,7 +176,6 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 			type progress struct {
 				TaskProgress []TaskProgress `xml:"taskprogress" json:"task_progress"`
 			}
-			p := &progress{}
 			for {
 				select {
 				case <-doneProgress:
@@ -184,7 +183,8 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 					return
 				default:
 					time.Sleep(time.Millisecond * 100)
-					_ = xml.Unmarshal(stdout.Bytes(), p)
+					var p progress
+					_ = xml.Unmarshal(stdout.Bytes(), &p)
 					progressIndex := len(p.TaskProgress) - 1
 					if progressIndex >= 0 {
 						s.liveProgress <- p.TaskProgress[progressIndex].Percent
