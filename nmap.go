@@ -250,15 +250,17 @@ func choosePorts(result *Run, filter func(Port) bool) {
 
 func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, stderr *bytes.Buffer, done chan error, doneProgress chan bool) error {
 	// Wait for nmap to finish.
-	var err = <-done
+	var (
+		errStatus = <-done
+		err       error
+	)
 	close(doneProgress)
-	if err != nil {
-		return err
-	}
-
 	// Check stderr output.
 	if err := checkStdErr(stderr, warnings); err != nil {
 		return err
+	}
+	if errStatus != nil {
+		return errStatus
 	}
 
 	// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
@@ -310,6 +312,10 @@ func checkStdErr(stderr *bytes.Buffer, warnings *[]string) error {
 		switch {
 		case strings.Contains(warning, "Malloc Failed!"):
 			return ErrMallocFailed
+		case strings.Contains(warning, "requires root privileges."):
+			return ErrRequiresRoot
+		// TODO: Add cases for other known errors we might want to guard.
+		default:
 		}
 	}
 	return nil
