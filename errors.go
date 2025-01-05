@@ -19,6 +19,9 @@ var (
 	// ErrParseOutput means that nmap's output was not parsed successfully.
 	ErrParseOutput = errors.New("unable to parse nmap output, see warnings for details")
 
+	// ErrRequiresRoot means this feature requires root privileges (e.g. OS detection)
+	ErrRequiresRoot = errors.New("this feature requires root privileges")
+
 	// ErrResolveName means that Nmap could not resolve a name.
 	ErrResolveName = errors.New("nmap could not resolve a name")
 )
