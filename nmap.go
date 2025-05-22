@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"os/exec"
@@ -255,11 +256,34 @@ func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, std
 		err       error
 	)
 	close(doneProgress)
-	// Check stderr output.
-	if err := checkStdErr(stderr, warnings); err != nil {
-		return err
+
+	// Check for errors indicated by stderr output.
+	if errStdout := checkStdErr(stderr, warnings); errStdout != nil {
+		return errStdout
 	}
+
+	// Check for errors indicated by return code.
 	if errStatus != nil {
+
+		// Return scan timeout error as deadline exceeded.
+		if errors.Is(s.ctx.Err(), context.DeadlineExceeded) {
+			return ErrScanTimeout
+		}
+
+		// Return scan interrupt error as the context was cancelled programmatically.
+		if errors.Is(s.ctx.Err(), context.Canceled) {
+			return ErrScanInterrupt
+		}
+
+		// Return scan interrupt error as the Nmap process was interrupted by ctrl+c.
+		if errStatus.Error() == "exit status 0xc000013a" || // Exit code of ctrl+c on Windows
+			errStatus.Error() == "exit status 130" { // Exit code of ctrl+c on Linux
+			return ErrScanInterrupt
+		}
+
+		// TODO: Add clauses for other known exit codes we might want to define.
+
+		// Return generic error.
 		return errStatus
 	}
 
