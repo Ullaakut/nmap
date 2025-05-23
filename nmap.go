@@ -264,17 +264,22 @@ func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, std
 
 	// Check for errors indicated by context or return code.
 	switch {
-	case errors.Is(s.ctx.Err(), context.DeadlineExceeded):
+	case errors.Is(s.ctx.Err(), context.DeadlineExceeded): // Command context exceeded
 		return ErrScanTimeout
-	case errors.Is(s.ctx.Err(), context.Canceled):
+	case errors.Is(s.ctx.Err(), context.Canceled): // Command context cancelled programmatically
 		return ErrScanInterrupt
-	case errStatus.Error() == "exit status 0xc000013a": // Exit code for ctrl+c on Windows
-		return ErrScanInterrupt
-	case errStatus.Error() == "exit status 130": // Exit code for ctrl+c on Linux
-		return ErrScanInterrupt
-	// TODO: Add clauses for other known exit codes we might want to define closer.
-	case errStatus != nil
-		return errStatus
+	case errStatus != nil: // Error with status code returned by Nmap
+
+		// Return suitable error or pass through original exit status
+		switch {
+		case errStatus.Error() == "exit status 0xc000013a": // Exit code for ctrl+c on Windows
+			return ErrScanInterrupt
+		case errStatus.Error() == "exit status 130": // Exit code for ctrl+c on Linux
+			return ErrScanInterrupt
+		// TODO: Add clauses for other known exit codes we might want to define closer.
+		default:
+			return errStatus
+		}
 	default:
 	}
 
