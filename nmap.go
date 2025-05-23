@@ -262,18 +262,16 @@ func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, std
 		return errStdout
 	}
 
-	// Check for errors indicated by return code.
-	if errStatus != nil {
-
-		// Return scan timeout error as deadline exceeded.
-		if errors.Is(s.ctx.Err(), context.DeadlineExceeded) {
+	switch {
+		case errors.Is(s.ctx.Err(), context.DeadlineExceeded):
 			return ErrScanTimeout
-		}
-
-		// Return scan interrupt error as the context was cancelled programmatically.
-		if errors.Is(s.ctx.Err(), context.Canceled) {
+		case errors.Is(s.ctx.Err(), context.Canceled):
+			return ErrScanInterrupt
+		case errStatus.Error() == "exit status 0xc000013a" || // Exit code of ctrl+c on Windows
+			errStatus.Error() == "exit status 130": // Exit code of ctrl+c on Linux
 			return ErrScanInterrupt
 		}
+	}
 
 		// Return scan interrupt error as the Nmap process was interrupted by ctrl+c.
 		if errStatus.Error() == "exit status 0xc000013a" || // Exit code of ctrl+c on Windows
