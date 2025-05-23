@@ -262,27 +262,20 @@ func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, std
 		return errStdout
 	}
 
+	// Check for errors indicated by context or return code.
 	switch {
-		case errors.Is(s.ctx.Err(), context.DeadlineExceeded):
-			return ErrScanTimeout
-		case errors.Is(s.ctx.Err(), context.Canceled):
-			return ErrScanInterrupt
-		case errStatus.Error() == "exit status 0xc000013a" || // Exit code of ctrl+c on Windows
-			errStatus.Error() == "exit status 130": // Exit code of ctrl+c on Linux
-			return ErrScanInterrupt
-		}
-	}
-
-		// Return scan interrupt error as the Nmap process was interrupted by ctrl+c.
-		if errStatus.Error() == "exit status 0xc000013a" || // Exit code of ctrl+c on Windows
-			errStatus.Error() == "exit status 130" { // Exit code of ctrl+c on Linux
-			return ErrScanInterrupt
-		}
-
-		// TODO: Add clauses for other known exit codes we might want to define.
-
-		// Return generic error.
+	case errors.Is(s.ctx.Err(), context.DeadlineExceeded):
+		return ErrScanTimeout
+	case errors.Is(s.ctx.Err(), context.Canceled):
+		return ErrScanInterrupt
+	case errStatus.Error() == "exit status 0xc000013a": // Exit code for ctrl+c on Windows
+		return ErrScanInterrupt
+	case errStatus.Error() == "exit status 130": // Exit code for ctrl+c on Linux
+		return ErrScanInterrupt
+	// TODO: Add clauses for other known exit codes we might want to define closer.
+	case errStatus != nil
 		return errStatus
+	default:
 	}
 
 	// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
