@@ -62,7 +62,7 @@ func main() {
 	printResults(result)
 }
 
-func printResults(result *nmap.Run) {
+func printResults(result nmap.Run) {
 	// Use the results to print an example output
 	for _, host := range result.Hosts {
 		if len(host.Ports) == 0 || len(host.Addresses) == 0 {

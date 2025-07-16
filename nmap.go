@@ -93,7 +93,7 @@ func (s *Scanner) Streamer(stream io.Writer) *Scanner {
 
 // Run will run the Scanner with the enabled options.
 // You need to create a Run struct and warnings array first so the function can parse it.
-func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
+func (s *Scanner) Run() (result Run, warnings *[]string, err error) {
 	warnings = &[]string{} // Instantiate warnings array
 
 	args := s.args
@@ -119,13 +119,9 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 	if err != nil {
 		return result, warnings, err
 	}
-
-	// According to cmd.StdoutPipe() doc, we must not "call Wait before all reads from the pipe have completed"
-
-	result = &Run{}
 	// Run nmap process.
 	err = cmd.Start()
-	s.processNmapResult(s.ctx, result, warnings, stdoutPipe, stderrPipe)
+	s.processNmapResult(s.ctx, &result, stdoutPipe, stderrPipe)
 	cmd.Wait()
 	if err != nil {
 		return result, warnings, err
@@ -172,40 +168,47 @@ func choosePorts(result *Run, filter func(Port) bool) {
 	}
 }
 
-func (s *Scanner) processNmapResult(ctx context.Context, result *Run, warnings *[]string, stdout, stderr io.Reader) error {
+func (s *Scanner) processNmapResult(ctx context.Context, result *Run, stdout, stderr io.Reader) ([]string, error) {
 	// Wait for nmap to finish.
 	// Check for errors indicated by stderr output.
-	var readers errgroup.Group
+	var (
+		readers  errgroup.Group
+		warnings []string
+	)
+
 	readers.Go(func() error {
-		if err := checkStdErr(stderr, warnings); err != nil {
+		var err error
+		if warnings, err = checkStdErr(stderr); err != nil {
 			return err
+		} else {
 		}
 		return nil
 	})
 	readers.Go(func() error {
 		return Parse(stdout, result)
 	})
-	return readers.Wait()
+	return warnings, readers.Wait()
 }
 
 // checkStdErr writes the output of stderr to the warnings array.
 // It also processes nmap stderr output containing none-critical errors and warnings.
-func checkStdErr(stderr io.Reader, warnings *[]string) error {
+func checkStdErr(stderr io.Reader) ([]string, error) {
 	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
+	var warnings = make([]string, 0)
 	scanner := bufio.NewScanner(stderr)
 	for scanner.Scan() {
 		warning := scanner.Text()
-		*warnings = append(*warnings, warning)
+		warnings = append(warnings, warning)
 		switch {
 		case strings.Contains(warning, "Malloc Failed!"):
-			return ErrMallocFailed
+			return warnings, ErrMallocFailed
 		case strings.Contains(warning, "requires root privileges."):
-			return ErrRequiresRoot
+			return warnings, ErrRequiresRoot
 		// TODO: Add cases for other known errors we might want to guard.
 		default:
 		}
 	}
-	return nil
+	return warnings, nil
 }
 
 // WithCustomArguments sets custom arguments to give to the nmap binary.

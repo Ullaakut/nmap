@@ -473,7 +473,7 @@ func TestCheckStdErr(t *testing.T) {
 			buf := bytes.Buffer{}
 			_, _ = buf.Write([]byte(test.stderr))
 			var warnings []string
-			err := checkStdErr(&buf, &warnings)
+			warnings, err := checkStdErr(&buf)
 
 			assert.Equal(t, test.expectedErr, err)
 			assert.True(t, reflect.DeepEqual(test.warnings, warnings))

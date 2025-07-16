@@ -33,7 +33,7 @@ func main() {
 	countByOS(result)
 }
 
-func countByOS(result *nmap.Run) {
+func countByOS(result nmap.Run) {
 	var (
 		linux, windows int
 	)
