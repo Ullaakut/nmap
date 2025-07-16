@@ -18,6 +18,8 @@ import (
 
 type testStreamer struct{}
 
+var ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
+
 // Write is a function that handles the normal nmap stdout.
 func (c *testStreamer) Write(d []byte) (int, error) {
 	return len(d), nil
@@ -205,11 +207,7 @@ func TestRun(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			ctx := context.Background()
 			if test.testTimeout {
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithTimeout(context.Background(), 99*time.Hour)
-
 				go (func() {
 					// Cancel context to force timeout
 					defer cancel()
@@ -403,11 +401,7 @@ func TestRunAsync(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			ctx := context.Background()
 			if test.testTimeout {
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithTimeout(context.Background(), 99*time.Hour)
-
 				go (func() {
 					// Cancel context to force timeout
 					defer cancel()
@@ -491,7 +485,6 @@ func TestCheckStdErr(t *testing.T) {
 // See: https://github.com/Ullaakut/nmap/issues/122
 func TestParseXMLOutputRaceCondition(t *testing.T) {
 	scans := make(chan int, 100)
-	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	var wg sync.WaitGroup

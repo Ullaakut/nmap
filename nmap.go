@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // ScanRunner represents something that can run a scan.
@@ -123,7 +125,7 @@ func (s *Scanner) Run() (result *Run, warnings *[]string, err error) {
 	result = &Run{}
 	// Run nmap process.
 	err = cmd.Start()
-	s.processNmapResult(result, warnings, stdoutPipe, stderrPipe)
+	s.processNmapResult(s.ctx, result, warnings, stdoutPipe, stderrPipe)
 	cmd.Wait()
 	if err != nil {
 		return result, warnings, err
@@ -170,19 +172,25 @@ func choosePorts(result *Run, filter func(Port) bool) {
 	}
 }
 
-func (s *Scanner) processNmapResult(result *Run, warnings *[]string, stdout, stderr io.Reader) error {
+func (s *Scanner) processNmapResult(ctx context.Context, result *Run, warnings *[]string, stdout, stderr io.Reader) error {
 	// Wait for nmap to finish.
 	// Check for errors indicated by stderr output.
-	if err := checkStdErr(stderr, warnings); err != nil {
-		return err
-	}
-	return Parse(stdout, result)
+	var readers errgroup.Group
+	readers.Go(func() error {
+		if err := checkStdErr(stderr, warnings); err != nil {
+			return err
+		}
+		return nil
+	})
+	readers.Go(func() error {
+		return Parse(stdout, result)
+	})
+	return readers.Wait()
 }
 
 // checkStdErr writes the output of stderr to the warnings array.
 // It also processes nmap stderr output containing none-critical errors and warnings.
 func checkStdErr(stderr io.Reader, warnings *[]string) error {
-
 	// Check for warnings that will inevitably lead to parsing errors, hence, have priority.
 	scanner := bufio.NewScanner(stderr)
 	for scanner.Scan() {
