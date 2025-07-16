@@ -57,7 +57,7 @@ func (r Run) ToReader() io.Reader {
 }
 
 func (r *Run) FromFile(filename string) error {
-	readFile, err := os.ReadFile(filename)
+	readFile, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -442,10 +442,10 @@ func (t *Timestamp) UnmarshalXMLAttr(attr xml.Attr) (err error) {
 }
 
 // Parse takes a byte array of nmap xml data and unmarshal it into a Run struct.
-func Parse(content []byte, result *Run) error {
-	result.rawXML = content
-
-	err := xml.Unmarshal(content, result)
-
-	return err
+func Parse(content io.Reader, result *Run) error {
+	if contentAll, err := io.ReadAll(content); err != nil {
+		return err
+	} else {
+		return xml.Unmarshal(contentAll, result)
+	}
 }

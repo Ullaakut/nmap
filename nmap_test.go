@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
@@ -255,7 +254,7 @@ func TestRun(t *testing.T) {
 
 func TestRunWithProgress(t *testing.T) {
 	// Open and parse sample result for testing
-	dat, err := ioutil.ReadFile("tests/xml/scan_base.xml")
+	dat, err := os.Open("tests/xml/scan_base.xml")
 	if err != nil {
 		panic(err)
 	}
