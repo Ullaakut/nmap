@@ -30,8 +30,8 @@ func main() {
 	}()
 
 	result, warnings, err := scanner.Progress(progress).Run()
-	if len(*warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+	if len(warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non-critical errors from nmap.
 	}
 	if err != nil {
 		log.Fatalf("unable to run nmap scan: %v", err)

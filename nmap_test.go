@@ -226,7 +226,7 @@ func TestRun(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, test.expectedWarnings, *warns)
+			assert.Equal(t, test.expectedWarnings, warns)
 
 			if test.expectedResult == nil {
 				return
@@ -348,7 +348,7 @@ func TestRunWithStreamer(t *testing.T) {
 
 			assert.Equal(t, test.expectedErr, err)
 
-			assert.Equal(t, test.expectedWarnings, *warnings)
+			assert.Equal(t, test.expectedWarnings, warnings)
 		})
 	}
 }

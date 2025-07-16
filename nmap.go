@@ -93,9 +93,7 @@ func (s *Scanner) Streamer(stream io.Writer) *Scanner {
 
 // Run will run the Scanner with the enabled options.
 // You need to create a Run struct and warnings array first so the function can parse it.
-func (s *Scanner) Run() (result Run, warnings *[]string, err error) {
-	warnings = &[]string{} // Instantiate warnings array
-
+func (s *Scanner) Run() (result Run, warnings []string, err error) {
 	args := s.args
 
 	// Write XML to standard output.
@@ -120,13 +118,15 @@ func (s *Scanner) Run() (result Run, warnings *[]string, err error) {
 		return result, warnings, err
 	}
 	// Run nmap process.
-	err = cmd.Start()
-	s.processNmapResult(s.ctx, &result, stdoutPipe, stderrPipe)
-	cmd.Wait()
-	if err != nil {
+	if err := cmd.Start(); err != nil {
+		return result, warnings, err
+	} else if warnings, err := s.processNmapResult(s.ctx, &result, stdoutPipe, stderrPipe); err != nil {
+		return result, warnings, err
+	} else if err := cmd.Wait(); err != nil {
+		return result, warnings, err
+	} else {
 		return result, warnings, err
 	}
-	return result, warnings, err
 }
 
 // AddOptions sets more scan options after the scan is created.
@@ -187,7 +187,8 @@ func (s *Scanner) processNmapResult(ctx context.Context, result *Run, stdout, st
 	readers.Go(func() error {
 		return Parse(stdout, result)
 	})
-	return warnings, readers.Wait()
+	err := readers.Wait()
+	return warnings, err
 }
 
 // checkStdErr writes the output of stderr to the warnings array.
@@ -204,8 +205,6 @@ func checkStdErr(stderr io.Reader) ([]string, error) {
 			return warnings, ErrMallocFailed
 		case strings.Contains(warning, "requires root privileges."):
 			return warnings, ErrRequiresRoot
-		// TODO: Add cases for other known errors we might want to guard.
-		default:
 		}
 	}
 	return warnings, nil
