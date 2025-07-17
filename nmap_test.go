@@ -58,6 +58,7 @@ func TestRun(t *testing.T) {
 		expectedResult   *Run
 		expectedErr      bool
 		expectedWarnings []string
+		slow             bool
 	}{
 		{
 			description: "invalid binary path",
@@ -92,6 +93,7 @@ func TestRun(t *testing.T) {
 
 			expectedErr:      true,
 			expectedWarnings: []string{},
+			slow:             true,
 		},
 		{
 			description: "scan localhost",
@@ -207,14 +209,17 @@ func TestRun(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			if test.testTimeout {
-				go (func() {
-					// Cancel context to force timeout
-					defer cancel()
-					time.Sleep(1 * time.Millisecond)
-				})()
+			if testing.Short() && test.slow {
+				t.Skip("skipping slow test " + test.description)
 			}
-
+			deadline, ok := t.Deadline()
+			ctx := context.Background()
+			var cancel context.CancelFunc
+			if ok {
+				ctx, cancel = context.WithDeadline(ctx, deadline)
+				defer cancel() // clean up resources when test exits
+			}
+			t.Logf("starting test %s", test.description)
 			s, err := NewScanner(ctx, test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.

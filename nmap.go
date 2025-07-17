@@ -199,7 +199,9 @@ func checkStdErr(stderr io.Reader) ([]string, error) {
 	scanner := bufio.NewScanner(stderr)
 	for scanner.Scan() {
 		warning := scanner.Text()
-		warnings = append(warnings, warning)
+		if warning != "" {
+			warnings = append(warnings, warning)
+		}
 		switch {
 		case strings.Contains(warning, "Malloc Failed!"):
 			return warnings, ErrMallocFailed
