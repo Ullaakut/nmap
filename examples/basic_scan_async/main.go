@@ -29,8 +29,8 @@ func main() {
 
 	// Blocks main until the scan has completed.
 	if err := <-done; err != nil {
-		if len(*warnings) > 0 {
-			log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+		if len(warnings) > 0 {
+			log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non-critical errors from nmap.
 		}
 		log.Fatal(err)
 	}

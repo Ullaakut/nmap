@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
@@ -18,6 +17,8 @@ import (
 )
 
 type testStreamer struct{}
+
+var ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 
 // Write is a function that handles the normal nmap stdout.
 func (c *testStreamer) Write(d []byte) (int, error) {
@@ -57,6 +58,7 @@ func TestRun(t *testing.T) {
 		expectedResult   *Run
 		expectedErr      bool
 		expectedWarnings []string
+		slow             bool
 	}{
 		{
 			description: "invalid binary path",
@@ -91,6 +93,7 @@ func TestRun(t *testing.T) {
 
 			expectedErr:      true,
 			expectedWarnings: []string{},
+			slow:             true,
 		},
 		{
 			description: "scan localhost",
@@ -206,18 +209,17 @@ func TestRun(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			ctx := context.Background()
-			if test.testTimeout {
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithTimeout(context.Background(), 99*time.Hour)
-
-				go (func() {
-					// Cancel context to force timeout
-					defer cancel()
-					time.Sleep(1 * time.Millisecond)
-				})()
+			if testing.Short() && test.slow {
+				t.Skip("skipping slow test " + test.description)
 			}
-
+			deadline, ok := t.Deadline()
+			ctx := context.Background()
+			var cancel context.CancelFunc
+			if ok {
+				ctx, cancel = context.WithDeadline(ctx, deadline)
+				defer cancel() // clean up resources when test exits
+			}
+			t.Logf("starting test %s", test.description)
 			s, err := NewScanner(ctx, test.options...)
 			if err != nil {
 				panic(err) // this is never supposed to err, as we are testing run and not new.
@@ -229,7 +231,7 @@ func TestRun(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, test.expectedWarnings, *warns)
+			assert.Equal(t, test.expectedWarnings, warns)
 
 			if test.expectedResult == nil {
 				return
@@ -255,7 +257,7 @@ func TestRun(t *testing.T) {
 
 func TestRunWithProgress(t *testing.T) {
 	// Open and parse sample result for testing
-	dat, err := ioutil.ReadFile("tests/xml/scan_base.xml")
+	dat, err := os.Open("tests/xml/scan_base.xml")
 	if err != nil {
 		panic(err)
 	}
@@ -351,7 +353,7 @@ func TestRunWithStreamer(t *testing.T) {
 
 			assert.Equal(t, test.expectedErr, err)
 
-			assert.Equal(t, test.expectedWarnings, *warnings)
+			assert.Equal(t, test.expectedWarnings, warnings)
 		})
 	}
 }
@@ -404,11 +406,7 @@ func TestRunAsync(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			ctx := context.Background()
 			if test.testTimeout {
-				var cancel context.CancelFunc
-				ctx, cancel = context.WithTimeout(context.Background(), 99*time.Hour)
-
 				go (func() {
 					// Cancel context to force timeout
 					defer cancel()
@@ -480,7 +478,7 @@ func TestCheckStdErr(t *testing.T) {
 			buf := bytes.Buffer{}
 			_, _ = buf.Write([]byte(test.stderr))
 			var warnings []string
-			err := checkStdErr(&buf, &warnings)
+			warnings, err := checkStdErr(&buf)
 
 			assert.Equal(t, test.expectedErr, err)
 			assert.True(t, reflect.DeepEqual(test.warnings, warnings))
@@ -492,7 +490,6 @@ func TestCheckStdErr(t *testing.T) {
 // See: https://github.com/Ullaakut/nmap/issues/122
 func TestParseXMLOutputRaceCondition(t *testing.T) {
 	scans := make(chan int, 100)
-	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	var wg sync.WaitGroup
