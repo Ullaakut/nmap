@@ -27,6 +27,17 @@ func TestServiceDetection(t *testing.T) {
 			},
 		},
 		{
+			description: "service detection on all ports",
+
+			options: []Option{
+				WithVersionDetectionOnAllPorts(),
+			},
+
+			expectedArgs: []string{
+				"--allports",
+			},
+		},
+		{
 			description: "service detection custom intensity",
 
 			options: []Option{
