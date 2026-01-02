@@ -10,6 +10,15 @@ func WithServiceInfo() Option {
 	}
 }
 
+// WithVersionDetectionOnAllPorts enables version detection on all specified ports,
+// including port 9100 which is excluded by default.
+// In other words, version detection is performed on all ports regardles of any Exclude directive.
+func WithVersionDetectionOnAllPorts() Option {
+	return func(s *Scanner) {
+		s.args = append(s.args, "--allports")
+	}
+}
+
 // WithVersionIntensity sets the level of intensity with which nmap should
 // probe the open ports to get version information.
 // Intensity should be a value between 0 (light) and 9 (try all probes). The
