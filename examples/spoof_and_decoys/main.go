@@ -52,8 +52,8 @@ func main() {
 	fmt.Println("Running the following nmap command:", scanner.Args())
 
 	result, warnings, err := scanner.Run()
-	if len(*warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
+	if len(warnings) > 0 {
+		log.Printf("run finished with warnings: %s\n", warnings) // Warnings are non-critical errors from nmap.
 	}
 	if err != nil {
 		log.Fatalf("nmap scan failed: %v", err)
@@ -62,7 +62,7 @@ func main() {
 	printResults(result)
 }
 
-func printResults(result *nmap.Run) {
+func printResults(result nmap.Run) {
 	// Use the results to print an example output
 	for _, host := range result.Hosts {
 		if len(host.Ports) == 0 || len(host.Addresses) == 0 {

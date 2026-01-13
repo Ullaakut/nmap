@@ -314,7 +314,7 @@ func TestToFile(t *testing.T) {
 
 func TestToReader(t *testing.T) {
 	inputFile := "tests/xml/scan_base.xml"
-	rawXML, err := ioutil.ReadFile(inputFile)
+	rawXML, err := os.Open(inputFile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1081,7 +1081,7 @@ func TestParseRunXML(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.inputFile, func(t *testing.T) {
-			rawXML, err := ioutil.ReadFile(test.inputFile)
+			rawXML, err := os.Open(test.inputFile)
 			if err != nil {
 				t.Fatal(err)
 			}
