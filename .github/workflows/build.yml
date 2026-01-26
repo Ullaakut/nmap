@@ -8,28 +8,43 @@ on:
       - 'examples/*'
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install Go
-        uses: actions/setup-go@v4
+        id: install-go
+        uses: actions/setup-go@v6
         with:
-          go-version: "1.20.0"
+          go-version-file: 'go.mod'
+          cache: false
 
-      - name: Cache Go modules
-        uses: actions/cache@v2
+      - name: Cache Go mod
+        id: gomod
+        uses: actions/cache@v5
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-mod-
 
-      # Here, we simply print the exact go version, to have it as part of the
-      # action's output, which might be convenient.
+      - name: Cache Go build
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-go-build-${{ github.ref_name }}
+          restore-keys: |
+            ${{ runner.os }}-go-build-
+
+      - name: Download dependencies
+        run: go mod download
+        if: steps.gomod.outputs.cache-hit != 'true'
+
       - name: Print Go version
         run: go version
 

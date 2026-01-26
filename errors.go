@@ -11,7 +11,7 @@ var (
 	ErrNmapNotInstalled = errors.New("nmap binary was not found")
 
 	// ErrScanTimeout means that the provided context timeout triggered done before the scanner finished its scan.
-	// This error will *not* be returned if a scan timeout was configured using Nmap arguments, since Nmap would
+	// This error is *not* returned if a scan timeout was configured using Nmap arguments, since Nmap would
 	// gracefully shut down it's scanning and return some results in that case.
 	ErrScanTimeout = errors.New("nmap scan timed out")
 
@@ -23,11 +23,14 @@ var (
 	ErrMallocFailed = errors.New("malloc failed, probably out of space")
 
 	// ErrParseOutput means that nmap's output was not parsed successfully.
-	ErrParseOutput = errors.New("unable to parse nmap output, see warnings for details")
+	ErrParseOutput = errors.New("nmap output parsing failure, see warnings for details")
 
-	// ErrRequiresRoot means that a feature (e.g. OS detection) requires root privileges
+	// ErrRequiresRoot means that a feature (e.g. OS detection) requires root privileges.
 	ErrRequiresRoot = errors.New("this feature requires root privileges")
 
 	// ErrResolveName means that Nmap could not resolve a name.
 	ErrResolveName = errors.New("nmap could not resolve a name")
+
+	// ErrReadOutputFile means that the output file specified could not be read.
+	ErrReadOutputFile = errors.New("unable to read nmap output file")
 )

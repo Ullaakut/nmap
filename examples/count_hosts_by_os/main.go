@@ -2,41 +2,39 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/Ullaakut/nmap/v3"
-	osfamily "github.com/Ullaakut/nmap/v3/pkg/osfamilies"
+	"github.com/Ullaakut/nmap/v4"
+	osfamily "github.com/Ullaakut/nmap/v4/pkg/osfamilies"
 )
 
 func main() {
 	// Equivalent to
-	// nmap -F -O 192.168.0.0/24
+	// nmap -F -O scanme.nmap.org
 	scanner, err := nmap.NewScanner(
-		context.Background(),
-		nmap.WithTargets("192.168.0.0/24"),
+		nmap.WithTargets("scanme.nmap.org"),
 		nmap.WithFastMode(),
 		nmap.WithOSDetection(), // Needs to run with sudo
 	)
 	if err != nil {
-		log.Fatalf("unable to create nmap scanner: %v", err)
+		log.Fatalf("creating nmap scanner: %v", err)
 	}
 
-	result, warnings, err := scanner.Run()
-	if len(*warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
-	}
+	result, err := scanner.Run(context.Background())
 	if err != nil {
-		log.Fatalf("nmap scan failed: %v", err)
+		log.Fatalf("running network scan: %v", err)
+	}
+
+	warnings := result.Warnings()
+	if len(warnings) > 0 {
+		log.Printf("warning: %v\n", warnings) // Warnings are non-critical errors from nmap.
 	}
 
 	countByOS(result)
 }
 
 func countByOS(result *nmap.Run) {
-	var (
-		linux, windows int
-	)
+	var linux, windows int
 
 	// Count the number of each OS for all hosts.
 	for _, host := range result.Hosts {
@@ -49,9 +47,8 @@ func countByOS(result *nmap.Run) {
 					windows++
 				}
 			}
-
 		}
 	}
 
-	fmt.Printf("Discovered %d linux hosts and %d windows hosts out of %d total up hosts.\n", linux, windows, result.Stats.Hosts.Up)
+	log.Printf("Discovered %d linux hosts and %d windows hosts out of %d total up hosts.\n", linux, windows, result.Stats.Hosts.Up)
 }
