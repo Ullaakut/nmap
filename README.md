@@ -162,6 +162,22 @@ func handleProgress(p nmap.TaskProgress) {
 }
 ```
 
+This example outputs the following:
+
+```txt
+2026/01/27 16:13:02 task "Connect Scan": 2.59% remaining 38
+2026/01/27 16:13:02 task "Connect Scan": 21.26% remaining 4
+2026/01/27 16:13:04 task "Connect Scan": 42.61% remaining 5
+2026/01/27 16:13:04 task "Connect Scan": 45.51% remaining 4
+2026/01/27 16:13:05 task "Connect Scan": 53.44% remaining 4
+2026/01/27 16:13:07 task "Connect Scan": 59.77% remaining 5
+2026/01/27 16:13:07 task "Connect Scan": 62.77% remaining 4
+2026/01/27 16:13:08 task "Connect Scan": 73.24% remaining 3
+2026/01/27 16:13:09 task "Connect Scan": 81.71% remaining 2
+2026/01/27 16:13:10 task "Connect Scan": 92.92% remaining 1
+2026/01/27 16:13:11 task "Connect Scan": 100.00% remaining 0
+```
+
 ### Asynchronous scan
 
 ```go
@@ -177,7 +193,7 @@ import (
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 
 	scanner, err := nmap.NewScanner(
@@ -191,21 +207,25 @@ func main() {
 	stdout, stderr, resultCh, err := scanner.RunAsync(ctx)
 	if err != nil {
 		log.Fatalf("running network scan: %v", err)
-    }
-	
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 			log.Fatalf("scan timed out: %v", ctx.Err())
 		case out := <-stdout:
-			fmt.Printf("Nmap output: %s\n", out)
+			fmt.Printf("nmap output: %s\n", out)
 		case errOut := <-stderr:
-			fmt.Printf("Nmap error output: %s\n", errOut)
+			fmt.Printf("nmap error output: %s\n", errOut)
 		case result := <-resultCh:
-			fmt.Printf("Nmap done: %d hosts up\n", len(result.Hosts))
+			if result.Err != nil {
+				log.Fatalf("running network scan: %v", result.Err)
+			}
+
+			fmt.Printf("Nmap done: %d hosts up\n", len(result.Result.Hosts))
 			return
 		}
-    }
+	}
 }
 ```
 

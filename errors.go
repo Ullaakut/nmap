@@ -30,7 +30,4 @@ var (
 
 	// ErrResolveName means that Nmap could not resolve a name.
 	ErrResolveName = errors.New("nmap could not resolve a name")
-
-	// ErrReadOutputFile means that the output file specified could not be read.
-	ErrReadOutputFile = errors.New("unable to read nmap output file")
 )

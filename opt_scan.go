@@ -64,6 +64,8 @@ func WithMaimonScan() Option {
 // to check both protocols during the same run.
 // UDP scanning is generally slower than TCP, but should not
 // be ignored.
+//
+// NOTE: UDP scans might require elevated privileges.
 func WithUDPScan() Option {
 	return func(s *Scanner) error {
 		s.args = append(s.args, "-sU")

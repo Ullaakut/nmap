@@ -116,8 +116,9 @@ func (s *Scanner) processNmapResult(stdout, stderr *bytes.Buffer) (*Run, error) 
 			return result, fmt.Errorf("reading output file %s: %w", *s.toFile, err)
 		}
 
-		if chmodErr := os.Chmod(*s.toFile, 0o600); chmodErr != nil {
-			warnings = append(warnings, fmt.Sprintf("unable to set output file permissions: %s", chmodErr))
+		chmodErr := os.Chmod(*s.toFile, 0o600)
+		if chmodErr != nil {
+			warnings = append(warnings, fmt.Sprintf("setting output file permissions: %s", chmodErr))
 		}
 	}
 

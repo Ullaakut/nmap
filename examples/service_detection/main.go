@@ -9,16 +9,12 @@ import (
 
 func main() {
 	// Equivalent to
-	// nmap -sV -T4 scanme.nmap.org with a filter to remove non-RTSP ports.
+	// nmap -sV -T4 scanme.nmap.org with a filter to remove hosts without open ports.
 	scanner, err := nmap.NewScanner(
 		nmap.WithTargets("scanme.nmap.org"),
-		nmap.WithPorts("80", "554", "8554"),
+		nmap.WithPorts("22", "80", "443"),
 		nmap.WithServiceInfo(),
 		nmap.WithTimingTemplate(nmap.TimingAggressive),
-		// Filter out ports that are not RTSP
-		nmap.WithFilterPort(func(p nmap.Port) bool {
-			return p.Service.Name == "rtsp"
-		}),
 		// Filter out hosts that don't have any open ports
 		nmap.WithFilterHost(func(h nmap.Host) bool {
 			// Filter out hosts with no open ports.
@@ -49,7 +45,11 @@ func main() {
 		log.Printf("Host %s\n", host.Addresses[0])
 
 		for _, port := range host.Ports {
-			log.Printf("\tPort %d open with RTSP service\n", port.ID)
+			if port.Status() != "open" {
+				continue
+			}
+
+			log.Printf("\tPort %d open (%s)\n", port.ID, port.Service.Name)
 		}
 	}
 }

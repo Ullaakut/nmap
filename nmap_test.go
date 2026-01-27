@@ -15,7 +15,7 @@ func TestMain(m *testing.M) {
 	ctr, err := nmaptesting.StartNetworkMapper()
 	if err != nil {
 		log.Println("unable to start nmap test container, skipping container-based tests:", err)
-		return
+		os.Exit(1)
 	}
 
 	code := m.Run()

@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -31,15 +31,21 @@ func main() {
 		case <-ctx.Done():
 			log.Fatalf("scan timed out: %v", ctx.Err())
 		case out := <-stdout:
-			fmt.Printf("nmap output: %s\n", out)
+			if len(bytes.TrimSpace(out)) == 0 {
+				continue
+			}
+			log.Printf("stdout: %s\n", out)
 		case errOut := <-stderr:
-			fmt.Printf("nmap error output: %s\n", errOut)
+			if len(bytes.TrimSpace(errOut)) == 0 {
+				continue
+			}
+			log.Printf("stderr: %s\n", errOut)
 		case result := <-resultCh:
 			if result.Err != nil {
 				log.Fatalf("running network scan: %v", result.Err)
 			}
 
-			fmt.Printf("Nmap done: %d hosts up\n", len(result.Result.Hosts))
+			log.Printf("Nmap done: %d hosts up\n", len(result.Result.Hosts))
 			return
 		}
 	}
