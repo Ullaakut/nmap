@@ -3,6 +3,7 @@ module github.com/Ullaakut/nmap/v4
 go 1.25
 
 require (
+	github.com/hamba/testutils v0.7.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.31.0
@@ -29,7 +30,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/hamba/testutils v0.7.0 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
