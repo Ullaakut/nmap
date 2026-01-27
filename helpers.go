@@ -49,7 +49,7 @@ func finalizeRun(ctx context.Context, runErr, parseErr error, result *Run, stdou
 
 	if parseErr != nil {
 		if stdout.Len() == 0 && stderr.Len() == 0 {
-			return nil, mappedErr //nolint:nilnesserr
+			return result, nil
 		}
 		return result, parseErr
 	}
@@ -97,31 +97,37 @@ func (w channelWriter) Write(p []byte) (int, error) {
 
 func (s *Scanner) processNmapResult(stdout, stderr *bytes.Buffer) (*Run, error) {
 	result := &Run{}
-	var err error
 
 	// Check for errors indicated by stderr output.
+	var warnings []string
 	warnings, errStdout := checkStdErr(stderr)
 	if errStdout != nil {
 		return result, errStdout
 	}
-	result.warnings = append(result.warnings, warnings...)
+
+	contents := stdout.Bytes()
 
 	// Parse nmap xml output. Usually nmap always returns valid XML, even if there is a scan error.
 	// Potentially available warnings are returned too, but probably not the reason for a broken XML.
-	var contents []byte
+	var err error
 	if s.toFile != nil {
 		contents, err = os.ReadFile(*s.toFile)
 		if err != nil {
 			return result, fmt.Errorf("reading output file %s: %w", *s.toFile, err)
 		}
-	} else {
-		contents = stdout.Bytes()
+
+		if chmodErr := os.Chmod(*s.toFile, 0o600); chmodErr != nil {
+			warnings = append(warnings, fmt.Sprintf("unable to set output file permissions: %s", chmodErr))
+		}
 	}
 
 	result, err = parse(contents)
 	if err != nil {
 		return nil, fmt.Errorf("parsing nmap XML output: %w", err)
 	}
+
+	// Add warnings after parsing to avoid them being overwritten.
+	result.warnings = append(result.warnings, warnings...)
 
 	// Critical scan errors are reflected in the XML.
 	if len(result.Stats.Finished.ErrorMsg) > 0 {
