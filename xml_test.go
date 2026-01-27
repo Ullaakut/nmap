@@ -1,26 +1,24 @@
 package nmap
 
 import (
-	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
-	family "github.com/Ullaakut/nmap/v3/pkg/osfamilies"
+	family "github.com/Ullaakut/nmap/v4/pkg/osfamilies"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestParseTime(t *testing.T) {
 	ts := Timestamp{}
 
 	err := ts.ParseTime("invalid")
-	if err == nil {
-		t.Errorf("expected strconv.ParseInt: parsing \"invalid\": invalid syntax got %v", err)
-	}
+	assert.Error(t, err)
 }
 
 func TestFormatTime(t *testing.T) {
@@ -28,15 +26,10 @@ func TestFormatTime(t *testing.T) {
 	ts := Timestamp{}
 
 	err := ts.ParseTime(originalStr)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	result := ts.FormatTime()
-
-	if result != originalStr {
-		t.Errorf("expected %s got %s", originalStr, result)
-	}
+	assert.Equal(t, originalStr, result)
 }
 
 func TestOSFamily(t *testing.T) {
@@ -44,9 +37,7 @@ func TestOSFamily(t *testing.T) {
 		Family: "Linux",
 	}
 
-	if osc.OSFamily() != family.Linux {
-		t.Errorf("expected OSClass.OSFamily() to be equal to %v, got %v", family.Linux, osc.OSFamily())
-	}
+	assert.Equal(t, family.Linux, osc.OSFamily())
 }
 
 func TestParseTableXML(t *testing.T) {
@@ -130,45 +121,21 @@ func TestParseTableXML(t *testing.T) {
 	))
 
 	var table Table
-
 	err := xml.Unmarshal(input, &table)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	// Outermost table.
-	if table.Key != expectedTable.Key {
-		t.Errorf("expected %v got %v", expectedTable.Key, table.Key)
-	}
-
-	if len(table.Elements) != len(expectedTable.Elements) {
-		t.Errorf("expected different number of elements in outermost table, want %v got %v", len(expectedTable.Elements), len(table.Elements))
-	}
-	for ie := range table.Elements {
-		if table.Elements[ie].Value != expectedTable.Elements[ie].Value {
-			t.Errorf("expected %v got %v", expectedTable.Elements[ie].Value, table.Elements[ie].Value)
-		}
+	assert.Equal(t, expectedTable.Key, table.Key)
+	assert.Len(t, table.Elements, len(expectedTable.Elements))
+	for idx := range table.Elements {
+		assert.Equal(t, expectedTable.Elements[idx].Key, table.Elements[idx].Key)
 	}
 
 	// Nested tables
-	if len(table.Tables) != len(expectedTable.Tables) {
-		t.Errorf("expected different amount of nested tables, want %v got %v", len(expectedTable.Tables), len(table.Tables))
-	}
-
-	for it := range table.Tables {
-		if table.Tables[it].Key != expectedTable.Tables[it].Key {
-			t.Errorf("expected %v got %v", expectedTable.Tables[0].Key, table.Tables[0].Key)
-		}
-
-		if len(table.Tables[it].Elements) != len(expectedTable.Tables[it].Elements) {
-			t.Errorf("expected number of elements in nested table[%v], want %v got %v",
-				it, len(expectedTable.Tables[it].Elements), len(table.Tables[it].Elements))
-		}
-		for ie := range table.Tables[it].Elements {
-			if table.Tables[it].Elements[ie].Value != expectedTable.Tables[it].Elements[ie].Value {
-				t.Errorf("expected %v got %v", expectedTable.Tables[it].Elements[ie].Value, table.Tables[it].Elements[ie].Value)
-			}
-		}
+	assert.Len(t, table.Tables, len(expectedTable.Tables))
+	for idx := range table.Tables {
+		assert.Equal(t, expectedTable.Tables[idx].Key, table.Tables[idx].Key)
+		assert.ElementsMatch(t, expectedTable.Tables[idx].Elements, table.Tables[idx].Elements)
 	}
 }
 
@@ -176,47 +143,24 @@ func TestFormatTableXML(t *testing.T) {
 	table := Table{
 		Key: "key123",
 		Elements: []Element{
-			{
-				Key:   "key",
-				Value: "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ==",
-			},
-			{
-				Key:   "fingerprint",
-				Value: "79f809acd4e232421049d3bd208285ec",
-			},
-			{
-				Key:   "type",
-				Value: "ssh-rsa",
-			},
-			{
-				Key:   "bits",
-				Value: "2048",
-			},
-			{
-				Value: "just some value",
-			},
+			{Key: "key", Value: "AAAAB3NzaC1yc2EAAAABIwAAAQEAwVKoTY/7GFG7BmKkG6qFAHY/f3ciDX2MXTBLMEJP0xyUJsoy/CVRYw2b4qUB/GCJ5lh2InP+LVnPD3ZdtpyIvbS0eRZs/BH+mVLGh9xA/wOEUiiCfzQRsHj1xn7cqeWViAzQtdGluk/5CVAvr1FU3HNaaWkg7KQOSiKAzgDwCBtQhlgI40xdXgbqMkrHeP4M1p4MxoEVpZMe4oObACWwazeHP/Xas1vy5rbnmE59MpEZaA8t7AfGlW4MrVMhAB1JsFMdd0qFLpy/l93H3ptSlx1+6PQ5gUyjhmDUjMR+k6fb0yOeGdOrjN8IrWPmebZRFBjK5aCJwubgY/03VsSBMQ=="},
+			{Key: "fingerprint", Value: "79f809acd4e232421049d3bd208285ec"},
+			{Key: "type", Value: "ssh-rsa"},
+			{Key: "bits", Value: "2048"},
+			{Value: "just some value"},
 		},
 		Tables: []Table{
 			{
 				Elements: []Element{
-					{
-						Key:   "important element",
-						Value: "ssh-rsa",
-					},
-					{
-						Value: "just some value",
-					},
+					{Key: "important element", Value: "ssh-rsa"},
+					{Value: "just some value"},
 				},
 			},
 			{
 				Key: "dialects",
 				Elements: []Element{
-					{
-						Value: "2.02",
-					},
-					{
-						Value: "2.10",
-					},
+					{Value: "2.02"},
+					{Value: "2.10"},
 				},
 			},
 		},
@@ -241,14 +185,10 @@ func TestFormatTableXML(t *testing.T) {
 	}
 
 	XML, err := xml.Marshal(table)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	for _, expectedXMLElement := range expectedXML {
-		if !bytes.Contains(XML, expectedXMLElement) {
-			t.Errorf("missing %s in %s", expectedXMLElement, XML)
-		}
+		assert.Contains(t, string(XML), string(expectedXMLElement))
 	}
 }
 
@@ -256,84 +196,54 @@ func TestStringMethods(t *testing.T) {
 	s := Status{
 		State: "up",
 	}
-
-	if s.String() != s.State {
-		t.Errorf("expected string method to output %s, got %s", s.State, s.String())
-	}
+	assert.Equal(t, s.State, s.String())
 
 	a := Address{
 		Addr: "192.168.1.1",
 	}
-
-	if a.String() != a.Addr {
-		t.Errorf("expected string method to output %s, got %s", a.Addr, a.String())
-	}
+	assert.Equal(t, a.Addr, a.String())
 
 	h := Hostname{
 		Name: "toto.test",
 	}
-
-	if h.String() != h.Name {
-		t.Errorf("expected string method to output %s, got %s", h.Name, h.String())
-	}
+	assert.Equal(t, h.Name, h.String())
 
 	s2 := State{
 		State: "open",
 	}
-
-	if s2.String() != s2.State {
-		t.Errorf("expected string method to output %s, got %s", s2.State, s2.String())
-	}
+	assert.Equal(t, s2.State, s2.String())
 
 	o := Owner{
 		Name: "test",
 	}
-
-	if o.String() != o.Name {
-		t.Errorf("expected string method to output %s, got %s", o.Name, o.String())
-	}
+	assert.Equal(t, o.Name, o.String())
 
 	s3 := Service{
 		Name: "http",
 	}
-
-	if s3.String() != s3.Name {
-		t.Errorf("expected string method to output %s, got %s", s3.Name, s3.String())
-	}
+	assert.Equal(t, s3.Name, s3.String())
 }
 
 func TestToFile(t *testing.T) {
 	r := &Run{}
 
 	err := r.ToFile(os.TempDir() + string(os.PathSeparator) + "toto.txt")
-
-	if err != nil {
-		t.Errorf("expected ToFile method to properly call ioutil.WriteFile, got %v", err)
-	}
+	require.NoError(t, err)
 }
 
 func TestToReader(t *testing.T) {
 	inputFile := "tests/xml/scan_base.xml"
-	rawXML, err := ioutil.ReadFile(inputFile)
-	if err != nil {
-		t.Fatal(err)
-	}
+	rawXML, err := os.ReadFile(inputFile)
+	require.NoError(t, err)
 
-	var result Run
-	err = Parse(rawXML, &result)
-	if err != nil {
-		t.Fatal(err)
-	}
+	result, err := parse(rawXML)
+	require.NoError(t, err)
 
 	reader := result.ToReader()
-	byteOutput, err := ioutil.ReadAll(reader)
-	if err != nil {
-		t.Fatal(err)
-	}
+	byteOutput, err := io.ReadAll(reader)
+	require.NoError(t, err)
 
-	if !bytes.Equal(byteOutput, result.rawXML) {
-		t.Error("expected ToReader method to return lexicographically identical results")
-	}
+	assert.Equal(t, string(byteOutput), string(rawXML))
 }
 
 func TestTimestampJSONMarshaling(t *testing.T) {
@@ -344,22 +254,13 @@ func TestTimestampJSONMarshaling(t *testing.T) {
 	ts2 := Timestamp{}
 
 	b, err := ts.MarshalJSON()
-	if err != nil {
-		t.Errorf("expected marshaljson to never return an error, got %v", err)
-	}
-
-	if !bytes.Equal(b, dateBytes) {
-		t.Errorf("expected json-encoded timestamp to be %s got %s", dateBytes, b)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, []byte("943920000"), b)
 
 	err = json.Unmarshal(dateBytes, &ts2)
-	if err != nil {
-		t.Errorf("expected datebytes to be unmarshaled in ts2, got error %v", err)
-	}
+	require.NoError(t, err)
 
-	if ts.FormatTime() != ts2.FormatTime() {
-		t.Errorf("expected timestamps to be equal, got %s and %s", ts.FormatTime(), ts2.FormatTime())
-	}
+	assert.Equal(t, ts.FormatTime(), ts2.FormatTime())
 }
 
 func TestTimestampXMLMarshaling(t *testing.T) {
@@ -370,33 +271,17 @@ func TestTimestampXMLMarshaling(t *testing.T) {
 	ts := Timestamp(dateTime)
 	ts2 := Timestamp{}
 
-	x, err := ts.MarshalXMLAttr(attrName)
-	if err != nil {
-		t.Errorf("expected marshaljson to never return an error, got %v", err)
-	}
+	got, err := ts.MarshalXMLAttr(attrName)
+	require.NoError(t, err)
+	assert.Equal(t, dateXML.Value, got.Value)
 
-	if x.Value != dateXML.Value {
-		t.Errorf("expected xml-encoded timestamp to be %s got %s", dateXML.Value, x.Value)
-	}
-
-	x, err = ts2.MarshalXMLAttr(attrName)
-	if err != nil {
-		t.Errorf("expected marshaljson to never return an error, got %v", err)
-	}
-
-	emptyAttr := xml.Attr{}
-	if x != emptyAttr {
-		t.Errorf("expected zero time to return empty attribute, got %v", x)
-	}
+	got, err = ts2.MarshalXMLAttr(attrName)
+	require.NoError(t, err)
+	assert.Equal(t, xml.Attr{}, got)
 
 	err = ts2.UnmarshalXMLAttr(dateXML)
-	if err != nil {
-		t.Errorf("expected datebytes to be unmarshaled in ts2, got error %v", err)
-	}
-
-	if ts.FormatTime() != ts2.FormatTime() {
-		t.Errorf("expected timestamps to be equal, got %s and %s", ts.FormatTime(), ts2.FormatTime())
-	}
+	require.NoError(t, err)
+	assert.Equal(t, ts.FormatTime(), ts2.FormatTime())
 }
 
 func TestParseRunXML(t *testing.T) {
@@ -404,7 +289,7 @@ func TestParseRunXML(t *testing.T) {
 		inputFile string
 
 		expectedResult *Run
-		expectedError  error
+		wantErr        require.ErrorAssertionFunc
 	}{
 		{
 			inputFile: "tests/xml/scan_base.xml",
@@ -1075,197 +960,264 @@ func TestParseRunXML(t *testing.T) {
 				},
 			},
 
-			expectedError: nil,
+			wantErr: require.NoError,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.inputFile, func(t *testing.T) {
-			rawXML, err := ioutil.ReadFile(test.inputFile)
-			if err != nil {
-				t.Fatal(err)
-			}
+			rawXML, err := os.ReadFile(test.inputFile)
+			require.NoError(t, err)
 
-			var result Run
-			err = Parse(rawXML, &result)
+			result, err := parse(rawXML)
+			test.wantErr(t, err)
 
-			// Remove rawXML before comparing
-			if err != nil {
-				result.rawXML = []byte{}
-			}
-
-			compareResults(t, test.expectedResult, &result)
-
-			if err != test.expectedError {
-				t.Errorf("expected %v got %v", test.expectedError, err)
-			}
+			compareResults(t, test.expectedResult, result)
 		})
 	}
 }
 
 func compareResults(t *testing.T, expected, got *Run) {
-	if got.Args != expected.Args {
-		t.Errorf("unexpected arguments, expected %v got %v", expected.Args, got.Args)
+	if expected == nil {
+		require.Nil(t, got)
+		return
 	}
 
-	if got.ProfileName != expected.ProfileName {
-		t.Errorf("unexpected arguments, expected %v got %v", expected.ProfileName, got.ProfileName)
+	require.NotNil(t, got)
+	if len(expected.Args) > 0 { // We don't care if there are extra args, no need to check.
+		assert.Equal(t, expected.Args, got.Args, "unexpected arguments")
+	}
+	if expected.ProfileName != "" {
+		assert.Equal(t, expected.ProfileName, got.ProfileName, "unexpected profile name")
+	}
+	if expected.Scanner != "" {
+		assert.Equal(t, expected.Scanner, got.Scanner, "unexpected scanner")
+	}
+	if expected.StartStr != "" {
+		assert.Equal(t, expected.StartStr, got.StartStr, "unexpected start string")
+	}
+	if expected.Debugging.Level != 0 {
+		assert.Equal(t, expected.Debugging.Level, got.Debugging.Level, "unexpected debugging level")
+	}
+	if expected.ScanInfo.NumServices != 0 {
+		assert.Equal(t, expected.ScanInfo.NumServices, got.ScanInfo.NumServices, "unexpected scan info num services")
+	}
+	if expected.ScanInfo.Protocol != "" {
+		assert.Equal(t, expected.ScanInfo.Protocol, got.ScanInfo.Protocol, "unexpected scan info protocol")
+	}
+	if expected.ScanInfo.ScanFlags != "" {
+		assert.Equal(t, expected.ScanInfo.ScanFlags, got.ScanInfo.ScanFlags, "unexpected scan info scan flags")
+	}
+	if expected.ScanInfo.Services != "" {
+		assert.Equal(t, expected.ScanInfo.Services, got.ScanInfo.Services, "unexpected scan info services")
+	}
+	if expected.ScanInfo.Type != "" {
+		assert.Equal(t, expected.ScanInfo.Type, got.ScanInfo.Type, "unexpected scan info type")
+	}
+	if !time.Time(expected.Start).IsZero() {
+		assert.Equal(t, expected.Start, got.Start, "unexpected start time")
+	}
+	if len(expected.Targets) > 0 {
+		assert.Equal(t, expected.Targets, got.Targets, "unexpected targets")
 	}
 
-	if got.Scanner != expected.Scanner {
-		t.Errorf("unexpected arguments, expected %v got %v", expected.Scanner, got.Scanner)
-	}
-
-	if got.StartStr != expected.StartStr {
-		t.Errorf("unexpected arguments, expected %v got %v", expected.StartStr, got.StartStr)
-	}
-
-	if !reflect.DeepEqual(got.Debugging, expected.Debugging) {
-		t.Errorf("unexpected debugging, expected %+v got %+v", expected.Debugging, got.Debugging)
-	}
-
-	if !reflect.DeepEqual(got.ScanInfo, expected.ScanInfo) {
-		t.Errorf("unexpected scan info, expected %+v got %+v", expected.ScanInfo, got.ScanInfo)
-	}
-
-	if !reflect.DeepEqual(got.Start, expected.Start) {
-		t.Errorf("unexpected start time, expected %+v got %+v", expected.Start, got.Start)
-	}
-
-	if !reflect.DeepEqual(got.Targets, expected.Targets) {
-		t.Errorf("unexpected targets, expected %+v got %+v", expected.Targets, got.Targets)
-	}
-
-	if len(expected.TaskBegin) != len(got.TaskBegin) {
-		t.Errorf("unexpected tasks begin entries, expected to have %d entries, got %d instead", len(expected.TaskBegin), len(got.TaskBegin))
-	} else {
-		for idx := range expected.TaskBegin {
-			if !reflect.DeepEqual(got.TaskBegin[idx], expected.TaskBegin[idx]) {
-				t.Errorf("unexpected task begin entry, expected %+v got %+v", expected.TaskBegin[idx], got.TaskBegin[idx])
+	if len(expected.TaskBegin) > 0 {
+		if assert.Len(t, got.TaskBegin, len(expected.TaskBegin), "unexpected tasks begin entries") {
+			for idx := range expected.TaskBegin {
+				if !time.Time(expected.TaskBegin[idx].Time).IsZero() {
+					assert.Equalf(t, expected.TaskBegin[idx].Time, got.TaskBegin[idx].Time, "unexpected task begin time at index %d", idx)
+				}
+				if expected.TaskBegin[idx].Task != "" {
+					assert.Equalf(t, expected.TaskBegin[idx].Task, got.TaskBegin[idx].Task, "unexpected task begin task at index %d", idx)
+				}
+				if expected.TaskBegin[idx].ExtraInfo != "" {
+					assert.Equalf(t, expected.TaskBegin[idx].ExtraInfo, got.TaskBegin[idx].ExtraInfo, "unexpected task begin extra info at index %d", idx)
+				}
 			}
 		}
 	}
 
-	if len(expected.TaskProgress) != len(got.TaskProgress) {
-		t.Errorf("unexpected tasks progress entries, expected to have %d entries, got %d instead", len(expected.TaskProgress), len(got.TaskProgress))
-	} else {
-		for idx := range expected.TaskProgress {
-			if !reflect.DeepEqual(got.TaskProgress[idx], expected.TaskProgress[idx]) {
-				t.Errorf("unexpected task progress entry, expected %+v got %+v", expected.TaskProgress[idx], got.TaskProgress[idx])
+	if len(expected.TaskProgress) > 0 {
+		if assert.Len(t, got.TaskProgress, len(expected.TaskProgress), "unexpected tasks progress entries") {
+			for idx := range expected.TaskProgress {
+				if expected.TaskProgress[idx].Percent != 0 {
+					assert.Equalf(t, expected.TaskProgress[idx].Percent, got.TaskProgress[idx].Percent, "unexpected task progress percent at index %d", idx)
+				}
+				if expected.TaskProgress[idx].Remaining != 0 {
+					assert.Equalf(t, expected.TaskProgress[idx].Remaining, got.TaskProgress[idx].Remaining, "unexpected task progress remaining at index %d", idx)
+				}
+				if expected.TaskProgress[idx].Task != "" {
+					assert.Equalf(t, expected.TaskProgress[idx].Task, got.TaskProgress[idx].Task, "unexpected task progress task at index %d", idx)
+				}
+				if !time.Time(expected.TaskProgress[idx].Etc).IsZero() {
+					assert.Equalf(t, expected.TaskProgress[idx].Etc, got.TaskProgress[idx].Etc, "unexpected task progress etc at index %d", idx)
+				}
+				if !time.Time(expected.TaskProgress[idx].Time).IsZero() {
+					assert.Equalf(t, expected.TaskProgress[idx].Time, got.TaskProgress[idx].Time, "unexpected task progress time at index %d", idx)
+				}
 			}
 		}
 	}
 
-	if len(expected.TaskEnd) != len(got.TaskEnd) {
-		t.Errorf("unexpected tasks end entries, expected to have %d entries, got %d instead", len(expected.TaskEnd), len(got.TaskEnd))
-	} else {
-		for idx := range expected.TaskEnd {
-			if !reflect.DeepEqual(got.TaskEnd[idx], expected.TaskEnd[idx]) {
-				t.Errorf("unexpected task end entry, expected %+v got %+v", expected.TaskEnd[idx], got.TaskEnd[idx])
+	if len(expected.TaskEnd) > 0 {
+		if assert.Len(t, got.TaskEnd, len(expected.TaskEnd), "unexpected tasks end entries") {
+			for idx := range expected.TaskEnd {
+				if !time.Time(expected.TaskEnd[idx].Time).IsZero() {
+					assert.Equalf(t, expected.TaskEnd[idx].Time, got.TaskEnd[idx].Time, "unexpected task end time at index %d", idx)
+				}
+				if expected.TaskEnd[idx].Task != "" {
+					assert.Equalf(t, expected.TaskEnd[idx].Task, got.TaskEnd[idx].Task, "unexpected task end task at index %d", idx)
+				}
+				if expected.TaskEnd[idx].ExtraInfo != "" {
+					assert.Equalf(t, expected.TaskEnd[idx].ExtraInfo, got.TaskEnd[idx].ExtraInfo, "unexpected task end extra info at index %d", idx)
+				}
 			}
 		}
 	}
 
-	if len(expected.Hosts) != len(got.Hosts) {
-		t.Errorf("unexpected number of hosts, expected to have %d hosts, got %d instead", len(expected.Hosts), len(got.Hosts))
-	} else {
-		for idx := range expected.Hosts {
-			if expected.Hosts[idx].Comment != got.Hosts[idx].Comment {
-				t.Errorf("unexpected host comment, expected %v got %v", expected.Hosts[idx].Comment, got.Hosts[idx].Comment)
-			}
+	if len(expected.Hosts) == 0 {
+		return
+	}
+	if !assert.Len(t, got.Hosts, len(expected.Hosts), "unexpected number of hosts") {
+		return
+	}
 
-			if !reflect.DeepEqual(expected.Hosts[idx].Addresses, got.Hosts[idx].Addresses) {
-				t.Errorf("unexpected host addresses, expected %+v got %+v", expected.Hosts[idx].Addresses, got.Hosts[idx].Addresses)
-			}
+	for idx := range expected.Hosts {
+		if expected.Hosts[idx].Comment != "" {
+			assert.Equalf(t, expected.Hosts[idx].Comment, got.Hosts[idx].Comment, "unexpected host comment at index %d", idx)
+		}
+		if len(expected.Hosts[idx].Addresses) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].Addresses, got.Hosts[idx].Addresses, "unexpected host addresses at index %d", idx)
+		}
+		if expected.Hosts[idx].Distance.Value != 0 {
+			assert.Equalf(t, expected.Hosts[idx].Distance.Value, got.Hosts[idx].Distance.Value, "unexpected host distance at index %d", idx)
+		}
+		if !time.Time(expected.Hosts[idx].EndTime).IsZero() {
+			assert.Equalf(t, expected.Hosts[idx].EndTime, got.Hosts[idx].EndTime, "unexpected host end time at index %d", idx)
+		}
+		if len(expected.Hosts[idx].ExtraPorts) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].ExtraPorts, got.Hosts[idx].ExtraPorts, "unexpected host extra ports at index %d", idx)
+		}
+		if len(expected.Hosts[idx].HostScripts) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].HostScripts, got.Hosts[idx].HostScripts, "unexpected host host scripts at index %d", idx)
+		}
+		if len(expected.Hosts[idx].Hostnames) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].Hostnames, got.Hosts[idx].Hostnames, "unexpected host host names at index %d", idx)
+		}
+		if expected.Hosts[idx].IPIDSequence.Class != "" {
+			assert.Equalf(t, expected.Hosts[idx].IPIDSequence.Class, got.Hosts[idx].IPIDSequence.Class, "unexpected host IPIDSequence class at index %d", idx)
+		}
+		if expected.Hosts[idx].IPIDSequence.Values != "" {
+			assert.Equalf(t, expected.Hosts[idx].IPIDSequence.Values, got.Hosts[idx].IPIDSequence.Values, "unexpected host IPIDSequence values at index %d", idx)
+		}
 
-			if !reflect.DeepEqual(expected.Hosts[idx].Distance, got.Hosts[idx].Distance) {
-				t.Errorf("unexpected host distance, expected %+v got %+v", expected.Hosts[idx].Distance, got.Hosts[idx].Distance)
-			}
+		if len(expected.Hosts[idx].OS.PortsUsed) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].OS.PortsUsed, got.Hosts[idx].OS.PortsUsed, "unexpected host ports used at index %d", idx)
+		}
+		if len(expected.Hosts[idx].OS.Fingerprints) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].OS.Fingerprints, got.Hosts[idx].OS.Fingerprints, "unexpected host os fingerprints at index %d", idx)
+		}
 
-			if !reflect.DeepEqual(expected.Hosts[idx].EndTime, got.Hosts[idx].EndTime) {
-				t.Errorf("unexpected host end time, expected %+v got %+v", expected.Hosts[idx].EndTime, got.Hosts[idx].EndTime)
-			}
+		if len(expected.Hosts[idx].Ports) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].Ports, got.Hosts[idx].Ports, "unexpected host ports at index %d", idx)
+		}
+		if len(expected.Hosts[idx].Smurfs) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].Smurfs, got.Hosts[idx].Smurfs, "unexpected host smurfs at index %d", idx)
+		}
+		if !time.Time(expected.Hosts[idx].StartTime).IsZero() {
+			assert.Equalf(t, expected.Hosts[idx].StartTime, got.Hosts[idx].StartTime, "unexpected host start time at index %d", idx)
+		}
+		if expected.Hosts[idx].TimedOut {
+			assert.Equalf(t, expected.Hosts[idx].TimedOut, got.Hosts[idx].TimedOut, "unexpected host timedout at index %d", idx)
+		}
+		if expected.Hosts[idx].Status.State != "" {
+			assert.Equalf(t, expected.Hosts[idx].Status.State, got.Hosts[idx].Status.State, "unexpected host status state at index %d", idx)
+		}
+		if expected.Hosts[idx].Status.Reason != "" {
+			assert.Equalf(t, expected.Hosts[idx].Status.Reason, got.Hosts[idx].Status.Reason, "unexpected host status reason at index %d", idx)
+		}
+		if expected.Hosts[idx].Status.ReasonTTL != 0 {
+			assert.Equalf(t, expected.Hosts[idx].Status.ReasonTTL, got.Hosts[idx].Status.ReasonTTL, "unexpected host status reason TTL at index %d", idx)
+		}
+		if expected.Hosts[idx].TCPSequence.Index != 0 {
+			assert.Equalf(t, expected.Hosts[idx].TCPSequence.Index, got.Hosts[idx].TCPSequence.Index, "unexpected host TCPSequence index at index %d", idx)
+		}
+		if expected.Hosts[idx].TCPSequence.Difficulty != "" {
+			assert.Equalf(t, expected.Hosts[idx].TCPSequence.Difficulty, got.Hosts[idx].TCPSequence.Difficulty, "unexpected host TCPSequence difficulty at index %d", idx)
+		}
+		if expected.Hosts[idx].TCPSequence.Values != "" {
+			assert.Equalf(t, expected.Hosts[idx].TCPSequence.Values, got.Hosts[idx].TCPSequence.Values, "unexpected host TCPSequence values at index %d", idx)
+		}
+		if expected.Hosts[idx].TCPTSSequence.Class != "" {
+			assert.Equalf(t, expected.Hosts[idx].TCPTSSequence.Class, got.Hosts[idx].TCPTSSequence.Class, "unexpected host TCPTSSequence class at index %d", idx)
+		}
+		if expected.Hosts[idx].TCPTSSequence.Values != "" {
+			assert.Equalf(t, expected.Hosts[idx].TCPTSSequence.Values, got.Hosts[idx].TCPTSSequence.Values, "unexpected host TCPTSSequence values at index %d", idx)
+		}
+		if expected.Hosts[idx].Times.SRTT != "" {
+			assert.Equalf(t, expected.Hosts[idx].Times.SRTT, got.Hosts[idx].Times.SRTT, "unexpected host times SRTT at index %d", idx)
+		}
+		if expected.Hosts[idx].Times.RTT != "" {
+			assert.Equalf(t, expected.Hosts[idx].Times.RTT, got.Hosts[idx].Times.RTT, "unexpected host times RTT at index %d", idx)
+		}
+		if expected.Hosts[idx].Times.To != "" {
+			assert.Equalf(t, expected.Hosts[idx].Times.To, got.Hosts[idx].Times.To, "unexpected host times To at index %d", idx)
+		}
+		if expected.Hosts[idx].Trace.Proto != "" {
+			assert.Equalf(t, expected.Hosts[idx].Trace.Proto, got.Hosts[idx].Trace.Proto, "unexpected host trace proto at index %d", idx)
+		}
+		if expected.Hosts[idx].Trace.Port != 0 {
+			assert.Equalf(t, expected.Hosts[idx].Trace.Port, got.Hosts[idx].Trace.Port, "unexpected host trace port at index %d", idx)
+		}
+		if len(expected.Hosts[idx].Trace.Hops) > 0 {
+			assert.Equalf(t, expected.Hosts[idx].Trace.Hops, got.Hosts[idx].Trace.Hops, "unexpected host trace hops at index %d", idx)
+		}
+		if expected.Hosts[idx].Uptime.Seconds != 0 {
+			assert.Equalf(t, expected.Hosts[idx].Uptime.Seconds, got.Hosts[idx].Uptime.Seconds, "unexpected host uptime seconds at index %d", idx)
+		}
+		if expected.Hosts[idx].Uptime.Lastboot != "" {
+			assert.Equalf(t, expected.Hosts[idx].Uptime.Lastboot, got.Hosts[idx].Uptime.Lastboot, "unexpected host uptime lastboot at index %d", idx)
+		}
 
-			if !reflect.DeepEqual(expected.Hosts[idx].ExtraPorts, got.Hosts[idx].ExtraPorts) {
-				t.Errorf("unexpected host extra ports, expected %+v got %+v", expected.Hosts[idx].ExtraPorts, got.Hosts[idx].ExtraPorts)
-			}
+		if len(expected.Hosts[idx].OS.Matches) == 0 {
+			continue
+		}
+		if assert.Len(t, got.Hosts[idx].OS.Matches, len(expected.Hosts[idx].OS.Matches), "unexpected number of host matches at index %d", idx) {
+			for i := range expected.Hosts[idx].OS.Matches {
+				if expected.Hosts[idx].OS.Matches[i].Name != "" {
+					assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Name, got.Hosts[idx].OS.Matches[i].Name, "unexpected host os match name at index %d match %d", idx, i)
+				}
+				if expected.Hosts[idx].OS.Matches[i].Accuracy != 0 {
+					assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Accuracy, got.Hosts[idx].OS.Matches[i].Accuracy, "unexpected host os match accuracy at index %d match %d", idx, i)
+				}
+				if expected.Hosts[idx].OS.Matches[i].Line != 0 {
+					assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Line, got.Hosts[idx].OS.Matches[i].Line, "unexpected host os match line at index %d match %d", idx, i)
+				}
 
-			if !reflect.DeepEqual(expected.Hosts[idx].HostScripts, got.Hosts[idx].HostScripts) {
-				t.Errorf("unexpected host host scripts, expected %+v got %+v", expected.Hosts[idx].HostScripts, got.Hosts[idx].HostScripts)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].Hostnames, got.Hosts[idx].Hostnames) {
-				t.Errorf("unexpected host host names, expected %+v got %+v", expected.Hosts[idx].Hostnames, got.Hosts[idx].Hostnames)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence) {
-				t.Errorf("unexpected host IPIDSequence, expected %+v got %+v", expected.Hosts[idx].IPIDSequence, got.Hosts[idx].IPIDSequence)
-			}
-
-			if len(expected.Hosts[idx].OS.Matches) != len(got.Hosts[idx].OS.Matches) {
-				t.Errorf("unexpected number of host matches, expected to have %d classes, got %d instead",
-					len(expected.Hosts[idx].OS.Matches), len(got.Hosts[idx].OS.Matches))
-			} else {
-				for i := range expected.Hosts[idx].OS.Matches {
-					if len(expected.Hosts[idx].OS.Matches[i].Classes) != len(got.Hosts[idx].OS.Matches[i].Classes) {
-						t.Errorf("unexpected number of host classes, expected to have %d classes, got %d instead",
-							len(expected.Hosts[idx].OS.Matches[i].Classes), len(got.Hosts[idx].OS.Matches[i].Classes))
-					} else {
+				if len(expected.Hosts[idx].OS.Matches[i].Classes) > 0 {
+					if assert.Len(t, got.Hosts[idx].OS.Matches[i].Classes, len(expected.Hosts[idx].OS.Matches[i].Classes), "unexpected number of host classes at index %d match %d", idx, i) {
 						for j := range expected.Hosts[idx].OS.Matches[i].Classes {
-							if !reflect.DeepEqual(expected.Hosts[idx].OS.Matches[i].Classes[j], got.Hosts[idx].OS.Matches[i].Classes[j]) {
-								t.Errorf("unexpected host os class, expected %+v got %+v", expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i].Classes[j])
+							if expected.Hosts[idx].OS.Matches[i].Classes[j].Vendor != "" {
+								assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Classes[j].Vendor, got.Hosts[idx].OS.Matches[i].Classes[j].Vendor, "unexpected host os class vendor at index %d match %d class %d", idx, i, j)
 							}
-						}
-
-						if !reflect.DeepEqual(expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i]) {
-							t.Errorf("unexpected host os match, expected %+v got %+v", expected.Hosts[idx].OS.Matches[i], got.Hosts[idx].OS.Matches[i])
+							if expected.Hosts[idx].OS.Matches[i].Classes[j].OSGeneration != "" {
+								assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Classes[j].OSGeneration, got.Hosts[idx].OS.Matches[i].Classes[j].OSGeneration, "unexpected host os class os generation at index %d match %d class %d", idx, i, j)
+							}
+							if expected.Hosts[idx].OS.Matches[i].Classes[j].Type != "" {
+								assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Classes[j].Type, got.Hosts[idx].OS.Matches[i].Classes[j].Type, "unexpected host os class type at index %d match %d class %d", idx, i, j)
+							}
+							if expected.Hosts[idx].OS.Matches[i].Classes[j].Accuracy != 0 {
+								assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Classes[j].Accuracy, got.Hosts[idx].OS.Matches[i].Classes[j].Accuracy, "unexpected host os class accuracy at index %d match %d class %d", idx, i, j)
+							}
+							if expected.Hosts[idx].OS.Matches[i].Classes[j].Family != "" {
+								assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Classes[j].Family, got.Hosts[idx].OS.Matches[i].Classes[j].Family, "unexpected host os class family at index %d match %d class %d", idx, i, j)
+							}
+							if len(expected.Hosts[idx].OS.Matches[i].Classes[j].CPEs) > 0 {
+								assert.Equalf(t, expected.Hosts[idx].OS.Matches[i].Classes[j].CPEs, got.Hosts[idx].OS.Matches[i].Classes[j].CPEs, "unexpected host os class CPEs at index %d match %d class %d", idx, i, j)
+							}
 						}
 					}
 				}
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].OS, got.Hosts[idx].OS) {
-				t.Errorf("unexpected host OS, expected %+v got %+v", expected.Hosts[idx].OS, got.Hosts[idx].OS)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].Ports, got.Hosts[idx].Ports) {
-				t.Errorf("unexpected host ports, expected %+v got %+v", expected.Hosts[idx].Ports, got.Hosts[idx].Ports)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].Smurfs, got.Hosts[idx].Smurfs) {
-				t.Errorf("unexpected host smurfs, expected %+v got %+v", expected.Hosts[idx].Smurfs, got.Hosts[idx].Smurfs)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].StartTime, got.Hosts[idx].StartTime) {
-				t.Errorf("unexpected host start time, expected %+v got %+v", expected.Hosts[idx].StartTime, got.Hosts[idx].StartTime)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].TimedOut, got.Hosts[idx].TimedOut) {
-				t.Errorf("unexpected host timedout, expected %+v got %+v", expected.Hosts[idx].TimedOut, got.Hosts[idx].TimedOut)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].Status, got.Hosts[idx].Status) {
-				t.Errorf("unexpected host status, expected %+v got %+v", expected.Hosts[idx].Status, got.Hosts[idx].Status)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].TCPSequence, got.Hosts[idx].TCPSequence) {
-				t.Errorf("unexpected host TCPSequence, expected %+v got %+v", expected.Hosts[idx].TCPSequence, got.Hosts[idx].TCPSequence)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].TCPTSSequence, got.Hosts[idx].TCPTSSequence) {
-				t.Errorf("unexpected host TCPTSSequence, expected %+v got %+v", expected.Hosts[idx].TCPTSSequence, got.Hosts[idx].TCPTSSequence)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].Times, got.Hosts[idx].Times) {
-				t.Errorf("unexpected host times, expected %+v got %+v", expected.Hosts[idx].Times, got.Hosts[idx].Times)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].Trace, got.Hosts[idx].Trace) {
-				t.Errorf("unexpected host trace, expected %+v got %+v", expected.Hosts[idx].Trace, got.Hosts[idx].Trace)
-			}
-
-			if !reflect.DeepEqual(expected.Hosts[idx].Uptime, got.Hosts[idx].Uptime) {
-				t.Errorf("unexpected host uptime, expected %+v got %+v", expected.Hosts[idx].Uptime, got.Hosts[idx].Uptime)
 			}
 		}
 	}

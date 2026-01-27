@@ -3,27 +3,28 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 
-	"github.com/Ullaakut/nmap/v3"
+	"github.com/Ullaakut/nmap/v4"
 )
 
 func main() {
-	scanner, err := nmap.NewScanner(context.Background())
+	ctx := context.Background()
+
+	scanner, err := nmap.NewScanner()
 	if err != nil {
-		log.Fatalf("unable to create nmap scanner: %v", err)
+		log.Fatalf("creating nmap scanner: %v", err)
 	}
 
-	interfaceList, err := scanner.GetInterfaceList()
+	interfaceList, err := scanner.InterfaceList(ctx)
 	if err != nil {
-		log.Fatalf("could not get interface list: %v", err)
+		log.Fatalf("getting interface list: %v", err)
 	}
 
 	bytes, err := json.MarshalIndent(interfaceList, "", "\t")
 	if err != nil {
-		log.Fatalf("unable to marshal: %v", err)
+		log.Fatalf("marshalling interface list: %v", err)
 	}
 
-	fmt.Println(string(bytes))
+	log.Println(string(bytes))
 }

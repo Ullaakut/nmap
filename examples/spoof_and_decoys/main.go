@@ -2,21 +2,22 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/Ullaakut/nmap/v3"
+	"github.com/Ullaakut/nmap/v4"
 )
 
 func main() {
-	ifaceScanner, err := nmap.NewScanner(context.Background())
+	ctx := context.Background()
+
+	scanner, err := nmap.NewScanner()
 	if err != nil {
-		log.Fatalf("unable to create nmap scanner: %v", err)
+		log.Fatalf("creating nmap scanner: %v", err)
 	}
 
-	interfaceList, err := ifaceScanner.GetInterfaceList()
+	interfaceList, err := scanner.InterfaceList(ctx)
 	if err != nil {
-		log.Fatalf("could not get interface list: %v", err)
+		log.Fatalf("getting interface list: %v", err)
 	}
 
 	if len(interfaceList.Interfaces) == 0 {
@@ -29,11 +30,10 @@ func main() {
 	// Equivalent to
 	// nmap -S 192.168.0.10 \
 	// -D 192.168.0.2,192.168.0.3,192.168.0.4,192.168.0.5,192.168.0.6,ME,192.168.0.8 \
-	// 192.168.0.72`.
-	scanner, err := nmap.NewScanner(
-		context.Background(),
+	// scanme.nmap.org`.
+	scanner, err = nmap.NewScanner(
 		nmap.WithInterface(interfaceToScan),
-		nmap.WithTargets("192.168.0.72"),
+		nmap.WithTargets("scanme.nmap.org"),
 		nmap.WithSpoofIPAddress("192.168.0.10"),
 		nmap.WithDecoys(
 			"192.168.0.2",
@@ -46,17 +46,19 @@ func main() {
 		),
 	)
 	if err != nil {
-		log.Fatalf("unable to create nmap scanner: %v", err)
+		log.Fatalf("creating nmap scanner: %v", err)
 	}
 
-	fmt.Println("Running the following nmap command:", scanner.Args())
+	log.Println("Running the following nmap command:", scanner.Args())
 
-	result, warnings, err := scanner.Run()
-	if len(*warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
-	}
+	result, err := scanner.Run(ctx)
 	if err != nil {
-		log.Fatalf("nmap scan failed: %v", err)
+		log.Fatalf("running network scan: %v", err)
+	}
+
+	warnings := result.Warnings()
+	if len(warnings) > 0 {
+		log.Printf("warning: %v\n", warnings) // Warnings are non-critical errors from nmap.
 	}
 
 	printResults(result)
@@ -69,12 +71,12 @@ func printResults(result *nmap.Run) {
 			continue
 		}
 
-		fmt.Printf("Host %q:\n", host.Addresses[0])
+		log.Printf("Host %q:\n", host.Addresses[0])
 
 		for _, port := range host.Ports {
-			fmt.Printf("\tPort %d/%s %s %s\n", port.ID, port.Protocol, port.State, port.Service.Name)
+			log.Printf("\tPort %d/%s %s %s\n", port.ID, port.Protocol, port.State, port.Service.Name)
 		}
 	}
 
-	fmt.Printf("Nmap done: %d hosts up scanned in %.2f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
+	log.Printf("Nmap done: %d hosts up scanned in %.2f seconds\n", len(result.Hosts), result.Stats.Finished.Elapsed)
 }

@@ -12,55 +12,67 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install Go
-        uses: actions/setup-go@v4
+        id: install-go
+        uses: actions/setup-go@v6
         with:
-          go-version: "1.20.0"
+          go-version-file: 'go.mod'
+          cache: false
 
-      - name: Cache Go modules
-        uses: actions/cache@v2
+      - name: Cache Go mod
+        id: gomod
+        uses: actions/cache@v5
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-mod-
 
-      # Here, we simply print the exact go version, to have it as part of the
-      # action's output, which might be convenient.
+      - name: Cache Go build
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/go-build
+          key: ${{ runner.os }}-go-build-${{ github.ref_name }}
+          restore-keys: |
+            ${{ runner.os }}-go-build-
+
+      - name: Download dependencies
+        run: go mod download
+        if: steps.gomod.outputs.cache-hit != 'true'
+
+      - name: Download nmap
+        run: sudo apt-get install -y nmap
+
       - name: Print Go version
         run: go version
-      
-      # This check makes sure that the `go.mod` and `go.sum` files for Go
-      # modules are always up-to-date.
-      - name: Verify Go modules
-        run: go mod tidy && git status && git --no-pager diff && git diff-index --quiet HEAD --
+        
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.7.2
 
-      # This check makes sure that the source code is formatted according to the
-      # Go standard `go fmt` formatting.
-      - name: Verify source code formatting
-        run: go fmt ./... && git status && git --no-pager diff && git diff-index --quiet HEAD --
+      - name: Setup gotestsum
+        uses: gertd/action-gotestsum@v3.0.0
+        with:
+          gotestsum_version: v1.13.0
 
-      - name: Install nmap
-        run: sudo apt install -y nmap
+      - name: Run Tests
+        env: 
+          TEST_DIR: ${{ inputs.TEST_DIR }}
+        run: |
+          GOTESTSUM_FLAGS="--junitfile tests.xml --format pkgname -- -cover -race"
+          if [ -z "$TEST_DIR" ]; then
+            gotestsum $GOTESTSUM_FLAGS ./...
+          else
+            gotestsum $GOTESTSUM_FLAGS ./$TEST_DIR/...
+          fi
 
-      - name: Test
-        run: go test -coverprofile=c.out ./...
-
-      - name: Install goveralls
-        run: go install github.com/mattn/goveralls@latest
-
-      - name: Create coverage report
-        run: go tool cover -func=c.out
-
-      - name: Send coverage report
-        env:
-            COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: goveralls -coverprofile=c.out -service=github
-
-      - name: Install staticcheck
-        run: go install honnef.co/go/tools/cmd/staticcheck@v0.4.3
-
-      - name: Run staticcheck for possible optimizations
-        run: staticcheck -tests=false
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "tests.xml"
+        if: always()

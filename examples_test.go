@@ -10,19 +10,18 @@ import (
 // that are given to nmap.
 func ExampleScanner_simple() {
 	s, err := NewScanner(
-		context.Background(),
 		WithTargets("google.com", "facebook.com", "youtube.com"),
 		WithCustomDNSServers("8.8.8.8", "8.8.4.4"),
 		WithTimingTemplate(TimingFastest),
 		WithTCPScanFlags(FlagACK, FlagNULL, FlagRST),
 	)
 	if err != nil {
-		log.Fatalf("unable to create nmap scanner: %v", err)
+		log.Fatalf("creating nmap scanner: %v", err)
 	}
 
-	scanResult, _, err := s.Run()
+	scanResult, err := s.Run(context.Background())
 	if err != nil {
-		log.Fatalf("nmap encountered an error: %v", err)
+		log.Fatalf("running network scan: %v", err)
 	}
 
 	fmt.Printf(
