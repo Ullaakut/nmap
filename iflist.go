@@ -2,6 +2,7 @@ package nmap
 
 import (
 	"bytes"
+	"context"
 	"net"
 	"os/exec"
 	"regexp"
@@ -15,7 +16,7 @@ type InterfaceList struct {
 	Routes     []*Route     `json:"routes"`
 }
 
-// Interface is a interface object.
+// Interface is an interface object.
 type Interface struct {
 	Device string           `json:"device"`
 	Short  string           `json:"short"`
@@ -36,36 +37,36 @@ type Route struct {
 	Gateway           net.IP `json:"gateway"`
 }
 
-// GetInterfaceList runs nmap with the --iflist option. The output will be parsed.
+// InterfaceList runs nmap with the --iflist option.
 // The return value is a struct containing all host interfaces and routes.
-func (s *Scanner) GetInterfaceList() (result *InterfaceList, err error) {
-	var stdout, stderr bytes.Buffer
-
-	args := append(s.args, "--iflist")
+func (s *Scanner) InterfaceList(ctx context.Context) (*InterfaceList, error) {
+	args := append([]string{}, s.args...)
+	args = append(args, "--iflist")
 
 	// Prepare nmap process
-	cmd := exec.Command(s.binaryPath, args...)
+	//nolint:gosec // Arguments are passed directly to nmap; users intentionally control args.
+	cmd := exec.CommandContext(ctx, s.binaryPath, args...)
+
+	// Bind stdout and stderr.
+	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	// Run nmap process
-	err = cmd.Run()
+	// Run nmap process.
+	err := cmd.Run()
 	if err != nil {
 		return nil, err
 	}
 
-	result = parseInterfaces(stdout.Bytes())
-
-	return result, nil
+	return parseInterfaces(stdout.String()), nil
 }
 
-func parseInterfaces(content []byte) *InterfaceList {
+func parseInterfaces(content string) *InterfaceList {
 	list := InterfaceList{
 		Interfaces: make([]*Interface, 0),
 		Routes:     make([]*Route, 0),
 	}
-	output := string(content)
-	lines := strings.Split(output, "\n")
+	lines := strings.Split(content, "\n")
 
 	interfaceRegex := regexp.MustCompile(`\*INTERFACES\*`)
 	routesRegex := regexp.MustCompile(`\*ROUTES\*`)
@@ -92,28 +93,33 @@ func parseInterfaces(content []byte) *InterfaceList {
 
 func convertInterface(line string) *Interface {
 	fields := strings.Fields(line)
-
 	if len(fields) < 6 {
 		return nil
 	}
+
 	iface := &Interface{
 		Device: fields[0],
 		Short:  fields[1],
 		Type:   fields[3],
 	}
-	if ip, val, err := net.ParseCIDR(fields[2]); err == nil {
+
+	ip, ipnet, err := net.ParseCIDR(fields[2])
+	if err == nil {
 		iface.IP = ip
-		iface.IPMask = net.IP(val.Mask)
+		iface.IPMask = net.IP(ipnet.Mask)
 	}
 
 	iface.Up = strings.ToLower(fields[4]) == "up"
 
-	if val, err := strconv.Atoi(fields[5]); err == nil {
-		iface.MTU = val
+	mtu, err := strconv.Atoi(fields[5])
+	if err == nil {
+		iface.MTU = mtu
 	}
+
 	if len(fields) > 6 {
-		if val, err := net.ParseMAC(fields[6]); err == nil {
-			iface.Mac = val
+		mac, err := net.ParseMAC(fields[6])
+		if err == nil {
+			iface.Mac = mac
 		}
 	}
 	return iface
@@ -121,7 +127,6 @@ func convertInterface(line string) *Interface {
 
 func convertRoute(line string) *Route {
 	fields := strings.Fields(line)
-
 	if len(fields) < 3 {
 		return nil
 	}
@@ -129,15 +134,21 @@ func convertRoute(line string) *Route {
 	route := &Route{
 		Device: fields[1],
 	}
-	if ip, val, err := net.ParseCIDR(fields[0]); err == nil {
+
+	ip, ipnet, err := net.ParseCIDR(fields[0])
+	if err == nil {
 		route.DestinationIP = ip
-		route.DestinationIPMask = net.IP(val.Mask)
+		route.DestinationIPMask = net.IP(ipnet.Mask)
 	}
-	if val, err := strconv.Atoi(fields[2]); err == nil {
-		route.Metric = val
+
+	metric, err := strconv.Atoi(fields[2])
+	if err == nil {
+		route.Metric = metric
 	}
+
 	if len(fields) > 3 {
 		route.Gateway = net.ParseIP(fields[3])
 	}
+
 	return route
 }

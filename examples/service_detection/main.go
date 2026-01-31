@@ -2,25 +2,19 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
-	"github.com/Ullaakut/nmap/v3"
+	"github.com/Ullaakut/nmap/v4"
 )
 
 func main() {
 	// Equivalent to
-	// nmap -sV -T4 192.168.0.0/24 with a filter to remove non-RTSP ports.
+	// nmap -sV -T4 scanme.nmap.org with a filter to remove hosts without open ports.
 	scanner, err := nmap.NewScanner(
-		context.Background(),
-		nmap.WithTargets("192.168.0.0/24"),
-		nmap.WithPorts("80", "554", "8554"),
+		nmap.WithTargets("scanme.nmap.org"),
+		nmap.WithPorts("22", "80", "443"),
 		nmap.WithServiceInfo(),
 		nmap.WithTimingTemplate(nmap.TimingAggressive),
-		// Filter out ports that are not RTSP
-		nmap.WithFilterPort(func(p nmap.Port) bool {
-			return p.Service.Name == "rtsp"
-		}),
 		// Filter out hosts that don't have any open ports
 		nmap.WithFilterHost(func(h nmap.Host) bool {
 			// Filter out hosts with no open ports.
@@ -34,22 +28,28 @@ func main() {
 		}),
 	)
 	if err != nil {
-		log.Fatalf("unable to create nmap scanner: %v", err)
+		log.Fatalf("creating nmap scanner: %v", err)
 	}
 
-	result, warnings, err := scanner.Run()
-	if len(*warnings) > 0 {
-		log.Printf("run finished with warnings: %s\n", *warnings) // Warnings are non-critical errors from nmap.
-	}
+	result, err := scanner.Run(context.Background())
 	if err != nil {
-		log.Fatalf("nmap scan failed: %v", err)
+		log.Fatalf("running network scan: %v", err)
+	}
+
+	warnings := result.Warnings()
+	if len(warnings) > 0 {
+		log.Printf("warning: %v\n", warnings) // Warnings are non-critical errors from nmap.
 	}
 
 	for _, host := range result.Hosts {
-		fmt.Printf("Host %s\n", host.Addresses[0])
+		log.Printf("Host %s\n", host.Addresses[0])
 
 		for _, port := range host.Ports {
-			fmt.Printf("\tPort %d open with RTSP service\n", port.ID)
+			if port.Status() != "open" {
+				continue
+			}
+
+			log.Printf("\tPort %d open (%s)\n", port.ID, port.Service.Name)
 		}
 	}
 }

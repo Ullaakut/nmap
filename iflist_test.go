@@ -1,7 +1,6 @@
 package nmap
 
 import (
-	"context"
 	"net"
 	"testing"
 
@@ -9,10 +8,10 @@ import (
 )
 
 func TestScanner_GetInterfaceList(t *testing.T) {
-	scanner, err := NewScanner(context.Background(), WithBinaryPath("tests/scripts/fake_nmap_iflist.sh"))
+	scanner, err := NewScanner(WithBinaryPath("tests/scripts/fake_nmap_iflist.sh"))
 	assert.NoError(t, err)
 
-	result, err := scanner.GetInterfaceList()
+	result, err := scanner.InterfaceList(t.Context())
 
 	assert.NoError(t, err)
 	assert.NotNil(t, result)

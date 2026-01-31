@@ -480,7 +480,7 @@ const (
 	Sagem           OSFamily = "Sagem"
 	Sagemcom        OSFamily = "Sagemcom"
 	Samsung         OSFamily = "Samsung"
-	Sandstrom       OSFamily = "Sandstrom"
+	Sandstorm       OSFamily = "Sandstorm"
 	Sanyo           OSFamily = "Sanyo"
 	Sapling         OSFamily = "Sapling"
 	Satel           OSFamily = "Satel"
