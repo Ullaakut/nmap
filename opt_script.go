@@ -87,8 +87,7 @@ func WithScriptTimeout(timeout time.Duration) Option {
 			return fmt.Errorf("format script timeout: %w", err)
 		}
 
-		s.args = append(s.args, "--script-timeout")
-		s.args = append(s.args, formatted)
+		s.args = append(s.args, "--script-timeout", formatted)
 		return nil
 	}
 }

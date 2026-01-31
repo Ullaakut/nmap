@@ -1,6 +1,9 @@
 package nmap
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // WithSYNScan sets the scan technique to use SYN packets over TCP.
 // This is the default method, as it is fast, stealthy and not
@@ -127,15 +130,46 @@ const (
 )
 
 // WithTCPScanFlags sets the scan technique to use custom TCP flags.
+//
+// NOTE: Nmap supports specifying TCP scan flags either as a decimal value or as a
+// string (e.g. "SYNACK"). However, the decimal form is limited to 0–255 because
+// it maps strictly to the 8-bit TCP flags field (FIN through CWR). The NS flag
+// does not live in this byte; it occupies a separate bit in the TCP reserved
+// field and therefore cannot be represented in a single 8-bit integer.
+//
+// As a result, any flag combination involving NS (and, more generally, full
+// TCP control-bit manipulation) can only be expressed using the string form.
+// We therefore always emit string-based scan flags to ensure correctness and
+// full feature coverage.
 func WithTCPScanFlags(flags ...TCPFlag) Option {
-	var total int
-	for _, flag := range flags {
-		total += int(flag)
+	var flag strings.Builder
+	for _, v := range flags {
+		switch v {
+		case FlagNULL:
+			continue
+		case FlagFIN:
+			flag.WriteString("FIN")
+		case FlagSYN:
+			flag.WriteString("SYN")
+		case FlagRST:
+			flag.WriteString("RST")
+		case FlagPSH:
+			flag.WriteString("PSH")
+		case FlagACK:
+			flag.WriteString("ACK")
+		case FlagURG:
+			flag.WriteString("URG")
+		case FlagECE:
+			flag.WriteString("ECE")
+		case FlagCWR:
+			flag.WriteString("CWR")
+		case FlagNS:
+			flag.WriteString("NS")
+		}
 	}
 
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--scanflags")
-		s.args = append(s.args, fmt.Sprintf("%x", total))
+		s.args = append(s.args, "--scanflags="+flag.String())
 		return nil
 	}
 }
@@ -204,8 +238,7 @@ func WithIPProtocolScan() Option {
 // default FTP port (21) on <server> is used.
 func WithFTPBounceScan(ftpRelayHost string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-b")
-		s.args = append(s.args, ftpRelayHost)
+		s.args = append(s.args, "-b", ftpRelayHost)
 		return nil
 	}
 }

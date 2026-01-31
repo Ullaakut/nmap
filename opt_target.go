@@ -18,8 +18,7 @@ func WithTargetExclusions(targets ...string) Option {
 	targetList := strings.Join(targets, ",")
 
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--exclude")
-		s.args = append(s.args, targetList)
+		s.args = append(s.args, "--exclude", targetList)
 		return nil
 	}
 }
@@ -27,8 +26,7 @@ func WithTargetExclusions(targets ...string) Option {
 // WithTargetInput sets the input file name to set the targets.
 func WithTargetInput(inputFileName string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-iL")
-		s.args = append(s.args, inputFileName)
+		s.args = append(s.args, "-iL", inputFileName)
 		return nil
 	}
 }
@@ -36,8 +34,7 @@ func WithTargetInput(inputFileName string) Option {
 // WithTargetExclusionInput sets the input file name to set the target exclusions.
 func WithTargetExclusionInput(inputFileName string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--excludefile")
-		s.args = append(s.args, inputFileName)
+		s.args = append(s.args, "--excludefile", inputFileName)
 		return nil
 	}
 }
@@ -45,8 +42,7 @@ func WithTargetExclusionInput(inputFileName string) Option {
 // WithRandomTargets sets the amount of targets to randomly choose from the targets.
 func WithRandomTargets(randomTargets int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-iR")
-		s.args = append(s.args, strconv.Itoa(randomTargets))
+		s.args = append(s.args, "-iR", strconv.Itoa(randomTargets))
 		return nil
 	}
 }

@@ -34,8 +34,7 @@ func WithVersionIntensity(intensity int16) Option {
 			return fmt.Errorf("value given to nmap.WithVersionIntensity() should be between 0 and 9, got %d", intensity)
 		}
 
-		s.args = append(s.args, "--version-intensity")
-		s.args = append(s.args, strconv.Itoa(int(intensity)))
+		s.args = append(s.args, "--version-intensity", strconv.Itoa(int(intensity)))
 		return nil
 	}
 }

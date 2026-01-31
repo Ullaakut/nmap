@@ -27,8 +27,7 @@ func WithAggressiveScan() Option {
 // nmap-mac-prefixes, and nmap-os-db.
 func WithDataDir(directoryPath string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--datadir")
-		s.args = append(s.args, directoryPath)
+		s.args = append(s.args, "--datadir", directoryPath)
 		return nil
 	}
 }
@@ -71,8 +70,7 @@ func WithUnprivileged() Option {
 // WithNmapOutput makes nmap output standard output to the filename specified.
 func WithNmapOutput(outputFileName string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-oN")
-		s.args = append(s.args, outputFileName)
+		s.args = append(s.args, "-oN", outputFileName)
 		return nil
 	}
 }
@@ -80,8 +78,7 @@ func WithNmapOutput(outputFileName string) Option {
 // WithGrepOutput makes nmap output greppable output to the filename specified.
 func WithGrepOutput(outputFileName string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-oG")
-		s.args = append(s.args, outputFileName)
+		s.args = append(s.args, "-oG", outputFileName)
 		return nil
 	}
 }

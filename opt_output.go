@@ -3,6 +3,7 @@ package nmap
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // WithVerbosity sets and increases the verbosity level of nmap.
@@ -11,7 +12,8 @@ func WithVerbosity(level int) Option {
 		if level < 0 || level > 10 {
 			return fmt.Errorf("value given to nmap.WithVerbosity() should be between 0 and 10: got %d", level)
 		}
-		s.args = append(s.args, fmt.Sprintf("-v%d", level))
+
+		s.args = append(s.args, "-v"+strconv.Itoa(level))
 		return nil
 	}
 }
@@ -22,7 +24,8 @@ func WithDebugging(level int) Option {
 		if level < 0 || level > 10 {
 			return fmt.Errorf("value given to nmap.WithDebugging() should be between 0 and 10: got %d", level)
 		}
-		s.args = append(s.args, fmt.Sprintf("-d%d", level))
+
+		s.args = append(s.args, "-d"+strconv.Itoa(level))
 		return nil
 	}
 }
@@ -64,8 +67,7 @@ func WithAppendOutput() Option {
 // from an output file.
 func WithResumePreviousScan(filePath string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--resume")
-		s.args = append(s.args, filePath)
+		s.args = append(s.args, "--resume", filePath)
 		return nil
 	}
 }
@@ -74,8 +76,7 @@ func WithResumePreviousScan(filePath string) Option {
 // XML output to HTML.
 func WithStylesheet(stylesheetPath string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--stylesheet")
-		s.args = append(s.args, stylesheetPath)
+		s.args = append(s.args, "--stylesheet", stylesheetPath)
 		return nil
 	}
 }

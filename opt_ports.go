@@ -31,8 +31,7 @@ func WithPorts(ports ...string) Option {
 			return nil
 		}
 
-		s.args = append(s.args, "-p")
-		s.args = append(s.args, portList)
+		s.args = append(s.args, "-p", portList)
 
 		return nil
 	}
@@ -43,8 +42,7 @@ func WithPortExclusions(ports ...string) Option {
 	portList := strings.Join(ports, ",")
 
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--exclude-ports")
-		s.args = append(s.args, portList)
+		s.args = append(s.args, "--exclude-ports", portList)
 		return nil
 	}
 }
@@ -70,8 +68,7 @@ func WithConsecutivePortScanning() Option {
 // common ports.
 func WithMostCommonPorts(number int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--top-ports")
-		s.args = append(s.args, strconv.Itoa(number))
+		s.args = append(s.args, "--top-ports", strconv.Itoa(number))
 		return nil
 	}
 }
@@ -84,8 +81,7 @@ func WithPortRatio(ratio float32) Option {
 			return fmt.Errorf("value given to nmap.WithPortRatio() should be between 0 and 1: got %f", ratio)
 		}
 
-		s.args = append(s.args, "--port-ratio")
-		s.args = append(s.args, fmt.Sprintf("%.1f", ratio))
+		s.args = append(s.args, "--port-ratio", fmt.Sprintf("%.1f", ratio))
 		return nil
 	}
 }

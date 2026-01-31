@@ -25,8 +25,7 @@ func WithFragmentPackets() Option {
 // Some programs have trouble handling these tiny packets.
 func WithMTU(offset int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--mtu")
-		s.args = append(s.args, strconv.Itoa(offset))
+		s.args = append(s.args, "--mtu", strconv.Itoa(offset))
 		return nil
 	}
 }
@@ -47,8 +46,7 @@ func WithDecoys(decoys ...string) Option {
 	decoyList := strings.Join(decoys, ",")
 
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-D")
-		s.args = append(s.args, decoyList)
+		s.args = append(s.args, "-D", decoyList)
 		return nil
 	}
 }
@@ -62,8 +60,7 @@ func WithDecoys(decoys ...string) Option {
 // the IP you are spoofing), so Nmap won't produce useful reports.
 func WithSpoofIPAddress(ip string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-S")
-		s.args = append(s.args, ip)
+		s.args = append(s.args, "-S", ip)
 		return nil
 	}
 }
@@ -71,8 +68,7 @@ func WithSpoofIPAddress(ip string) Option {
 // WithInterface specifies which network interface to use for scanning.
 func WithInterface(iface string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "-e")
-		s.args = append(s.args, iface)
+		s.args = append(s.args, "-e", iface)
 		return nil
 	}
 }
@@ -80,8 +76,7 @@ func WithInterface(iface string) Option {
 // WithSourcePort specifies from which port to scan.
 func WithSourcePort(port uint16) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--source-port")
-		s.args = append(s.args, strconv.FormatUint(uint64(port), 10))
+		s.args = append(s.args, "--source-port", strconv.FormatUint(uint64(port), 10))
 		return nil
 	}
 }
@@ -91,8 +86,7 @@ func WithProxies(proxies ...string) Option {
 	proxyList := strings.Join(proxies, ",")
 
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--proxies")
-		s.args = append(s.args, proxyList)
+		s.args = append(s.args, "--proxies", proxyList)
 		return nil
 	}
 }
@@ -100,8 +94,7 @@ func WithProxies(proxies ...string) Option {
 // WithHexData appends a custom hex-encoded payload to sent packets.
 func WithHexData(data string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--data")
-		s.args = append(s.args, data)
+		s.args = append(s.args, "--data", data)
 		return nil
 	}
 }
@@ -109,8 +102,7 @@ func WithHexData(data string) Option {
 // WithASCIIData appends a custom ascii-encoded payload to sent packets.
 func WithASCIIData(data string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--data-string")
-		s.args = append(s.args, data)
+		s.args = append(s.args, "--data-string", data)
 		return nil
 	}
 }
@@ -118,8 +110,7 @@ func WithASCIIData(data string) Option {
 // WithDataLength appends a random payload of the given length to sent packets.
 func WithDataLength(length int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--data-length")
-		s.args = append(s.args, strconv.Itoa(length))
+		s.args = append(s.args, "--data-length", strconv.Itoa(length))
 		return nil
 	}
 }
@@ -131,8 +122,7 @@ func WithDataLength(length int) Option {
 // for examples of use.
 func WithIPOptions(options string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--ip-options")
-		s.args = append(s.args, options)
+		s.args = append(s.args, "--ip-options", options)
 		return nil
 	}
 }
@@ -144,8 +134,7 @@ func WithIPTimeToLive(ttl int16) Option {
 			return fmt.Errorf("value given to nmap.WithIPTimeToLive() should be between 0 and 255: got %d", ttl)
 		}
 
-		s.args = append(s.args, "--ttl")
-		s.args = append(s.args, strconv.Itoa(int(ttl)))
+		s.args = append(s.args, "--ttl", strconv.Itoa(int(ttl)))
 		return nil
 	}
 }
@@ -158,8 +147,7 @@ func WithIPTimeToLive(ttl int16) Option {
 // deadbeefcafe, 0020F2, and Cisco.
 func WithSpoofMAC(argument string) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--spoof-mac")
-		s.args = append(s.args, argument)
+		s.args = append(s.args, "--spoof-mac", argument)
 		return nil
 	}
 }

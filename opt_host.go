@@ -154,8 +154,7 @@ func WithCustomDNSServers(dnsServers ...string) Option {
 	dnsList := strings.Join(dnsServers, ",")
 
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--dns-servers")
-		s.args = append(s.args, dnsList)
+		s.args = append(s.args, "--dns-servers", dnsList)
 		return nil
 	}
 }

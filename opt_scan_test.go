@@ -123,8 +123,18 @@ func TestScanTechniques(t *testing.T) {
 			},
 
 			expectedArgs: []string{
-				"--scanflags",
-				"11",
+				"--scanflags=ACKFIN",
+			},
+		},
+		{
+			description: "TCP scan flags ALL flags",
+
+			options: []Option{
+				WithTCPScanFlags(FlagNS, FlagCWR, FlagECE, FlagURG, FlagACK, FlagPSH, FlagRST, FlagSYN, FlagFIN, FlagNULL),
+			},
+
+			expectedArgs: []string{
+				"--scanflags=NSCWRECEURGACKPSHRSTSYNFIN",
 			},
 		},
 		{

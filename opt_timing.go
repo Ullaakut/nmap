@@ -28,7 +28,7 @@ const (
 // WithTimingTemplate sets the timing template for nmap.
 func WithTimingTemplate(timing Timing) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, fmt.Sprintf("-T%d", timing))
+		s.args = append(s.args, "-T"+strconv.Itoa(int(timing)))
 		return nil
 	}
 }
@@ -36,8 +36,7 @@ func WithTimingTemplate(timing Timing) Option {
 // WithMinHostgroup sets the minimal parallel host scan group size.
 func WithMinHostgroup(size int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--min-hostgroup")
-		s.args = append(s.args, strconv.Itoa(size))
+		s.args = append(s.args, "--min-hostgroup", strconv.Itoa(size))
 		return nil
 	}
 }
@@ -45,8 +44,7 @@ func WithMinHostgroup(size int) Option {
 // WithMaxHostgroup sets the maximal parallel host scan group size.
 func WithMaxHostgroup(size int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--max-hostgroup")
-		s.args = append(s.args, strconv.Itoa(size))
+		s.args = append(s.args, "--max-hostgroup", strconv.Itoa(size))
 		return nil
 	}
 }
@@ -54,8 +52,7 @@ func WithMaxHostgroup(size int) Option {
 // WithMinParallelism sets the minimal number of parallel probes.
 func WithMinParallelism(probes int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--min-parallelism")
-		s.args = append(s.args, strconv.Itoa(probes))
+		s.args = append(s.args, "--min-parallelism", strconv.Itoa(probes))
 		return nil
 	}
 }
@@ -63,8 +60,7 @@ func WithMinParallelism(probes int) Option {
 // WithMaxParallelism sets the maximal number of parallel probes.
 func WithMaxParallelism(probes int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--max-parallelism")
-		s.args = append(s.args, strconv.Itoa(probes))
+		s.args = append(s.args, "--max-parallelism", strconv.Itoa(probes))
 		return nil
 	}
 }
@@ -77,8 +73,7 @@ func WithMinRTTTimeout(roundTripTime time.Duration) Option {
 			return fmt.Errorf("format round trip time: %w", err)
 		}
 
-		s.args = append(s.args, "--min-rtt-timeout")
-		s.args = append(s.args, formatted)
+		s.args = append(s.args, "--min-rtt-timeout", formatted)
 		return nil
 	}
 }
@@ -91,8 +86,7 @@ func WithMaxRTTTimeout(roundTripTime time.Duration) Option {
 			return fmt.Errorf("format round trip time: %w", err)
 		}
 
-		s.args = append(s.args, "--max-rtt-timeout")
-		s.args = append(s.args, formatted)
+		s.args = append(s.args, "--max-rtt-timeout", formatted)
 		return nil
 	}
 }
@@ -105,8 +99,7 @@ func WithInitialRTTTimeout(roundTripTime time.Duration) Option {
 			return fmt.Errorf("format round trip time: %w", err)
 		}
 
-		s.args = append(s.args, "--initial-rtt-timeout")
-		s.args = append(s.args, formatted)
+		s.args = append(s.args, "--initial-rtt-timeout", formatted)
 		return nil
 	}
 }
@@ -114,8 +107,7 @@ func WithInitialRTTTimeout(roundTripTime time.Duration) Option {
 // WithMaxRetries sets the maximal number of port scan probe retransmissions.
 func WithMaxRetries(tries int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--max-retries")
-		s.args = append(s.args, strconv.Itoa(tries))
+		s.args = append(s.args, "--max-retries", strconv.Itoa(tries))
 		return nil
 	}
 }
@@ -128,8 +120,7 @@ func WithHostTimeout(timeout time.Duration) Option {
 			return fmt.Errorf("format host timeout: %w", err)
 		}
 
-		s.args = append(s.args, "--host-timeout")
-		s.args = append(s.args, formatted)
+		s.args = append(s.args, "--host-timeout", formatted)
 		return nil
 	}
 }
@@ -142,8 +133,7 @@ func WithScanDelay(delay time.Duration) Option {
 			return fmt.Errorf("format scan delay: %w", err)
 		}
 
-		s.args = append(s.args, "--scan-delay")
-		s.args = append(s.args, formatted)
+		s.args = append(s.args, "--scan-delay", formatted)
 		return nil
 	}
 }
@@ -156,8 +146,7 @@ func WithMaxScanDelay(delay time.Duration) Option {
 			return fmt.Errorf("format scan delay: %w", err)
 		}
 
-		s.args = append(s.args, "--max-scan-delay")
-		s.args = append(s.args, formatted)
+		s.args = append(s.args, "--max-scan-delay", formatted)
 		return nil
 	}
 }
@@ -165,8 +154,7 @@ func WithMaxScanDelay(delay time.Duration) Option {
 // WithMinRate sets the minimal number of packets sent per second.
 func WithMinRate(packetsPerSecond int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--min-rate")
-		s.args = append(s.args, strconv.Itoa(packetsPerSecond))
+		s.args = append(s.args, "--min-rate", strconv.Itoa(packetsPerSecond))
 		return nil
 	}
 }
@@ -174,8 +162,7 @@ func WithMinRate(packetsPerSecond int) Option {
 // WithMaxRate sets the maximal number of packets sent per second.
 func WithMaxRate(packetsPerSecond int) Option {
 	return func(s *Scanner) error {
-		s.args = append(s.args, "--max-rate")
-		s.args = append(s.args, strconv.Itoa(packetsPerSecond))
+		s.args = append(s.args, "--max-rate", strconv.Itoa(packetsPerSecond))
 		return nil
 	}
 }

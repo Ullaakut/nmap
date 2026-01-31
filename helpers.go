@@ -194,8 +194,7 @@ func checkStdErr(stderr *bytes.Buffer) (warnings []string, err error) {
 
 	// Check for warnings that inevitably lead to parsing errors, hence, have priority.
 	for warning := range stderrSplit {
-		warning = strings.Trim(warning, " ")
-		warnings = append(warnings, warning)
+		warnings = append(warnings, strings.Trim(warning, " "))
 		switch {
 		case strings.Contains(warning, "Malloc Failed!"):
 			return warnings, ErrMallocFailed
