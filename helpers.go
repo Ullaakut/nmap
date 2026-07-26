@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 )
 
 func (s *Scanner) buildArgs() []string {
@@ -32,6 +33,9 @@ func (s *Scanner) newCmd(ctx context.Context) *exec.Cmd {
 	//nolint:gosec // Arguments are passed directly to nmap; users intentionally control args.
 	cmd := exec.CommandContext(ctx, s.binaryPath, args...)
 	if s.modifySysProcAttr != nil {
+		if cmd.SysProcAttr == nil {
+			cmd.SysProcAttr = &syscall.SysProcAttr{}
+		}
 		s.modifySysProcAttr(cmd.SysProcAttr)
 	}
 	return cmd

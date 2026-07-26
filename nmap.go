@@ -22,7 +22,7 @@ type AsyncScanRunner interface {
 	RunAsync(ctx context.Context) (<-chan []byte, <-chan []byte, <-chan RunResult, error)
 }
 
-// Scanner represents n Nmap scanner.
+// Scanner represents an Nmap scanner.
 type Scanner struct {
 	modifySysProcAttr func(*syscall.SysProcAttr)
 
